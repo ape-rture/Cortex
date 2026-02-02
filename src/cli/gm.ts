@@ -1,4 +1,4 @@
-﻿import path from "node:path";
+import path from "node:path";
 import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
 
@@ -35,6 +35,9 @@ export async function runMorningBriefing(): Promise<string> {
   const calendarSummary = calendar.warning
     ? `(calendar unavailable) ${calendar.warning}`
     : summarizeEvents(calendar.events);
+  const calendarSources = calendar.sources?.length
+    ? `Sources: ${calendar.sources.join(", ")}`
+    : "";
 
   const output: string[] = [];
   output.push("# Morning Briefing");
@@ -42,7 +45,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Weekly Focus", weeklyFocus));
   output.push(formatSection("Pending Actions", pendingActions));
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
-  output.push(formatSection("Calendar", calendarSummary));
+  output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
 
   return output.join("\n").trimEnd() + "\n";
 }

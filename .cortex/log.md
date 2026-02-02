@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-02-02 codex -- multi-calendar support
+
+- Added multi-calendar support via GOOGLE_CALENDAR_IDS and calendarIds option
+- /gm now shows calendar sources
+- Added google-calendar unit test and updated knowledge base for calendar accounts
+- Tests: npm run test:unit (7/7 passed)
+
 ## 2026-02-02 codex -- merge to main
 
 - Merged branch `codex/core-tests` into `main` with --no-ff

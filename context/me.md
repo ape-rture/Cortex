@@ -16,6 +16,10 @@
 **Type**: Full-time, remote (worldwide)
 **Scope**: Operates at founder level -- coding, sales, marketing, team management
 
+## Calendar Accounts
+- dennisverstappen1@gmail.com -- personal/todo dump and appointments
+- dennis@indexing.co -- meetings + Calendly scheduling (blocks agenda)
+
 ## Professional Background
 
 ### Career Timeline

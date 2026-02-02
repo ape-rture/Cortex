@@ -33,6 +33,26 @@ Read `actions/queue.md`. Report:
 
 If the file doesn't exist or is empty, skip.
 
+### Step 3b: Session Snapshot (Warm Handoff)
+
+Read `.cortex/snapshot.md`. This is the state from the last session — what was being worked on, what's unfinished, and what should happen next.
+
+If a snapshot exists:
+- Show what was in progress and whether it's now done (cross-check with queue)
+- Surface any open questions that still need Dennis's input
+- Highlight next steps from the snapshot
+
+If the file doesn't exist, skip.
+
+### Step 3c: Git Push Reminders
+
+Check for unpushed commits in tracked repos (starting with the Cortex repo itself). For each repo with unpushed work:
+- Branch name and number of unpushed commits
+- Age of the oldest unpushed commit
+- Flag as urgent if commits are 24+ hours old
+
+If no unpushed commits, skip.
+
 ### Step 4: Calendar
 
 Fetch today's calendar events using the Google Calendar MCP tool (if available). List meetings with:
@@ -79,10 +99,16 @@ If tools are not available, note that these integrations are pending.
 - 🟡 [Due today — list]
 - ⏳ [Blocking others — list]
 
+### Picking Up Where We Left Off
+[From snapshot: what was in progress, open questions]
+
 ### Queue
 - [In-progress tasks from last session]
 - [High-priority queued items]
 - [N other items in queue]
+
+### Git
+- [Repo: N unpushed commits on branch (age)]
 
 ### Relationship Alerts
 - [Contact] — no interaction in [N] days. Last topic: [X]

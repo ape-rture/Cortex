@@ -1,0 +1,39 @@
+/**
+ * Session Snapshot & Warm Handoff types.
+ *
+ * A session snapshot captures the "mental state" when a session ends
+ * so the next session (same agent or different) can reconstruct context
+ * without a cold start.
+ *
+ * Stored at `.cortex/snapshot.md`, overwritten each session.
+ * The /gm morning routine reads the latest snapshot.
+ */
+
+/** Who created this snapshot. */
+export type SnapshotAgent = "claude" | "codex" | "dennis" | "runtime";
+
+export interface SessionSnapshot {
+  /** Which agent wrote this snapshot. */
+  readonly agent: SnapshotAgent;
+  /** ISO datetime when the session ended. */
+  readonly ended_at: string;
+  /** Git branch the agent was on. */
+  readonly branch?: string;
+  /** One-line summary of what was being worked on. */
+  readonly working_on: string;
+  /** Tasks that were started but not completed. */
+  readonly unfinished: readonly string[];
+  /** What should happen next (ordered by priority). */
+  readonly next_steps: readonly string[];
+  /** Questions or decisions that need Dennis's input. */
+  readonly open_questions: readonly string[];
+  /** Key file paths that are relevant context. */
+  readonly key_files: readonly string[];
+}
+
+export interface SessionSnapshotStore {
+  /** Write a snapshot, overwriting any previous one. */
+  capture(snapshot: SessionSnapshot): Promise<void>;
+  /** Read the latest snapshot, or undefined if none exists. */
+  load(): Promise<SessionSnapshot | undefined>;
+}
