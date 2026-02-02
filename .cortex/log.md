@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-02-02 codex -- session snapshot store
+
+- Added src/core/session-snapshot.ts with markdown-backed store
+- Added src/core/session-snapshot.test.ts
+
 ## 2026-02-02 codex -- cleanup bom in source
 
 - Removed UTF-8 BOM markers from core source files to avoid import issues
