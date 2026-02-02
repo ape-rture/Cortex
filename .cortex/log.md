@@ -59,6 +59,11 @@
 
 ---
 
+## 2026-02-02 codex -- task queue processor
+
+- Added src/core/task-queue.ts implementing MarkdownTaskQueue with add/update/list/next
+- Reads/writes actions/queue.md using markdown utils
+
 ## 2026-02-02 codex -- markdown utils
 
 - Added src/utils/markdown.ts with task queue parsing/serialization and contact parsing

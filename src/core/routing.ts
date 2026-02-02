@@ -192,13 +192,6 @@ export class ConfigRouter implements Router {
     if (!this.config) await this.reloadConfig();
     if (!this.config) throw new Error("Routing config not loaded");
 
-    const touches = request.touches_files ?? [];
-    const matchedClasses = detectDataClasses(touches, this.config.data_classes);
-    const policyViolation = this.checkPolicyRules(matchedClasses, request.user_override);
-    if (policyViolation) {
-      throw new Error(policyViolation);
-    }
-
     const taskType = request.task_type
       ? request.task_type
       : (await this.classify(request.prompt)).task_type;
@@ -208,6 +201,12 @@ export class ConfigRouter implements Router {
 
     const primary = request.user_override ?? route.primary;
     const fallback = request.user_override ? [] : route.fallback;
+    const touches = request.touches_files ?? [];
+    const matchedClasses = detectDataClasses(touches, this.config.data_classes);
+    const policyViolation = this.checkPolicyRules(matchedClasses, primary);
+    if (policyViolation) {
+      throw new Error(policyViolation);
+    }
 
     const { content, modelUsed, usedFallback, usage, latencyMs } = await this.executeWithFallback({
       taskType,
@@ -246,18 +245,13 @@ export class ConfigRouter implements Router {
     return null;
   }
 
-  private checkPolicyRules(matchedClasses: readonly string[], userOverride?: ModelRef): string | undefined {
+  private checkPolicyRules(matchedClasses: readonly string[], modelRef: ModelRef): string | undefined {
     if (!this.config || matchedClasses.length === 0) return undefined;
     for (const rule of this.config.policy_rules) {
       const intersects = rule.match.data_classes.some((item) => matchedClasses.includes(item));
       if (!intersects) continue;
-
-      if (userOverride) {
-        const { provider } = parseModelRef(userOverride);
-        if (!rule.allowed_providers.includes(provider)) {
-          return `Policy violation: ${rule.id} requires local-only routing`;
-        }
-      } else if (!rule.allowed_providers.includes("local")) {
+      const { provider } = parseModelRef(modelRef);
+      if (!rule.allowed_providers.includes(provider)) {
         return `Policy violation: ${rule.id} requires local-only routing`;
       }
     }
