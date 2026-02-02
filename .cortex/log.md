@@ -4,6 +4,11 @@
 
 ---
 
+## 2026-02-02 codex -- test runner fix
+
+- Updated npm scripts to use `node --import tsx` (Node 24 requirement)
+- Installed deps and ran `npm run test:unit` successfully
+
 ## 2026-02-02 codex -- core tests
 
 - Added node:test suites for markdown utils, task queue, routing
