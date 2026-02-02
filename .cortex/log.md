@@ -4,24 +4,6 @@
 
 ---
 
-## 2026-02-02 claude -- Phase 1 remaining: types, prompts, Codex tasks
-
-- Created `src/core/types/session.ts` -- SessionSnapshot + SessionSnapshotStore for warm handoff between sessions
-- Created `src/core/types/daily-digest.ts` -- DailyDigest + DigestGenerator for EOD summaries
-- Created `src/core/types/git-monitor.ts` -- UnpushedReport + GitMonitor for push reminders
-- Updated barrel export in `src/core/types/index.ts`
-- Created `src/agents/prompts/daily-digest.md` -- /digest command spec
-- Updated `src/agents/prompts/gm.md` -- added snapshot handoff + git push sections
-- Queued 4 Codex tasks: session snapshot store, daily digest generator, git monitor, /gm snapshot wiring
-- Branch: `claude/phase1-remaining` -- merged to main
-- Tests: 7/7 pass
-
-### For Codex:
-- Implement `SessionSnapshotStore` -- read/write `.cortex/snapshot.md`
-- Implement `DigestGenerator` -- collect from log, queue, git, pending; write to `daily/YYYY-MM-DD.md`
-- Implement `GitMonitor` -- shell out to `git log @{push}..`, integrate into /gm
-- Wire snapshot loading into `src/cli/gm.ts`
-
 ## 2026-02-02 codex -- multi-calendar support
 
 - Added multi-calendar support via GOOGLE_CALENDAR_IDS and calendarIds option
