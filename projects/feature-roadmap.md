@@ -1,7 +1,7 @@
 # Cortex Feature Roadmap
 
 **Created**: 2026-02-02
-**Status**: Brainstorming — features confirmed, order TBD
+**Status**: Brainstorming -- features confirmed, order TBD
 
 ---
 
@@ -20,9 +20,10 @@
 | **Task queue** (`/actions/queue.md`) | P0 | Designed | Async work between sessions, survives session boundaries |
 | **Morning routine** (gm command) | P0 | Designed | Calendar + pending + queue + FOCUS alerts + Attio decay |
 | **Session snapshots & warm handoff** | P0 | Designed | Auto-capture mental state on session end, reconstruct on start |
-| **Daily digest** | P1 | Designed | EOD summary → `/daily/`, what happened, what's open |
+| **Daily digest** | P1 | Designed | EOD summary -> `/daily/`, what happened, what's open |
 | **Git push reminders** | P1 | Confirmed | Detect unpushed commits, remind |
 | **Shorthand/alias system** | P2 | Confirmed | Emerge from patterns, Cortex suggests, tracked in `/context/aliases.md` |
+| **Agent output schema** | P1 | Designed | Standardized JSON schema all runtime agents return. Foundation for orchestrator |
 
 ## Phase 2: Relationships & Sales
 
@@ -31,20 +32,20 @@
 | **CRM auto-sync** (Attio) | P0 | Confirmed | After any interaction, update contact file + Attio |
 | **Relationship decay alerts** | P1 | Confirmed | 30-day silence detection, last topic recall, check-in suggestion |
 | **Meeting prep autopilot** | P1 | Confirmed | One-page brief: recent interactions, company news, action items, talking points |
-| **FOCUS integration** | P1 | Confirmed | Build API → surface open alerts, stale messages, follow-ups |
+| **FOCUS integration** | P1 | Confirmed | Build API -> surface open alerts, stale messages, follow-ups |
 | **Telegram sales tracking** | P2 | Confirmed | Track relationship context from Telegram conversations |
 
 ## Phase 3: Content Pipeline
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
-| **Content ideas tracker** | P0 | Designed | `/projects/content-ideas.md`, idea → outline → draft → review → publish |
-| **Thread/post builder** | P1 | Confirmed | Give take → draft thread → iterate → queue for posting |
-| **Content recycler** | P1 | Confirmed | Detect insights from Granola, Slack, conversations → content seeds |
+| **Content ideas tracker** | P0 | Designed | `/projects/content-ideas.md`, idea -> outline -> draft -> review -> publish |
+| **Thread/post builder** | P1 | Confirmed | Give take -> draft thread -> iterate -> queue for posting |
+| **Content recycler** | P1 | Confirmed | Detect insights from Granola, Slack, conversations -> content seeds |
 | **Granola as content source** | P1 | Confirmed | Auto-extract publishable insights from meeting transcripts |
-| **Cross-platform recycling** | P2 | Confirmed | YouTube → thread → LinkedIn post → newsletter. Track the chain |
+| **Cross-platform recycling** | P2 | Confirmed | YouTube -> thread -> LinkedIn post -> newsletter. Track the chain |
 | **Marketing tool integration** | P2 | Confirmed | API connection to Indexing Co marketing tool, possibly shared RAG/content DB |
-| **Human in the loop** | P0 | Design principle | Draft → approve → publish. No auto-posting ever |
+| **Human in the loop** | P0 | Design principle | Draft -> approve -> publish. No auto-posting ever |
 | **Audience intelligence** (X analytics) | P3 | Later roadmap | Need to figure out Twitter analytics integration first |
 
 ## Phase 4: Code Productivity
@@ -60,11 +61,14 @@
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
-| **Self-improvement on command** | P1 | Designed | "Fix this", "optimize that" → read own code → propose fix → apply after approval |
-| **Proactive feature suggestions** | P1 | Designed | Detect repeated patterns → propose automation. Surface in `/projects/feature-proposals.md` |
-| **Bug detection & self-repair** | P1 | Designed | Log failures → diagnose → self-patch on command → track regressions |
-| **Compound knowledge** (nightly) | P2 | Designed | Synthesize memory, merge notes, surface stale items, update contacts |
-| **Model performance tracking** | P2 | Confirmed | Per-task metrics (latency, tokens, success rate, cost) → tune routing |
+| **Self-improvement on command** | P1 | Designed | "Fix this", "optimize that" -> read own code -> propose fix -> apply after approval |
+| **Proactive feature suggestions** | P1 | Designed | Detect repeated patterns -> propose automation. Surface in `/projects/feature-proposals.md` |
+| **Bug detection & self-repair** | P1 | Designed | Log failures -> diagnose -> self-patch on command -> track regressions |
+| **Orchestrator MVP** | P0 | Designed | Node.js scheduler. Spawns 2-3 agents on cron. Hybrid rules + small model salience. See `decisions/2026-02-02-dennett-architecture.md` |
+| **First runtime agents** | P1 | Designed | Sales Watcher + Content Creator as first autonomous agents |
+| **Agent permission envelopes** | P1 | Designed | Scoped read/write/API access per agent. Security separation enforced |
+| **Compound knowledge** (nightly) | P2 | Designed | Synthesize memory, merge notes, surface stale items, update contacts (Memory Synthesizer agent) |
+| **Model performance tracking** | P2 | Confirmed | Per-task metrics (latency, tokens, success rate, cost) -> tune routing |
 | **Routing optimization** | P2 | Confirmed | Suggest model switches based on accumulated performance data |
 
 ## Phase 6: Meta-Productivity
@@ -81,6 +85,8 @@
 | **Slack `#cortex` queue bot** | P1 | Designed | Slack bot appends commands/notes to queue file. Process at desk or in real-time |
 | **Slack bridge with LLM** | P2 | Designed | Upgrade bot to invoke Claude API, respond in thread |
 | **Telegram listener (read-only)** | P2 | Designed | Monitor sales chats, extract contact context. Never sends messages |
+| **Full orchestrator** | P1 | Designed | Parallel agents, LLM-scored salience, webhook/Slack/cron triggers. Full Dennettian Multiple Drafts |
+| **Agent-to-agent triggers** | P2 | Idea | Agents can spawn other agents (e.g., Content Creator -> Thread Builder) |
 | **Custom web UI** | P3 | Idea | Full dashboard: queue, projects, content, relationships. Real product territory |
 
 ## Phase 8: Sharing & Open Source
@@ -92,6 +98,7 @@
 | **Shareable MCP servers** | P2 | Idea | Package useful integrations as standalone MCP servers |
 | **Shareable skills** | P2 | Idea | Claude Code skills that others can drop in |
 | **Agent templates** | P3 | Idea | Publishable agent configurations with docs |
+| **Swarm pattern template** | P3 | Idea | The orchestrator + agents pattern itself as a shareable open-source framework |
 
 ---
 
@@ -103,7 +110,7 @@ See `decisions/2026-02-02-blocking-decisions.md` for full rationale.
 |---|---|---|
 | 1 | Programming language | **TypeScript / Node.js** |
 | 2 | Interface | **Slack `#cortex` channel** (command input) + Telegram (read-only data source) |
-| 3 | Local models | **Defer — cloud only** (Claude + Codex). Ollama when GPU available |
+| 3 | Local models | **Defer -- cloud only** (Claude + Codex). Ollama when GPU available |
 | 4 | Routing | **Static rules + user override.** Multi-provider: Anthropic + OpenAI |
 | 5 | Deployment | **Local primary + cheap VPS** (Slack bot + Telegram listener + file sync) |
 | 6 | Security | **Layered by phase.** Human-in-the-loop non-negotiable |

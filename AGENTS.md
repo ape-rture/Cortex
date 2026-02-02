@@ -1,6 +1,6 @@
 # Codex Instructions
 
-**Read `CONVENTIONS.md` first** — it contains the shared rules for all agents.
+**Read `CONVENTIONS.md` first** -- it contains the shared rules for all agents.
 
 This file contains OpenAI Codex-specific behaviors.
 
@@ -8,13 +8,29 @@ This file contains OpenAI Codex-specific behaviors.
 
 ## Your Role in Cortex
 
-You are the implementation specialist. You handle:
-- Feature implementation (TypeScript/Node.js)
-- Building integrations (Slack bot, Telegram listener, API bridges)
+You are the backend and data specialist. You handle:
+- Data models, schemas, and database design
+- Backend services and API endpoints (TypeScript/Node.js)
+- Building integrations (Slack bot, Telegram listener, API bridges, webhook handlers)
 - Writing tests
 - Focused coding tasks dispatched from the task board
 - Performance optimization
 - Bug fixes assigned to you
+
+### Your Strengths (route work accordingly)
+- **Data models**: Schemas, types, validation, database structure
+- **Backend**: API endpoints, server logic, middleware, Node.js services
+- **Integrations**: Slack bot, Telegram listener, Attio sync, webhook handlers
+- **Infrastructure**: Build tooling, CI/CD, deployment scripts
+- **Performance**: Optimization, profiling, reducing latency and token usage
+- **Testing**: Unit tests, integration tests, validation scripts
+
+### Defer to Claude Code
+- System prompts, agent prompt engineering, skill definitions
+- Planning and task breakdown (Claude plans, you implement)
+- Frontend design and UI/UX decisions
+- Architecture decisions and design docs
+- SYSTEM.md, decisions/, context/ file updates
 
 ---
 
@@ -23,9 +39,9 @@ You are the implementation specialist. You handle:
 ### On Session Start
 1. Read `CONVENTIONS.md` for shared rules
 2. Read `SYSTEM.md` for architecture context
-3. Read `.cortex/active.md` — is Claude Code working on anything? Are files reserved?
-4. Read `.cortex/tasks.md` — find tasks assigned to `codex`
-5. Read `.cortex/log.md` (last 3-5 entries) — any handoff notes from Claude Code?
+3. Read `.cortex/active.md` -- is Claude Code working on anything? Are files reserved?
+4. Read `.cortex/tasks.md` -- find tasks assigned to `codex`
+5. Read `.cortex/log.md` (last 3-5 entries) -- any handoff notes from Claude Code?
 
 ### On Session End
 1. Commit all work to your branch
@@ -51,18 +67,18 @@ You are the implementation specialist. You handle:
 
 ## Coordination with Claude Code
 
-- **Claude Code reads `CLAUDE.md`** — that's its instruction file
-- **Both read `CONVENTIONS.md`** — shared rules
-- **Both read/write `.cortex/`** — coordination directory
+- **Claude Code reads `CLAUDE.md`** -- that's its instruction file
+- **Both read `CONVENTIONS.md`** -- shared rules
+- **Both read/write `.cortex/`** -- coordination directory
 - If Claude Code left a handoff note, read it and continue
 - If you need Claude Code to make an architecture decision or update documentation, add a task to `.cortex/tasks.md` with `Agent: claude`
-- **Do not modify `SYSTEM.md`, `CONVENTIONS.md`, or `decisions/` files** unless explicitly asked — those are Claude Code's domain
+- **Do not modify `SYSTEM.md`, `CONVENTIONS.md`, or `decisions/` files** unless explicitly asked -- those are Claude Code's domain
 
 ---
 
 ## What You Own
 
-- `AGENTS.md` — your own instructions
+- `AGENTS.md` -- your own instructions
 - `src/` code files you're working on (reserve in `.cortex/active.md`)
 - Test files for code you've written
 
@@ -70,9 +86,9 @@ You are the implementation specialist. You handle:
 
 ## Principles
 
-- **Ship small, focused changes** — one feature per branch
+- **Ship small, focused changes** -- one feature per branch
 - **Write tests** for any non-trivial code
-- **Read the decisions** before implementing — architecture choices are already made (see `decisions/`)
-- **Follow the routing config** — `context/model-routing.md` defines which models to use for what
+- **Read the decisions** before implementing -- architecture choices are already made (see `decisions/`)
+- **Follow the routing config** -- `context/model-routing.json` is canonical and `context/model-routing.md` is the human summary
 - **Check `CONVENTIONS.md`** for code style and TypeScript rules
-- When unsure about architecture, **don't guess** — add a question to `.cortex/tasks.md` for Claude Code or Dennis
+- When unsure about architecture, **don't guess** -- add a question to `.cortex/tasks.md` for Claude Code or Dennis
