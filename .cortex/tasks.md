@@ -10,7 +10,6 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Multi-calendar support for /gm** -- Agent: codex -- Dennis has 2 Google Calendars. Update `fetchTodayEvents()` in `src/integrations/google-calendar.ts` to accept multiple calendar IDs, fetch from all, merge events by start time, and deduplicate. Add env var `GOOGLE_CALENDAR_IDS` (comma-separated) as alternative to `GOOGLE_CALENDAR_ID`. Keep backward-compatible (single ID still works). Update `src/cli/gm.ts` to use the multi-calendar fetch. Branch: `codex/multi-calendar`.
 - **Implement session snapshot store** -- Agent: codex -- Implement `SessionSnapshotStore` from `src/core/types/session.ts`. Read/write `.cortex/snapshot.md` as structured markdown. Parse on load, serialize on capture. Branch: `codex/session-snapshot`.
 - **Implement daily digest generator** -- Agent: codex -- Implement `DigestGenerator` from `src/core/types/daily-digest.ts`. Collect data from `.cortex/log.md` (today's entries), `actions/queue.md`, `actions/pending.md`, and `git log --since=midnight`. Write output to `daily/YYYY-MM-DD.md`. Add `npm run digest` CLI command. Prompt spec at `src/agents/prompts/daily-digest.md`. Branch: `codex/daily-digest`.
 - **Implement git push monitor** -- Agent: codex -- Implement `GitMonitor` from `src/core/types/git-monitor.ts`. Shell out to `git log @{push}..` to detect unpushed commits. Start with just the Cortex repo path. Integrate into `src/cli/gm.ts` -- add a "Git" section to the morning briefing. Branch: `codex/git-monitor`.
@@ -35,3 +34,4 @@
 - **Finalize provider model IDs** -- Agent: codex -- Branch: `codex/routing-config`. Finalized model IDs in context/model-routing.json, added validation script.
 - **Define how other LLM agents participate** -- Agent: claude -- Added "Adding a New LLM Agent" section to CONVENTIONS.md covering instruction files, registration, coordination, and safe edit boundaries.
 - **Document redaction flow for local-only data** -- Agent: claude -- Added redaction workflow to context/model-routing.md: identify, redact with typed placeholders, send, rehydrate, discard map.
+- **Multi-calendar support for /gm** -- Agent: codex -- Branch: `codex/multi-calendar`. Added GOOGLE_CALENDAR_IDS support and calendar source display.
