@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-02-02 codex -- gm entrypoint
+
+- Added src/cli/gm.ts runnable morning briefing entrypoint
+- Added src/cli/index.ts export and npm script \"gm\"
+- Test run failed: tsx loader missing (install deps before running)
+
 ## 2026-02-02 codex -- google calendar integration
 
 - Added src/integrations/google-calendar.ts (fetch today's events via googleapis)
