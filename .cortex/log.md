@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-02-02 codex -- google calendar integration
+
+- Added src/integrations/google-calendar.ts (fetch today's events via googleapis)
+- Added src/integrations/index.ts export
+- Added googleapis dependency to package.json
+
 ## 2026-02-02 codex -- routing layer
 
 - Added src/core/routing.ts implementing ConfigRouter (config load, policy rules, fallback chain, provider calls)
