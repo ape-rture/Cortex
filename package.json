@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node scripts/validate-routing-config.mjs",
-    "gm": "node --loader tsx src/cli/gm.ts"
+    "gm": "node --loader tsx src/cli/gm.ts",
+    "test:unit": "node --loader tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",

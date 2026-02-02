@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-02-02 codex -- core tests
+
+- Added node:test suites for markdown utils, task queue, routing
+- Added npm script test:unit
+- Tests failed locally: tsx loader missing (install deps first)
+
 ## 2026-02-02 codex -- gm entrypoint
 
 - Added src/cli/gm.ts runnable morning briefing entrypoint
