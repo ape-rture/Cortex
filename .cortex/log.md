@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-02-02 codex -- merge to main
+
+- Merged branch `codex/core-tests` into `main` with --no-ff
+- Ran `npm run test:unit` (6 tests passed)
+- Ready to delete `codex/core-tests`
+
 ## 2026-02-02 codex -- apply stashed instructions
 
 - Applied stashed updates to CONVENTIONS.md (new agent onboarding rules)
