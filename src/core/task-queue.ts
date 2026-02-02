@@ -1,4 +1,4 @@
-﻿import { promises as fs } from "node:fs";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 import { parseTaskQueue, serializeTaskQueue } from "../utils/markdown.js";
 import type { Task, TaskPriority, TaskQueue, TaskStatus } from "./types/task-queue.js";

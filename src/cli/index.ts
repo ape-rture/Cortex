@@ -1,1 +1,1 @@
-﻿export * from "./gm.js";
+export * from "./gm.js";

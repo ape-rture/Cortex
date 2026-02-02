@@ -1,1 +1,1 @@
-﻿export * from "./google-calendar.js";
+export * from "./google-calendar.js";
