@@ -4,6 +4,42 @@
 
 ---
 
+## 2026-02-02 codex -- apply stashed instructions
+
+- Applied stashed updates to CONVENTIONS.md (new agent onboarding rules)
+- Applied redaction flow section to context/model-routing.md
+- Synced tasks board updates from stash
+
+## 2026-02-02 codex -- test runner fix
+
+- Updated npm scripts to use `node --import tsx` (Node 24 requirement)
+- Installed deps and ran `npm run test:unit` successfully
+
+## 2026-02-02 codex -- core tests
+
+- Added node:test suites for markdown utils, task queue, routing
+- Added npm script test:unit
+- Tests failed locally: tsx loader missing (install deps first)
+
+## 2026-02-02 codex -- gm entrypoint
+
+- Added src/cli/gm.ts runnable morning briefing entrypoint
+- Added src/cli/index.ts export and npm script \"gm\"
+- Test run failed: tsx loader missing (install deps before running)
+
+## 2026-02-02 codex -- google calendar integration
+
+- Added src/integrations/google-calendar.ts (fetch today's events via googleapis)
+- Added src/integrations/index.ts export
+- Added googleapis dependency to package.json
+
+## 2026-02-02 codex -- routing layer
+
+- Added src/core/routing.ts implementing ConfigRouter (config load, policy rules, fallback chain, provider calls)
+- Logs model performance to context/model-performance.md via append helper
+- Uses heuristic classifier as placeholder until local classifier is available
+- Tests: not run (no test runner configured)
+
 ## 2026-02-02 claude -- Phase 1 contracts (types, routing API, task queue, /gm skill)
 
 - Created `src/core/types/` directory with all Phase 1 type definitions:
@@ -33,6 +69,22 @@
 - After Codex scaffolds the project, both agents can work in parallel
 
 ---
+
+## 2026-02-02 codex -- task queue processor
+
+- Added src/core/task-queue.ts implementing MarkdownTaskQueue with add/update/list/next
+- Reads/writes actions/queue.md using markdown utils
+
+## 2026-02-02 codex -- markdown utils
+
+- Added src/utils/markdown.ts with task queue parsing/serialization and contact parsing
+- Added src/utils/index.ts exports
+
+## 2026-02-02 codex -- scaffold TypeScript project
+
+- Added package.json (ESM, strict TypeScript) with Anthropic + OpenAI SDK deps
+- Added tsconfig.json (strict, NodeNext, path aliases)
+- Ensured src/ structure (integrations/utils placeholders)
 
 ## 2026-02-02 codex -- phase 5 content creator naming
 

@@ -21,6 +21,41 @@ The following data never leaves local execution unless Dennis explicitly approve
 
 If a task touches any of the above, route to local models only.
 
+### Redaction Flow (when cloud routing is explicitly approved)
+
+When Dennis explicitly approves sending sensitive context to a cloud model, follow this flow:
+
+**Step 1 — Identify sensitive fields**
+Scan the input for:
+- Names, emails, phone numbers, addresses (PII)
+- Company names, deal values, revenue figures (business-sensitive)
+- API keys, tokens, passwords (secrets — these are NEVER sent, even redacted)
+- Strategy docs, pricing, competitive analysis (strategic)
+
+**Step 2 — Redact**
+Replace sensitive values with typed placeholders:
+```
+Dennis Verstappen  →  [PERSON_1]
+sarah@acme.com     →  [EMAIL_1]
+Acme Corp          →  [COMPANY_1]
+$450k deal         →  [DEAL_VALUE_1]
+```
+Keep a local redaction map (in-memory only, never persisted) to restore values after.
+
+**Step 3 — Send to cloud model**
+The redacted payload goes to the cloud provider. The prompt context includes only placeholders.
+
+**Step 4 — Rehydrate**
+When the response comes back, replace placeholders with original values using the local map. Discard the map immediately after.
+
+**What is NEVER sent, even redacted:**
+- API keys, tokens, or secrets (no placeholder — just omit entirely)
+- Raw meeting transcripts (summarize locally first, then send the summary)
+- Contact files in full (extract only the fields needed for the task)
+
+**Who can approve cloud routing of sensitive data:**
+- Only Dennis, explicitly, per-request. No standing approvals. No batch approvals.
+
 ## Routing Table (Summary)
 
 | Task Type | Primary | Fallback | Notes |
