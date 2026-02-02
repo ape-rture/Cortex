@@ -34,6 +34,12 @@
 
 ---
 
+## 2026-02-02 codex -- scaffold TypeScript project
+
+- Added package.json (ESM, strict TypeScript) with Anthropic + OpenAI SDK deps
+- Added tsconfig.json (strict, NodeNext, path aliases)
+- Ensured src/ structure (integrations/utils placeholders)
+
 ## 2026-02-02 codex -- phase 5 content creator naming
 
 - Replaced Content Scanner with Content Creator across decision, routing, roadmap, and SYSTEM diagram
