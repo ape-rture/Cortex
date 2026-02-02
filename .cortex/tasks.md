@@ -10,9 +10,8 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Define how other LLM agents participate** -- Agent: claude -- Add a short section in CONVENTIONS.md or SYSTEM.md covering how to add a new LLM agent, where its instruction file lives, and how it can propose edits safely.
-- **Finalize provider model IDs** -- Agent: claude -- Replace TBD model ids in context/model-routing.json with actual API model ids once selected.
-- **Document redaction flow for local-only data** -- Agent: claude -- Add a brief workflow for redacting contacts/meetings/plans when cloud routing is explicitly approved.
+- **Wire /gm entrypoint** -- Agent: codex -- Add a runnable CLI entrypoint that uses markdown utils + calendar integration to produce a morning briefing. Branch: `codex/gm-entrypoint`. Depends on: google-calendar.
+- **Add tests for core modules** -- Agent: codex -- Tests for markdown utils, task queue, routing. Branch: `codex/core-tests`. Depends on: routing, task-queue, markdown-utils.
 
 ## In Progress
 
@@ -28,5 +27,6 @@
 - **Implement task queue processor** -- Agent: codex -- Branch: `codex/task-queue`. Added MarkdownTaskQueue with read/write, add, update, next helpers.
 - **Implement routing layer** -- Agent: codex -- Branch: `codex/routing-layer`. Added ConfigRouter with config load, policy rules, fallback chain, provider calls, and performance logging.
 - **Implement Google Calendar integration** -- Agent: codex -- Branch: `codex/google-calendar`. Added googleapis-based integration to fetch today's events.
-- **Wire /gm entrypoint** -- Agent: codex -- Branch: `codex/gm-entrypoint`. Added CLI entrypoint for morning briefing.
-- **Add tests for core modules** -- Agent: codex -- Branch: `codex/core-tests`. Added node:test suites for markdown utils, task queue, and routing.
+- **Finalize provider model IDs** -- Agent: codex -- Branch: `codex/routing-config`. Finalized model IDs in context/model-routing.json, added validation script.
+- **Define how other LLM agents participate** -- Agent: claude -- Added "Adding a New LLM Agent" section to CONVENTIONS.md covering instruction files, registration, coordination, and safe edit boundaries.
+- **Document redaction flow for local-only data** -- Agent: claude -- Added redaction workflow to context/model-routing.md: identify, redact with typed placeholders, send, rehydrate, discard map.

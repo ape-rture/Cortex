@@ -4,6 +4,12 @@
 
 ---
 
+## 2026-02-02 codex -- apply stashed instructions
+
+- Applied stashed updates to CONVENTIONS.md (new agent onboarding rules)
+- Applied redaction flow section to context/model-routing.md
+- Synced tasks board updates from stash
+
 ## 2026-02-02 codex -- test runner fix
 
 - Updated npm scripts to use `node --import tsx` (Node 24 requirement)

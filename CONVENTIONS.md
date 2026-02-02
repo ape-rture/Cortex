@@ -140,6 +140,48 @@ Some files should generally be owned by one agent to prevent conflicts:
 
 ---
 
+## Adding a New LLM Agent
+
+Cortex is designed for multiple AI agents. Currently: Claude Code (architect) and OpenAI Codex (backend). To add a third agent (e.g., Gemini, Mistral, a local model):
+
+### 1. Create an instruction file
+
+Create `<AGENT_NAME>.md` in the repo root (e.g., `GEMINI.md`). This file must:
+- Start with: **Read `CONVENTIONS.md` first**
+- Define the agent's role, strengths, and what it defers to other agents
+- Include the session workflow (read `.cortex/active.md`, `.cortex/tasks.md`, `.cortex/log.md`)
+- Specify its branch prefix (e.g., `gemini/`)
+- Specify its commit prefix (e.g., `gemini: description`)
+
+Use `AGENTS.md` (Codex) as a template.
+
+### 2. Register the agent
+
+- Add a row to the **File Ownership Rules** table above for any files the agent primarily owns
+- Add the agent's branch prefix to the **Git Conventions > Branches** section
+- Add the agent's commit prefix to the **Git Conventions > Commits** section
+- Add model routing entries to `context/model-routing.json` if the agent uses a new provider
+
+### 3. Coordination rules
+
+The new agent follows the same coordination protocol as existing agents:
+- Reserve files in `.cortex/active.md` before editing
+- Pick up tasks from `.cortex/tasks.md` assigned to it
+- Write handoff notes to `.cortex/log.md` when done
+- Never push to `main`
+
+### 4. Safe edit boundaries
+
+New agents start with **restricted write access**:
+- Can only edit files explicitly assigned in `.cortex/tasks.md`
+- Cannot modify `SYSTEM.md`, `CONVENTIONS.md`, `decisions/`, or another agent's instruction file
+- Must reserve files in `.cortex/active.md` before any edit
+- Dennis grants broader access per-agent once trust is established
+
+To propose changes to restricted files, the agent adds a task to `.cortex/tasks.md` assigned to the file's owner (see File Ownership Rules table).
+
+---
+
 ## Security Rules
 
 1. **Never commit secrets**: No API keys, tokens, passwords, or credentials in any file. Use `.env` and environment variables
