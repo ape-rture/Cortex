@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-02-02 codex -- routing layer
+
+- Added src/core/routing.ts implementing ConfigRouter (config load, policy rules, fallback chain, provider calls)
+- Logs model performance to context/model-performance.md via append helper
+- Uses heuristic classifier as placeholder until local classifier is available
+- Tests: not run (no test runner configured)
+
 ## 2026-02-02 claude -- Phase 1 contracts (types, routing API, task queue, /gm skill)
 
 - Created `src/core/types/` directory with all Phase 1 type definitions:
