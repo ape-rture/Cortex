@@ -53,3 +53,21 @@ export type {
   OrchestratorConfig,
   Orchestrator,
 } from "./orchestrator.js";
+
+export type {
+  SnapshotAgent,
+  SessionSnapshot,
+  SessionSnapshotStore,
+} from "./session.js";
+
+export type {
+  DigestItem,
+  DailyDigest,
+  DigestGenerator,
+} from "./daily-digest.js";
+
+export type {
+  UnpushedReport,
+  GitMonitor,
+  GitMonitorConfig,
+} from "./git-monitor.js";
