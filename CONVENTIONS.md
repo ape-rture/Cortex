@@ -52,13 +52,39 @@ Read these files before making architectural decisions. If a decision has alread
 
 ## Git Conventions
 
+### Two-Track Commit Model
+
+The repo has two kinds of files with different git workflows:
+
+**Track 1 -- Shared files: commit directly to `main`.**
+These files are written by multiple agents and must always be in sync. Never put them on a feature branch.
+- `.cortex/*` (active.md, log.md, tasks.md, snapshot.md)
+- `CONVENTIONS.md`, `SYSTEM.md`, `CLAUDE.md`, `AGENTS.md`
+- `context/*.md`, `decisions/*.md`, `projects/*.md`
+- `actions/*.md`, `daily/*.md`
+- `src/core/types/*` (shared contracts)
+- `src/agents/prompts/*` (shared prompt specs)
+
+**Track 2 -- Feature code: use branches, then merge.**
+These files are implementation code that may break things. Branch, test, merge.
+- `src/core/*.ts` (excluding `types/`)
+- `src/integrations/*`
+- `src/cli/*`
+- `src/utils/*`
+- `src/ui/*`
+- Test files (`*.test.ts`)
+- `package.json`, `tsconfig.json`, config scripts
+
+### Workflow
+
+1. **Shared file edits** -- commit to `main` immediately. No branch needed. These are coordination files; blocking them behind branches causes stalls.
+2. **Feature code** -- create a branch (`claude/[slug]` or `codex/[slug]`), implement, test, merge to main, delete branch.
+3. **Mixed changes** -- commit shared files to `main` first, then create branch for feature code. Never put shared files on a feature branch.
+
 ### Branches
-- `main` -- stable branch. **Never push directly to main.**
 - `claude/[task-slug]` -- branches created by Claude Code
 - `codex/[task-slug]` -- branches created by OpenAI Codex
 - `dennis/[task-slug]` -- branches created by Dennis manually
-
-Examples: `claude/task-queue`, `codex/slack-bot`, `claude/memory-system`
 
 ### Commits
 Format: `[agent]: description`
@@ -66,8 +92,7 @@ Format: `[agent]: description`
 ```
 claude: add task queue processing to core
 codex: implement Slack webhook handler
-claude: fix routing fallback for Codex provider
-codex: add tests for content pipeline module
+claude: update task board with new Codex tasks
 dennis: update SYSTEM.md with new requirements
 ```
 
@@ -75,10 +100,17 @@ dennis: update SYSTEM.md with new requirements
 - Write in imperative mood: "add", "fix", "update", not "added", "fixed", "updated"
 
 ### Merging
-- **Agents can merge their own branches to main** after tests pass and Dennis confirms the work is correct
+- **Agents merge their own branches to main autonomously** -- no human approval needed for merging
+- Run tests before merging. If tests fail, fix first
 - Merge with `git checkout main && git merge [branch] --no-ff` (preserve branch history)
-- After merging, clean up: delete the merged branch, update `.cortex/log.md`
-- If there are merge conflicts, stop and surface to Dennis -- don't force-resolve
+- After merging: delete the branch, update `.cortex/log.md`
+- If there are merge conflicts, resolve them if straightforward. Surface to Dennis only if the conflict involves a design decision
+
+### What Dennis Never Needs To Do
+- Dennis does NOT merge branches -- agents handle this
+- Dennis does NOT resolve git conflicts -- agents handle this or escalate
+- Dennis does NOT approve commits -- agents commit and merge autonomously
+- Dennis reviews work via `.cortex/log.md` and the code itself, not via git workflow
 
 ---
 
@@ -88,21 +120,23 @@ dennis: update SYSTEM.md with new requirements
 
 1. **Read `.cortex/active.md`** -- check if another agent is working and what files they've reserved
 2. **Read `.cortex/tasks.md`** -- find your assigned task
-3. **Update `.cortex/active.md`** -- register yourself, your task, and the files you'll touch
-4. **Create your branch** -- `claude/[slug]` or `codex/[slug]`
+3. **Update `.cortex/active.md`** -- register yourself, your task, and the files you'll touch (commit to main)
+4. **If the task involves feature code**: create a branch (`claude/[slug]` or `codex/[slug]`)
+5. **If the task is shared-files only** (docs, types, prompts, coordination): stay on `main`
 
 ### While Working
 
-- Stay on your branch
-- Only touch files you've reserved in `active.md`
-- If you need a file another agent has reserved: STOP, note the dependency in `active.md`, and move to a different task or wait
+- Feature code: stay on your branch
+- Shared files: commit to `main` as you go
+- If you need a file another agent has reserved: STOP, note the dependency in `active.md`, and move to a different task
 
 ### When Finishing a Task
 
 1. **Commit your work** with proper commit message format
-2. **Update `.cortex/active.md`** -- clear your entry, unreserve files
-3. **Append to `.cortex/log.md`** -- what you did, files changed, what to pick up next
-4. **Update `.cortex/tasks.md`** -- move task from "In Progress" to "Done"
+2. **If on a branch**: run tests, merge to main, delete branch
+3. **Update `.cortex/active.md`** -- clear your entry, unreserve files (commit to main)
+4. **Append to `.cortex/log.md`** -- what you did, files changed, what to pick up next (commit to main)
+5. **Update `.cortex/tasks.md`** -- move task from "In Progress" to "Done" (commit to main)
 
 ### Handoff Between Agents
 
@@ -114,6 +148,7 @@ When one agent finishes work that another agent should continue:
    - Which files are relevant
 2. Finishing agent adds a task to `.cortex/tasks.md` assigned to the other agent
 3. The next agent picks it up on their next session
+4. All handoff updates are committed to `main` immediately
 
 ---
 
@@ -169,7 +204,7 @@ The new agent follows the same coordination protocol as existing agents:
 - Reserve files in `.cortex/active.md` before editing
 - Pick up tasks from `.cortex/tasks.md` assigned to it
 - Write handoff notes to `.cortex/log.md` when done
-- Never push to `main`
+- Follow the two-track commit model (shared files to main, feature code on branches)
 
 ### 4. Safe edit boundaries
 
