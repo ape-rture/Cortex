@@ -1,0 +1,216 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-02-02",
+  "routing_mode": "hybrid",
+  "notes": "Canonical routing config. Update here and regenerate summaries as needed.",
+  "user_override": {
+    "enabled": true,
+    "priority": 1,
+    "examples": [
+      "use opus for this",
+      "send this to codex",
+      "route locally"
+    ]
+  },
+  "classifier": {
+    "enabled": true,
+    "model": "local-small",
+    "confidence_threshold": 0.7,
+    "fallback_on_low_confidence": true
+  },
+  "data_classes": {
+    "contacts": {
+      "local_only": true,
+      "examples": [
+        "contacts/**"
+      ]
+    },
+    "meetings": {
+      "local_only": true,
+      "examples": [
+        "meetings/**",
+        "daily/**"
+      ]
+    },
+    "plans": {
+      "local_only": true,
+      "examples": [
+        "projects/**",
+        "context/weekly-focus.md",
+        "decisions/**"
+      ]
+    }
+  },
+  "policy_rules": [
+    {
+      "id": "local_only_personal",
+      "description": "Contacts, meetings, and in-flight plans never leave local unless Dennis explicitly approves a redacted summary.",
+      "match": {
+        "data_classes": [
+          "contacts",
+          "meetings",
+          "plans"
+        ]
+      },
+      "allowed_providers": [
+        "local"
+      ],
+      "requires_user_approval_for_cloud": true
+    }
+  ],
+  "providers": {
+    "anthropic": {
+      "enabled": true,
+      "models": {
+        "opus": {
+          "api_model_id": "claude-opus-4-1-20250805"
+        },
+        "sonnet": {
+          "api_model_id": "claude-sonnet-4-20250514"
+        },
+        "haiku": {
+          "api_model_id": "claude-3-5-haiku-20241022"
+        }
+      }
+    },
+    "openai": {
+      "enabled": true,
+      "models": {
+        "gpt_4o": {
+          "api_model_id": "gpt-4o-2024-11-20"
+        },
+        "codex": {
+          "api_model_id": "gpt-5.1-codex"
+        }
+      }
+    },
+    "local": {
+      "enabled": false,
+      "models": {
+        "local_small": {
+          "api_model_id": "TBD"
+        },
+        "local_coder": {
+          "api_model_id": "TBD"
+        }
+      }
+    }
+  },
+  "task_types": {
+    "quick_capture": {
+      "description": "Short notes, filing, or simple transforms"
+    },
+    "meeting_summary": {
+      "description": "Summaries, minutes, action extraction"
+    },
+    "complex_reasoning": {
+      "description": "Hard reasoning, multi-step decisions"
+    },
+    "code_generation": {
+      "description": "Implementation work"
+    },
+    "code_review": {
+      "description": "Review or critique"
+    },
+    "content_drafting": {
+      "description": "Posts, threads, drafts"
+    },
+    "research_analysis": {
+      "description": "Deep analysis, synthesis"
+    },
+    "classification": {
+      "description": "Routing/classification only"
+    },
+    "bulk_ops": {
+      "description": "Large batch transformations"
+    },
+    "security_audit": {
+      "description": "Threat modeling, security reviews"
+    },
+    "vibe_coding": {
+      "description": "Interactive coding sessions"
+    }
+  },
+  "routes": {
+    "quick_capture": {
+      "primary": "anthropic:haiku",
+      "fallback": [
+        "anthropic:sonnet"
+      ]
+    },
+    "meeting_summary": {
+      "primary": "anthropic:sonnet",
+      "fallback": [
+        "anthropic:opus"
+      ]
+    },
+    "complex_reasoning": {
+      "primary": "anthropic:opus",
+      "fallback": [
+        "openai:gpt_4o"
+      ]
+    },
+    "code_generation": {
+      "primary": "anthropic:sonnet",
+      "fallback": [
+        "openai:codex"
+      ]
+    },
+    "code_review": {
+      "primary": "anthropic:sonnet",
+      "fallback": [
+        "openai:codex"
+      ]
+    },
+    "content_drafting": {
+      "primary": "anthropic:sonnet",
+      "fallback": []
+    },
+    "research_analysis": {
+      "primary": "anthropic:opus",
+      "fallback": [
+        "openai:gpt_4o"
+      ]
+    },
+    "classification": {
+      "primary": "anthropic:haiku",
+      "fallback": [
+        "anthropic:sonnet"
+      ]
+    },
+    "bulk_ops": {
+      "primary": "anthropic:haiku",
+      "fallback": []
+    },
+    "security_audit": {
+      "primary": "anthropic:opus",
+      "fallback": []
+    },
+    "vibe_coding": {
+      "primary": "openai:codex",
+      "fallback": [
+        "anthropic:sonnet"
+      ]
+    }
+  },
+  "fallback_rules": {
+    "on_error": true,
+    "on_timeout_ms": 45000,
+    "on_low_confidence": true
+  },
+  "logging": {
+    "path": "context/model-performance.md",
+    "fields": [
+      "date",
+      "task_type",
+      "provider",
+      "model",
+      "input_tokens",
+      "output_tokens",
+      "latency_ms",
+      "success",
+      "cost_est",
+      "notes"
+    ]
+  }
+}

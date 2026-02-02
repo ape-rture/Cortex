@@ -1,76 +1,84 @@
 # Model Routing Configuration
 
-**Last updated**: 2026-02-02
-**Mode**: Static rules + user override
-**Providers**: Anthropic (Claude), OpenAI (GPT/Codex), Local (Ollama — future)
+Last updated: 2026-02-02
+Mode: Hybrid (user override + classifier + static routes)
+Canonical config: context/model-routing.json
 
 ## How Routing Works
 
-1. User can override any routing: "use Opus for this" or "send this to Codex" → uses that
-2. Otherwise, task type → model mapping below
-3. If primary model fails → try fallback
-4. All calls logged to `/context/model-performance.md`
-5. Cortex should be able to dispatch to BOTH Claude and OpenAI APIs — they are complementary, not competing
+1. User can override any routing ("use opus for this", "send this to codex").
+2. Otherwise a classifier tags the task type and sensitivity.
+3. The router selects the primary model from the canonical config.
+4. If the call fails or times out, try the fallback chain.
+5. Log outcomes to context/model-performance.md.
 
-## Available Providers
+## Local-Only Data Policy
 
-| Provider | Models | API | Notes |
-|---|---|---|---|
-| **Anthropic** | Claude Opus, Sonnet, Haiku | Anthropic API | Primary for reasoning, content, general agent work |
-| **OpenAI** | GPT-4o, GPT Codex | OpenAI API | Available for coding tasks, second opinion, specific strengths |
-| **Local (future)** | Ollama models | localhost:11434 | When GPU hardware available |
+The following data never leaves local execution unless Dennis explicitly approves a redacted summary:
+- Contacts (contacts/)
+- Meetings and transcripts (meetings/, daily/)
+- In-flight plans and strategy (projects/, context/weekly-focus.md, decisions/)
 
-## Routing Table
+If a task touches any of the above, route to local models only.
+
+## Routing Table (Summary)
 
 | Task Type | Primary | Fallback | Notes |
 |---|---|---|---|
 | Quick capture / filing | haiku | sonnet | Fast, cheap |
 | Meeting summary | sonnet | opus | Balance speed + quality |
-| Complex reasoning | opus | gpt-4o | Maximum reasoning, cross-check on hard problems |
-| Code generation | sonnet | **codex** | Claude for most code, Codex for heavy backend/algorithmic work |
-| Code review | sonnet | codex | Different models catch different issues |
-| Content drafting | sonnet | — | Creative + fast |
+| Complex reasoning | opus | gpt-4o | Cross-provider for hard problems |
+| Code generation | sonnet | codex | Codex for heavy backend/algorithmic work |
+| Code review | sonnet | codex | Different model catches different issues |
+| Content drafting | sonnet | - | Creative + fast |
 | Research / analysis | opus | gpt-4o | Needs depth |
 | Classification / routing | haiku | sonnet | Speed is king |
-| Bulk operations | haiku | — | Cheap batch processing |
-| Security audit | opus | — | Needs deep reasoning |
-| Vibe coding (interactive) | **codex** | sonnet | Codex for dedicated coding sessions via OpenAI API |
-
-## Multi-Provider Strategy
-
-Cortex is NOT locked to one provider. The system should:
-
-- **Route by strength**: Claude for reasoning/content, Codex for pure coding, Haiku for cheap/fast ops
-- **Cross-validate on critical tasks**: For architecture decisions or security audits, optionally get a second opinion from a different provider
-- **Track performance per provider per task**: The performance log shows which provider is actually better for each task type — use data, not assumptions
-- **Unified interface**: The agent code calls a routing function, not a specific API. Switching models = changing config, not code
-- **Cost awareness**: Track spend per provider. Alert if monthly costs exceed thresholds
+| Bulk operations | haiku | - | Cheap batch processing |
+| Security audit | opus | - | Deep reasoning |
+| Vibe coding (interactive) | codex | sonnet | Codex for dedicated coding sessions |
 
 ## Coding Workflow: Claude Code + Codex
 
-Both tools are available for coding. Use them based on context:
-
-| Scenario | Tool | Why |
+| Task Type | Agent | Why |
 |---|---|---|
-| Working in Claude Code session | Claude (Sonnet/Opus) | Already in context, has project knowledge |
-| Dedicated coding task dispatched from queue | Codex via API | Codex excels at focused code generation |
-| Code review / second opinion | Opposite of what wrote it | Different model catches different bugs |
-| Pair programming / interactive | Claude Code CLI | Conversational, iterative |
-| Batch code generation (many files) | Codex via API | Can parallelize requests |
+| System prompts, agent definitions, skill configs | Claude Code | Prompt engineering is a core strength |
+| Planning, task breakdown, architecture | Claude Code | Designs the plan, Codex implements |
+| Frontend / UI / components | Claude Code | Design and UX decisions |
+| Data models, schemas, types | Codex | Data modeling strength |
+| Backend services, API endpoints | Codex | Server-side implementation |
+| Integrations (Slack, Attio, webhooks) | Codex | Plumbing and API bridges |
+| Code review / second opinion | Opposite of what wrote it | Different models catch different issues |
+| Performance optimization | Codex | Profiling and low-level optimization |
 | Debugging / tracing | Claude (Opus) | Strong reasoning about state |
 
-## Local Models (Future — When Hardware Available)
+## Runtime Agent Routing
 
-When a GPU or Apple Silicon machine is available, add:
+Each runtime agent (see `decisions/2026-02-02-dennett-architecture.md`) is powered by a specific model. The orchestrator reads this config when spawning agents.
 
-| Task Type | Local Model | Cloud Fallback |
-|---|---|---|
-| Quick capture / filing | llama3.1:8b | haiku |
-| Classification / routing | llama3.1:8b | haiku |
-| Code generation | qwen2.5-coder:14b | codex / sonnet |
-| General agent work | qwen2.5:14b | sonnet |
-| Embeddings | nomic-embed-text | — |
-| Bulk operations | llama3.1:8b | haiku |
+| Agent | Default Model | Rationale | Max Tokens | Escalation |
+|---|---|---|---|---|
+| **Triage Agent** | haiku | Runs after multi-agent cycles or high-level tag. Classify + suggest | 1000 | sonnet if confidence < 0.7 |
+| **Sales Watcher** | haiku | Simple date/gap checks against contacts/ | 2000 | sonnet for relationship analysis |
+| **Code Watcher** | haiku | Git timestamp checks, branch status | 1500 | sonnet for failure diagnosis |
+| **Content Creator** | sonnet | Creates publishable insights; scanner is a sub-step | 4000 | opus for high-value content |
+| **Pattern Detector** | sonnet | Needs reasoning across multiple data sources | 4000 | opus for complex pattern synthesis |
+| **Memory Synthesizer** | sonnet | Compounding knowledge requires good writing | 6000 | - |
+| **Security Auditor** | opus | Must not miss PII/keys. High stakes | 4000 | - |
+
+### Escalation Rules
+
+Agents can request escalation to a more powerful model mid-task. The orchestrator handles this:
+- Agent returns `{"escalation_needed": true, "reason": "..."}` instead of findings
+- Orchestrator re-spawns the same agent with the escalation model
+- Max one escalation per agent per cycle (prevents loops)
+- Escalations are logged in performance tracking
+
+### Salience Scorer Routing
+
+The salience scorer that ranks agent outputs:
+- **Phase 5-6** (MVP): Hybrid rules + small model. Rules set priors, small model adjusts within bounds
+- **Phase 7** (full): Small model call with all agent outputs as context. Returns ranked list
+- **Phase 8+** (learned): Weights tuned from user behavior (which alerts were acted on)
 
 ## Performance Tracking
 
@@ -82,8 +90,8 @@ After each LLM call, log:
 - Success (did the output achieve the task?)
 - Cost estimate
 
-Store in `/context/model-performance.md`. Review weekly for routing optimization.
+Store in context/model-performance.md. Review weekly for routing optimization.
 
 ---
 
-*Cortex can propose routing changes based on accumulated performance data.*
+This file is a human-readable summary. The canonical source is context/model-routing.json.

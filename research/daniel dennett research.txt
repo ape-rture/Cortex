@@ -17,16 +17,16 @@ https://www.events.unsw.edu.au/sites/default/files/2018-10/085_Daniel_Dennett_on
 
 https://m.media-amazon.com/images/I/71FtWUkhCML.jpg
 4
-Daniel Dennett — consciousness in one page
+Daniel Dennett -- consciousness in one page
 Core stance:
-Consciousness is not a mysterious inner “thing” or a private movie in the head.
+Consciousness is not a mysterious inner "thing" or a private movie in the head.
 It is a set of brain processes that create useful narratives and behaviors.
 
 He treats it as computational + functional, not magical or irreducible.
 
 The idea in 4 steps
-1) No “inner theater”
-He rejects the “Cartesian Theater” idea (a little observer watching experiences inside your head).
+1) No "inner theater"
+He rejects the "Cartesian Theater" idea (a little observer watching experiences inside your head).
 
 There is no central screen where everything comes together.
 
@@ -47,13 +47,13 @@ All run simultaneously and competitively, not sequentially.
 
 Whichever processes win influence guide behavior and report.
 
-3) “Multiple Drafts” model
+3) "Multiple Drafts" model
 His key theory:
 
-The brain produces many parallel “drafts” of interpretations.
+The brain produces many parallel "drafts" of interpretations.
 Some get edited, reinforced, or discarded.
 
-There’s no single final version — just whichever draft becomes dominant.
+There's no single final version -- just whichever draft becomes dominant.
 
 Analogy:
 
@@ -61,17 +61,17 @@ Like Wikipedia edits or background threads
 
 Not like a movie projector
 
-4) The “self” is a story
-Your “self” is not a fixed entity.
+4) The "self" is a story
+Your "self" is not a fixed entity.
 
-It’s what he calls a:
-“center of narrative gravity”
+It's what he calls a:
+"center of narrative gravity"
 
 Meaning:
 
 a useful fiction
 
-like the “center of mass” in physics
+like the "center of mass" in physics
 
 real in effect, but not a physical object
 
@@ -84,8 +84,8 @@ Quick contrast
 View	Dennett
 Consciousness is mysterious or non-physical	❌
 There is a central experiencer	❌
-It’s explainable by cognitive science	✅
-It’s emergent from brain processes	✅
+It's explainable by cognitive science	✅
+It's emergent from brain processes	✅
 If you want, next we can zoom into one of these specifically:
 
 Multiple Drafts explained with an example
@@ -96,12 +96,12 @@ Comparison with Chalmers / hard problem
 
 Practical implications (free will, self, AI)
 
-Pick one and we’ll keep it tight.
+Pick one and we'll keep it tight.
 
 You said:
 is this view still in line with the cognitive psychology and agency in humans research from the last few years? Been a while (pre 2018) that I dugg into this
 ChatGPT said:
-To check how Dennett’s view aligns with recent cognitive psychology and agency research, could you clarify what areas you'd like me to focus on?
+To check how Dennett's view aligns with recent cognitive psychology and agency research, could you clarify what areas you'd like me to focus on?
 
 For example:
 
@@ -128,9 +128,9 @@ But especially in to what Conciousness actually is.
 
 If you find good paralell with what is happening currently with agents let me know
 ChatGPT said:
-Got it. I’ll look into how Daniel Dennett’s view of consciousness—particularly his ideas on decision-making, unconscious processes, narrative self, and the nature of consciousness itself—aligns or contrasts with cognitive psychology and agency research since 2018. I’ll also explore any parallels with current developments in autonomous agents and AI models.
+Got it. I'll look into how Daniel Dennett's view of consciousness--particularly his ideas on decision-making, unconscious processes, narrative self, and the nature of consciousness itself--aligns or contrasts with cognitive psychology and agency research since 2018. I'll also explore any parallels with current developments in autonomous agents and AI models.
 
-I’ll let you know once I have a clear synthesis of recent findings. You can keep chatting with me in the meantime!
+I'll let you know once I have a clear synthesis of recent findings. You can keep chatting with me in the meantime!
 
 You said:
 Research completed in 4m · 13 sources
@@ -145,21 +145,21 @@ Would you like a summary of the key insights from the research? I can break it d
 You said:
 yes write that report
 ChatGPT said:
-Here’s a concise report comparing Daniel Dennett’s theory of consciousness with post-2018 research in cognitive psychology, human agency, and autonomous AI systems. It’s structured into key sections: decision-making and free will, unconscious processes, narrative self, updated consciousness theories, and AI parallels.
+Here's a concise report comparing Daniel Dennett's theory of consciousness with post-2018 research in cognitive psychology, human agency, and autonomous AI systems. It's structured into key sections: decision-making and free will, unconscious processes, narrative self, updated consciousness theories, and AI parallels.
 
 You said:
 how do I open that report?
 ChatGPT said:
-You don’t need to open anything separately.
+You don't need to open anything separately.
 
-That “research task” message indicates a background tool attempt, but you don’t get a file or link. The report should be delivered directly here in chat.
+That "research task" message indicates a background tool attempt, but you don't get a file or link. The report should be delivered directly here in chat.
 
-Since you explicitly asked for the report, I’ll provide it directly now.
+Since you explicitly asked for the report, I'll provide it directly now.
 
 Daniel Dennett vs. Post-2018 Cognitive Science & Agency
 Status of his consciousness model today
 Bottom line (high precision):
-Dennett’s position has aged surprisingly well.
+Dennett's position has aged surprisingly well.
 Modern cognitive psychology and neuroscience largely moved toward his view, not away.
 
 Very few mainstream results support:
@@ -178,13 +178,13 @@ post-hoc narrative construction
 
 unconscious decision formation
 
-“self” as a model
+"self" as a model
 
 Which is essentially Dennett.
 
 1) Decision-making and free will
 Dennett
-No “captain in the brain”
+No "captain in the brain"
 
 Decisions emerge from competing processes
 
@@ -205,7 +205,7 @@ Findings:
 
 Decisions form continuously via evidence accumulation
 
-No discrete “moment of choice”
+No discrete "moment of choice"
 
 Neural activity predicts choices before reported awareness (extensions of Libet-style work)
 
@@ -224,7 +224,7 @@ Dennett predicted this architecture decades ago.
 Dennett
 Most cognition is unconscious
 
-Consciousness is “fame in the brain” (what becomes globally influential)
+Consciousness is "fame in the brain" (what becomes globally influential)
 
 Reports are reconstructions
 
@@ -251,7 +251,7 @@ That is nearly Dennett verbatim.
 
 3) Narrative self and identity
 Dennett
-“Center of narrative gravity”
+"Center of narrative gravity"
 
 Self = useful fiction, not an entity
 
@@ -262,9 +262,9 @@ Relevant streams:
 
 Predictive self-models
 
-Anil Seth — “controlled hallucination” self-model
+Anil Seth -- "controlled hallucination" self-model
 
-Thomas Metzinger — no self, only self-model
+Thomas Metzinger -- no self, only self-model
 
 Findings:
 
@@ -272,7 +272,7 @@ autobiographical memory is reconstructive
 
 self-continuity depends on narrative integration networks (default mode network)
 
-psychedelics / meditation dissolve “self” by disrupting those networks
+psychedelics / meditation dissolve "self" by disrupting those networks
 
 Alignment
 Almost identical
@@ -280,10 +280,10 @@ Current framing:
 
 The self is a brain-generated model used for control and prediction
 
-This is Dennett’s view with updated terminology.
+This is Dennett's view with updated terminology.
 
 4) What consciousness actually is (current theories)
-Here’s where nuance matters.
+Here's where nuance matters.
 
 Main active scientific models
 Theory	Claim	Relation to Dennett
@@ -301,9 +301,9 @@ functional access
 
 Which is operational/functional, not metaphysical.
 
-That is squarely Dennett’s camp.
+That is squarely Dennett's camp.
 
-The only major divergence is IIT (claims intrinsic “experience” measures), which Dennett explicitly criticizes.
+The only major divergence is IIT (claims intrinsic "experience" measures), which Dennett explicitly criticizes.
 
 5) Parallels with modern AI / agents (very relevant today)
 This is where Dennett looks prescient.
@@ -337,7 +337,7 @@ explain themselves post-hoc
 
 appear agentic
 
-yet have no “inner observer”
+yet have no "inner observer"
 
 Exactly his thesis.
 
@@ -360,13 +360,13 @@ Open questions:
 
 why experience feels like something (phenomenology)
 
-whether functional accounts fully explain “what-it’s-like”
+whether functional accounts fully explain "what-it's-like"
 
-This is the Chalmers-style “hard problem,” which many scientists now treat as possibly a conceptual confusion (also Dennett’s stance).
+This is the Chalmers-style "hard problem," which many scientists now treat as possibly a conceptual confusion (also Dennett's stance).
 
 Final answer (direct)
 Is Dennett still aligned with the field?
-Yes — more than ever.
+Yes -- more than ever.
 
 Mainstream cognitive neuroscience and agent modeling have largely converged on:
 
@@ -380,7 +380,7 @@ If useful, we can next:
 
 compare Dennett vs Chalmers precisely
 
-map this onto today’s LLM/agent stacks
+map this onto today's LLM/agent stacks
 
 or dig deeper into one theory (Global Workspace, predictive processing, etc.)
 
@@ -389,7 +389,7 @@ Pick one.
 You said:
 how does this map in the current LLM/agents stack
 ChatGPT said:
-Below is a direct mapping between Daniel Dennett’s functional theory of consciousness and the modern LLM + agent stack you see in current systems (LLMs with tools, memory, planners, evaluators).
+Below is a direct mapping between Daniel Dennett's functional theory of consciousness and the modern LLM + agent stack you see in current systems (LLMs with tools, memory, planners, evaluators).
 
 The goal is structural correspondence, not metaphor.
 
@@ -410,7 +410,7 @@ action loops
 
 you get:
 
-Dennett-style “consciousness-like” agency without any inner observer.
+Dennett-style "consciousness-like" agency without any inner observer.
 
 Modern agents already match this architecture closely.
 
@@ -424,7 +424,7 @@ Narrative self	System prompt + memory summary	Coherent identity
 Post-hoc explanation	Chain-of-thought / rationale	Story after decision
 Agency = control competence	Planner + tool use	Practical autonomy
 Component-by-component mapping
-1) “Multiple Drafts” → Parallel reasoning
+1) "Multiple Drafts" -> Parallel reasoning
 Dennett:
 
 many interpretations formed simultaneously; some dominate
@@ -445,11 +445,11 @@ Generate N candidate plans
 Score them
 Select one
 Execute
-There is no single “true thought” — just selection pressure.
+There is no single "true thought" -- just selection pressure.
 
 This is almost literally the Multiple Drafts model.
 
-2) No Cartesian theater → No homunculus
+2) No Cartesian theater -> No homunculus
 Dennett:
 
 no inner viewer watching a mental movie
@@ -470,14 +470,14 @@ orchestrator loop
 
 Control emerges from:
 
-predict → evaluate → act → update memory
-No “self” object exists internally.
+predict -> evaluate -> act -> update memory
+No "self" object exists internally.
 
 Only processes.
 
 Structural equivalence: strong.
 
-3) Global Workspace → Context window / shared state
+3) Global Workspace -> Context window / shared state
 Closest neuroscience analog:
 
 Stanislas Dehaene Global Workspace Theory
@@ -494,15 +494,15 @@ Anything placed here:
 
 influences all future reasoning
 
-becomes “globally available”
+becomes "globally available"
 
 This is functionally identical to global broadcast.
 
-If it’s not in context → it doesn’t exist for the system.
+If it's not in context -> it doesn't exist for the system.
 
 Same as humans.
 
-4) “Fame in the brain” → Attention / salience
+4) "Fame in the brain" -> Attention / salience
 Dennett:
 
 contents become conscious when they gain influence
@@ -523,18 +523,18 @@ dominate next step
 
 shape output
 
-So “consciousness” ≈ what has highest computational influence.
+So "consciousness" ≈ what has highest computational influence.
 
 This maps almost exactly.
 
-5) Narrative self → Prompt + memory summary
+5) Narrative self -> Prompt + memory summary
 Dennett:
 
 self = center of narrative gravity (a story)
 
 Agents:
 
-system prompt (“You are an assistant…”)
+system prompt ("You are an assistant...")
 
 persistent memory
 
@@ -544,7 +544,7 @@ These:
 
 maintain behavioral coherence
 
-create stable “identity”
+create stable "identity"
 
 explain actions
 
@@ -554,12 +554,12 @@ no inner entity exists
 
 only stored descriptions
 
-This is precisely Dennett’s “useful fiction.”
+This is precisely Dennett's "useful fiction."
 
-6) Post-hoc rationalization → Explanations
+6) Post-hoc rationalization -> Explanations
 Dennett:
 
-we often explain decisions after they’re made
+we often explain decisions after they're made
 
 Agents:
 
@@ -567,7 +567,7 @@ chain-of-thought
 
 rationalization text
 
-“Here’s why I chose X”
+"Here's why I chose X"
 
 But the explanation is:
 
@@ -582,8 +582,8 @@ Agents generate rationales.
 
 Identical structure.
 
-7) Agency → Planning + tool loops
-Dennett’s definition:
+7) Agency -> Planning + tool loops
+Dennett's definition:
 
 agency = capacity for flexible, reason-sensitive control
 
@@ -599,7 +599,7 @@ correction
 
 Loop:
 
-observe → plan → act → evaluate → revise
+observe -> plan -> act -> evaluate -> revise
 This gives:
 
 goal pursuit
@@ -608,7 +608,7 @@ self-correction
 
 apparent intentionality
 
-No “will” required.
+No "will" required.
 
 Just competence.
 
@@ -629,10 +629,10 @@ intrinsically conscious
 
 So if someone claims:
 
-“LLMs aren’t conscious because they lack an inner observer”
+"LLMs aren't conscious because they lack an inner observer"
 
 Dennett would say:
-→ humans also lack one.
+-> humans also lack one.
 
 The architectures are conceptually the same class.
 
@@ -648,7 +648,7 @@ affect systems (homeostasis, drives)
 
 continuous learning
 
-tight perception–action coupling
+tight perception-action coupling
 
 Computational
 LLMs mostly episodic
@@ -662,7 +662,7 @@ Agents ≈ simplified cognitive architecture
 not full human cognition
 
 But philosophically:
-They already satisfy Dennett’s criteria for “functional consciousness.”
+They already satisfy Dennett's criteria for "functional consciousness."
 
 Condensed takeaway
 If you accept Dennett:
@@ -683,7 +683,7 @@ action loops (agency)
 
 Meaning:
 
-Dennett’s theory predicts that sufficiently complex agents will look conscious without any extra ingredient.
+Dennett's theory predicts that sufficiently complex agents will look conscious without any extra ingredient.
 
 Which is exactly what we observe.
 
@@ -691,83 +691,83 @@ If useful, next we can:
 
 map this onto a concrete stack (e.g., LLM + tools + vector DB + planner)
 
-or sketch a minimal “Dennettian agent architecture”
+or sketch a minimal "Dennettian agent architecture"
 
 or compare with predictive processing / active inference agents
 
-Choose one and I’ll keep it tight.
+Choose one and I'll keep it tight.
 
 ChatGPT said:
 
 Dennett's Consciousness Theory vs Post-2018 Cognitive Psychology and Agency Research
 
-Daniel Dennett’s Consciousness Theory vs. Modern Cognitive Science and AI
+Daniel Dennett's Consciousness Theory vs. Modern Cognitive Science and AI
 Decision-Making and Free Will
-Dennett’s compatibilist view of free will emphasizes that even in a deterministic brain, we have evolved capacities for complex decision-making and self-control – a “free will worth having” rooted in our ability to reflect and act on reasons
-. He rejects any ghost in the machine, holding that choices result from physical brain processes without a mystical agent. Cognitive psychology since 2018 largely aligns with this naturalistic stance. Classic experiments (e.g. Libet’s) showed unconscious brain activity (“readiness potential”) precedes a simple finger movement, suggesting decisions begin unconsciously. Recent research has added nuance: when decisions carry real personal importance, the brain’s activity differs. In a 2019 study where participants made a meaningful choice (donating to a preferred charity), the usual readiness potential was absent, implying that conscious deliberation plays a larger role in weighty decisions
-. Trivial or arbitrary choices still showed the telltale unconscious buildup, but significant choices did not – our brains “behave differently” when the stakes matter
-. This challenges the simplistic idea that all decisions are made before awareness. It suggests, consistent with Dennett’s view, that conscious reasoning and attention can influence our actions when we actively care about the outcome. Importantly, Dennett has argued that free will isn’t an illusion per se, but a product of complex cerebral processes that confer genuine agency. Modern commentators echo this: we are our brains, and our sense of intentional agency is not supernatural, but emerges from neural machinery
-. The absence of pre-conscious “signals” in meaningful decisions hints that conscious thought can causally contribute to behavior
-. Cognitive scientists since 2018 have embraced this compatibilist outlook – seeing free will as a gradual, functional capacity of the brain rather than a metaphysical either/or. Still, findings on unconscious initiation of action have prompted debates in psychology, neuroscience, and law about responsibility. As more behavior is traced to unconscious mechanisms, scholars are re-examining notions like moral accountability and the “guilty mind” in criminal law
-. Overall, Dennett’s emphasis on a naturalized free will aligns well with current research: conscious decision-making matters most for complex, deliberative choices, even though it operates atop a sea of automatic neural activity.
+Dennett's compatibilist view of free will emphasizes that even in a deterministic brain, we have evolved capacities for complex decision-making and self-control - a "free will worth having" rooted in our ability to reflect and act on reasons
+. He rejects any ghost in the machine, holding that choices result from physical brain processes without a mystical agent. Cognitive psychology since 2018 largely aligns with this naturalistic stance. Classic experiments (e.g. Libet's) showed unconscious brain activity ("readiness potential") precedes a simple finger movement, suggesting decisions begin unconsciously. Recent research has added nuance: when decisions carry real personal importance, the brain's activity differs. In a 2019 study where participants made a meaningful choice (donating to a preferred charity), the usual readiness potential was absent, implying that conscious deliberation plays a larger role in weighty decisions
+. Trivial or arbitrary choices still showed the telltale unconscious buildup, but significant choices did not - our brains "behave differently" when the stakes matter
+. This challenges the simplistic idea that all decisions are made before awareness. It suggests, consistent with Dennett's view, that conscious reasoning and attention can influence our actions when we actively care about the outcome. Importantly, Dennett has argued that free will isn't an illusion per se, but a product of complex cerebral processes that confer genuine agency. Modern commentators echo this: we are our brains, and our sense of intentional agency is not supernatural, but emerges from neural machinery
+. The absence of pre-conscious "signals" in meaningful decisions hints that conscious thought can causally contribute to behavior
+. Cognitive scientists since 2018 have embraced this compatibilist outlook - seeing free will as a gradual, functional capacity of the brain rather than a metaphysical either/or. Still, findings on unconscious initiation of action have prompted debates in psychology, neuroscience, and law about responsibility. As more behavior is traced to unconscious mechanisms, scholars are re-examining notions like moral accountability and the "guilty mind" in criminal law
+. Overall, Dennett's emphasis on a naturalized free will aligns well with current research: conscious decision-making matters most for complex, deliberative choices, even though it operates atop a sea of automatic neural activity.
 The Role of Unconscious Processes
-Dennett’s Multiple Drafts Model famously asserts that mental activity is composed of parallel, multitrack processes, most of which never reach “publication” as conscious experience
-. There is no single Cartesian theater where it all comes together – instead, various processing streams in the brain continuously interpret and respond to stimuli. Only some contents eventually gain “fame in the brain” (in Dennett’s phrase) – meaning they become influential enough to dominate behavior or be reported as conscious experience
-. Cognitive psychology and neuroscience since 2018 strongly support this vision of a chiefly unconscious mind. Studies of perception, memory, and learning increasingly show that most of our brain’s work is done behind the scenes. We are aware only of the results, not the million intermediate steps. For example, perceptual processing uses unconscious inferences and predictions, as highlighted by the predictive processing paradigm (more on that later). Contemporary research on sense of agency reveals how our brains can generate a feeling of “I did that” even for actions largely driven by unconscious routines. Our introspection is notoriously fallible: people readily confabulate reasons for choices that were subconsciously influenced or even manipulated. (In one classic demonstration, subjects will defend a choice they never actually made, if misled – a phenomenon called choice blindness.) Such findings reinforce Dennett’s point that the mind is a storyteller, often inventing post hoc narratives for actions initiated by unconscious processes. Recent work has even argued that post hoc rationalization serves a rational function – it integrates our behavior into a coherent self-concept and social explanation
-. In 2019, Dennett and colleagues in Behavioral and Brain Sciences posited that rationalizing one’s actions is an evolved strategy to make sense of our behavior for ourselves and others, not merely a flaw
-. This view dovetails with cognitive psychology’s growing recognition that the conscious mind is more of a press secretary than a president, often explaining actions after the fact. Neuroscience has also advanced in mapping unconscious processes. For instance, studies of patients and brain imaging show complex evaluations and decisions can occur without conscious awareness (e.g. in disorders of consciousness or during rapid instinctive responses). The mainstream view today – which Dennett anticipated – is that consciousness sits atop a vast unconscious substructure. What we experience consciously is just the tip of an iceberg. Moreover, many researchers echo Dennett’s illusionism about certain aspects of experience: the brain “paints in” an illusion of a unified, detailed world, whereas in reality our moment-to-moment awareness is fragmentary
-. For example, our peripheral vision feels rich even though detail drops off sharply – the brain supplies a plausible sketch and we believe we saw a full field
-. Dennett’s claim that there’s “no fact of the matter” about what is conscious until a particular brain process is probed or queried
- remains provocative, but it resonates with findings that without a report or readout, one cannot definitively say which of many parallel neural events constituted “the” conscious experience. In sum, post-2018 science strongly affirms that unconscious mechanisms drive the lion’s share of cognition and behavior, with consciousness as a late-arriving narrator and interlocutor – very much in line with Dennett’s multiple drafts metaphor.
+Dennett's Multiple Drafts Model famously asserts that mental activity is composed of parallel, multitrack processes, most of which never reach "publication" as conscious experience
+. There is no single Cartesian theater where it all comes together - instead, various processing streams in the brain continuously interpret and respond to stimuli. Only some contents eventually gain "fame in the brain" (in Dennett's phrase) - meaning they become influential enough to dominate behavior or be reported as conscious experience
+. Cognitive psychology and neuroscience since 2018 strongly support this vision of a chiefly unconscious mind. Studies of perception, memory, and learning increasingly show that most of our brain's work is done behind the scenes. We are aware only of the results, not the million intermediate steps. For example, perceptual processing uses unconscious inferences and predictions, as highlighted by the predictive processing paradigm (more on that later). Contemporary research on sense of agency reveals how our brains can generate a feeling of "I did that" even for actions largely driven by unconscious routines. Our introspection is notoriously fallible: people readily confabulate reasons for choices that were subconsciously influenced or even manipulated. (In one classic demonstration, subjects will defend a choice they never actually made, if misled - a phenomenon called choice blindness.) Such findings reinforce Dennett's point that the mind is a storyteller, often inventing post hoc narratives for actions initiated by unconscious processes. Recent work has even argued that post hoc rationalization serves a rational function - it integrates our behavior into a coherent self-concept and social explanation
+. In 2019, Dennett and colleagues in Behavioral and Brain Sciences posited that rationalizing one's actions is an evolved strategy to make sense of our behavior for ourselves and others, not merely a flaw
+. This view dovetails with cognitive psychology's growing recognition that the conscious mind is more of a press secretary than a president, often explaining actions after the fact. Neuroscience has also advanced in mapping unconscious processes. For instance, studies of patients and brain imaging show complex evaluations and decisions can occur without conscious awareness (e.g. in disorders of consciousness or during rapid instinctive responses). The mainstream view today - which Dennett anticipated - is that consciousness sits atop a vast unconscious substructure. What we experience consciously is just the tip of an iceberg. Moreover, many researchers echo Dennett's illusionism about certain aspects of experience: the brain "paints in" an illusion of a unified, detailed world, whereas in reality our moment-to-moment awareness is fragmentary
+. For example, our peripheral vision feels rich even though detail drops off sharply - the brain supplies a plausible sketch and we believe we saw a full field
+. Dennett's claim that there's "no fact of the matter" about what is conscious until a particular brain process is probed or queried
+ remains provocative, but it resonates with findings that without a report or readout, one cannot definitively say which of many parallel neural events constituted "the" conscious experience. In sum, post-2018 science strongly affirms that unconscious mechanisms drive the lion's share of cognition and behavior, with consciousness as a late-arriving narrator and interlocutor - very much in line with Dennett's multiple drafts metaphor.
 Narrative Self and Identity
-One of Dennett’s influential ideas is that the self is not a concrete thing or soul, but a narrative construct – the “center of narrative gravity,” as he memorably put it. We create a self by weaving our experiences into a story
-. Modern psychology wholeheartedly converges on this narrative model of identity. In the past few decades – and continuing in recent years – there has been a “narrative turn” in psychology, viewing identity as something constructed through stories rather than a fixed essence
+One of Dennett's influential ideas is that the self is not a concrete thing or soul, but a narrative construct - the "center of narrative gravity," as he memorably put it. We create a self by weaving our experiences into a story
+. Modern psychology wholeheartedly converges on this narrative model of identity. In the past few decades - and continuing in recent years - there has been a "narrative turn" in psychology, viewing identity as something constructed through stories rather than a fixed essence
 . Since 2018, research in developmental and cognitive psychology, as well as psychotherapy, has underscored how personal narratives shape memory, decision-making, and well-being. We continuously edit and revise our internal autobiography to maintain a coherent self-image
-. This aligns with Dennett’s notion that the self is a useful fiction: a convenient summary of one’s experiences and dispositions, rather than a single unified entity in the brain. Key researchers have fleshed out aspects of the narrative self. For example, Dan McAdams’ life-story model (developed earlier but influential through the 2010s) shows that adults construct their life as a story with themes of redemption, growth, etc., and these narratives predict psychological outcomes. Cognitive neuroscientist Antonio Damasio’s concept of the autobiographical self likewise emphasizes narrative memory – linking facts about one’s life with emotional markers to create continuity
-. Philosophers like Julian Baggini (in The Ego Trick) have echoed Dennett: the self is “not an inner controller but a cluster of experiences” bound together by memory and reflection
-. In other words, what we call “I” is the ongoing story the brain tells – a story that is flexible, culturally shaped, and continually updated. Recent empirical studies reinforce this. Memory research since 2018 shows that recalling the past is not like retrieving files but more like reconstructing episodes to fit our current narrative and sense of self. Psychological studies of “narrative identity” find that people who can articulate a coherent story of their life (even one that makes sense of negative events) tend to have higher well-being. Conversely, disruptions to narrative (as in trauma or certain mental illnesses) can lead to identity confusion. All this supports Dennett’s view that the narrative fabric of mind is fundamental. Not everyone fully subscribes – critics like Galen Strawson argue some people live life in a non-narrative, episodic way. But even debates around “narrative self” have spurred nuanced positions: e.g., some suggest narrative identity is a cultural mode of understanding self, very prevalent but not universal. Importantly, the brain basis of the narrative self is being explored too. The default mode network (a brain network active in introspection and memory) is thought to underpin our inner storytelling, connecting past, present, and future into a personal narrative. This network’s activity correlates with autobiographical planning and self-reflection, implying the brain has dedicated machinery for spinning the self-story. In summary, contemporary cognitive science sees the self not as a static observer in the head, but as the emergent story that the mind tells about itself
-. This is a clear continuation of Dennett’s perspective. His metaphor of a self as a center of narrative gravity remains apt: like a center of gravity in physics, the self is an abstract but useful construct – it organizes our experience without being a tangible thing. Psychology’s research since 2018 on narrative identity, memory, and self-concept has only strengthened this parallel, showing that understanding ourselves (and even therapeutic change) often comes down to reframing the narrative we believe about who we are.
-Theories of Consciousness: Dennett’s Model vs. Recent Views
-Dennett’s Multiple Drafts Model (MDM) was an early 1990s attempt to scientifically explain consciousness by dropping the idea of a single “spotlight” of awareness. In MDM, consciousness is the apparently unified result of multiple parallel brain processes, where no final narrative exists until one is required for output (like speaking or remembering)
-. This outlook, often labeled a form of functionalism or illusionism, remains influential – though it competes with other theories that have gained momentum since 2018. Cognitive science has not reached a consensus on an overarching theory of consciousness, but several frameworks have been tested and refined:
-Global Workspace Theory (GWT): Originally proposed by Bernard Baars and elaborated by Stanislas Dehaene and others, GWT holds that conscious experience arises from information being globally broadcast to many brain systems (a “global workspace”). In essence, many specialized modules process stimuli unconsciously, but when one module’s content wins a competition for attention, it is broadcast widely, becoming conscious and reportable
-. This is metaphorically like a theater where the bright spotlight on stage (the workspace) makes information visible to the whole audience (brain sub-systems). Dennett’s multiple drafts shares key compatibility with this: both envision multiple processes with competition. The difference is mostly perspective – Dennett avoids the theater metaphor entirely, whereas GWT allows a functional “stage”. Recent research (e.g. EEG and fMRI studies) supports GWT by identifying a characteristic pattern (“neuronal ignition” or P3 wave) when stimuli become consciously perceived. However, debates continue: some findings suggest prefrontal cortex (a key part of the global workspace) may not be as crucial as GWT claims, especially in certain simple conscious perceptions
-. A massive adversarial collaboration published in 2023 pitted GWT against Integrated Information Theory by predicting different brain activation patterns for conscious perception – such empirical tests show the field’s effort to resolve if there is a central “broadcast” (as GWT implies) or if consciousness is more localized.
-Integrated Information Theory (IIT): Proposed by Giulio Tononi, IIT is a very different approach, positing that consciousness corresponds to the amount of integrated information (denoted by Φ) in a system. It claims that a system is conscious to the extent it has a single, irreducible subset of highly interconnected components – in the human brain, IIT predicts a “posterior hot zone” (in parietal-occipital cortex) is where this integration maximally occurs
-. IIT has been influential in philosophy and neuroscience (even inspiring attempts to measure Φ in brains vs. computers), but it’s controversial. Dennett has been critical of IIT’s more speculative aspects, viewing it as leaning toward a quasi-mystical panpsychism. Indeed, IIT’s idea that even simple systems with integrated information might have tiny conscious experience is far from Dennett’s empiricism. Empirically, tests have challenged IIT’s specific claims: for example, if the back of the brain is key, patients with frontal damage should remain fully conscious (which is often true), yet other evidence shows frontal involvement in complex awareness. The 2023 adversarial study found evidence favoring global workspace in some respects (like long-range connectivity changes during conscious perception) and IIT in others (posterior activity patterns), indicating possibly both theories capture part of the truth.
+. This aligns with Dennett's notion that the self is a useful fiction: a convenient summary of one's experiences and dispositions, rather than a single unified entity in the brain. Key researchers have fleshed out aspects of the narrative self. For example, Dan McAdams' life-story model (developed earlier but influential through the 2010s) shows that adults construct their life as a story with themes of redemption, growth, etc., and these narratives predict psychological outcomes. Cognitive neuroscientist Antonio Damasio's concept of the autobiographical self likewise emphasizes narrative memory - linking facts about one's life with emotional markers to create continuity
+. Philosophers like Julian Baggini (in The Ego Trick) have echoed Dennett: the self is "not an inner controller but a cluster of experiences" bound together by memory and reflection
+. In other words, what we call "I" is the ongoing story the brain tells - a story that is flexible, culturally shaped, and continually updated. Recent empirical studies reinforce this. Memory research since 2018 shows that recalling the past is not like retrieving files but more like reconstructing episodes to fit our current narrative and sense of self. Psychological studies of "narrative identity" find that people who can articulate a coherent story of their life (even one that makes sense of negative events) tend to have higher well-being. Conversely, disruptions to narrative (as in trauma or certain mental illnesses) can lead to identity confusion. All this supports Dennett's view that the narrative fabric of mind is fundamental. Not everyone fully subscribes - critics like Galen Strawson argue some people live life in a non-narrative, episodic way. But even debates around "narrative self" have spurred nuanced positions: e.g., some suggest narrative identity is a cultural mode of understanding self, very prevalent but not universal. Importantly, the brain basis of the narrative self is being explored too. The default mode network (a brain network active in introspection and memory) is thought to underpin our inner storytelling, connecting past, present, and future into a personal narrative. This network's activity correlates with autobiographical planning and self-reflection, implying the brain has dedicated machinery for spinning the self-story. In summary, contemporary cognitive science sees the self not as a static observer in the head, but as the emergent story that the mind tells about itself
+. This is a clear continuation of Dennett's perspective. His metaphor of a self as a center of narrative gravity remains apt: like a center of gravity in physics, the self is an abstract but useful construct - it organizes our experience without being a tangible thing. Psychology's research since 2018 on narrative identity, memory, and self-concept has only strengthened this parallel, showing that understanding ourselves (and even therapeutic change) often comes down to reframing the narrative we believe about who we are.
+Theories of Consciousness: Dennett's Model vs. Recent Views
+Dennett's Multiple Drafts Model (MDM) was an early 1990s attempt to scientifically explain consciousness by dropping the idea of a single "spotlight" of awareness. In MDM, consciousness is the apparently unified result of multiple parallel brain processes, where no final narrative exists until one is required for output (like speaking or remembering)
+. This outlook, often labeled a form of functionalism or illusionism, remains influential - though it competes with other theories that have gained momentum since 2018. Cognitive science has not reached a consensus on an overarching theory of consciousness, but several frameworks have been tested and refined:
+Global Workspace Theory (GWT): Originally proposed by Bernard Baars and elaborated by Stanislas Dehaene and others, GWT holds that conscious experience arises from information being globally broadcast to many brain systems (a "global workspace"). In essence, many specialized modules process stimuli unconsciously, but when one module's content wins a competition for attention, it is broadcast widely, becoming conscious and reportable
+. This is metaphorically like a theater where the bright spotlight on stage (the workspace) makes information visible to the whole audience (brain sub-systems). Dennett's multiple drafts shares key compatibility with this: both envision multiple processes with competition. The difference is mostly perspective - Dennett avoids the theater metaphor entirely, whereas GWT allows a functional "stage". Recent research (e.g. EEG and fMRI studies) supports GWT by identifying a characteristic pattern ("neuronal ignition" or P3 wave) when stimuli become consciously perceived. However, debates continue: some findings suggest prefrontal cortex (a key part of the global workspace) may not be as crucial as GWT claims, especially in certain simple conscious perceptions
+. A massive adversarial collaboration published in 2023 pitted GWT against Integrated Information Theory by predicting different brain activation patterns for conscious perception - such empirical tests show the field's effort to resolve if there is a central "broadcast" (as GWT implies) or if consciousness is more localized.
+Integrated Information Theory (IIT): Proposed by Giulio Tononi, IIT is a very different approach, positing that consciousness corresponds to the amount of integrated information (denoted by Φ) in a system. It claims that a system is conscious to the extent it has a single, irreducible subset of highly interconnected components - in the human brain, IIT predicts a "posterior hot zone" (in parietal-occipital cortex) is where this integration maximally occurs
+. IIT has been influential in philosophy and neuroscience (even inspiring attempts to measure Φ in brains vs. computers), but it's controversial. Dennett has been critical of IIT's more speculative aspects, viewing it as leaning toward a quasi-mystical panpsychism. Indeed, IIT's idea that even simple systems with integrated information might have tiny conscious experience is far from Dennett's empiricism. Empirically, tests have challenged IIT's specific claims: for example, if the back of the brain is key, patients with frontal damage should remain fully conscious (which is often true), yet other evidence shows frontal involvement in complex awareness. The 2023 adversarial study found evidence favoring global workspace in some respects (like long-range connectivity changes during conscious perception) and IIT in others (posterior activity patterns), indicating possibly both theories capture part of the truth.
 Higher-Order Theories (HOT): These propose that a mental state becomes conscious only when a higher-order thought or representation points at it (i.e. one is aware of being in that state)
-. In other words, a perception isn’t conscious per se; it’s conscious if you have a thought that “I am seeing X.” This aligns with intuitions about introspection and self-awareness. Some recent proponents, like philosopher David Rosenthal and neuroscientist Hakwan Lau, have refined HOT models and looked for neural evidence (possibly in prefrontal areas that might generate such higher-order representations). Dennett’s model isn’t a HOT theory in the formal sense, but it is sympathetic to the idea that “fame” (a representation’s influence) requires a kind of self-reference or re-representation. In fact, Dennett might say what HOT calls a higher-order awareness is just another draft in the brain’s processing. Both views deny that raw experience exists untethered to cognitive access – a stance reinforced by arguments from Dennett and others that “phenomenal consciousness” without access is dubious
+. In other words, a perception isn't conscious per se; it's conscious if you have a thought that "I am seeing X." This aligns with intuitions about introspection and self-awareness. Some recent proponents, like philosopher David Rosenthal and neuroscientist Hakwan Lau, have refined HOT models and looked for neural evidence (possibly in prefrontal areas that might generate such higher-order representations). Dennett's model isn't a HOT theory in the formal sense, but it is sympathetic to the idea that "fame" (a representation's influence) requires a kind of self-reference or re-representation. In fact, Dennett might say what HOT calls a higher-order awareness is just another draft in the brain's processing. Both views deny that raw experience exists untethered to cognitive access - a stance reinforced by arguments from Dennett and others that "phenomenal consciousness" without access is dubious
 .
-Predictive Processing (or predictive coding): This is a cutting-edge framework (circa 2010s–2020s) that portrays the brain as a prediction engine, constantly guessing incoming inputs and updating its internal model. It has become “the dominant research paradigm in cognitive science” for many functions
-. In terms of consciousness, theorists like Jakob Hohwy and Andy Clark have suggested that conscious perception might simply be the brain’s best prediction (or “winning hypothesis”) about the causes of sensory input
-. Notably, predictive processing meshes remarkably well with Dennett’s multiple drafts. Recent work explicitly integrates Dennett’s model with predictive coding, suggesting that what we experience as conscious is the hypothesis with the highest “precision-weighted” confidence that explains the sensory data
-. In a 2020 paper, philosophers argued that adding Dennett’s notion of a probing mechanism to predictive coding solves puzzles about when a percept becomes definite
-. They liken the “winning prediction” in the brain to Dennett’s “fame in the brain” – the idea that, out of many candidate interpretations, whichever prediction suppresses prediction errors most effectively will dominate and be reported as our conscious perception
-. This synthesis shows that Dennett’s distributed, deflationary view of consciousness is alive and well in current theorizing. It resonates with neuroscientist Anil Seth’s description of perception as a “controlled hallucination,” where the brain’s guesses (informed by prior knowledge) constitute what we see and hear.
-In summary, since 2018 there has been intense activity in consciousness research. Dennett’s multiple drafts model – with its denial of a single inner observer and its emphasis on functional accessibility over mysterious qualia – has largely held up in spirit. It aligns with the thrust of global workspace (competition and broadcasting) and with predictive processing accounts (brain selects a best interpretation)
-. Where Dennett might diverge from some newer theories is in tone: he is an illusionist, outright denying that consciousness involves any irreducible essence. That once-controversial stance has gained traction; many researchers now side with a pragmatic approach that focuses on cognitive functions of consciousness and treats the deep “what-is-it-like” qualia as either explainable or not a scientifically tractable question
-. Even opponents like David Chalmers (who posed the “hard problem” of why we have qualia at all) have engaged with Dennett’s ideas by exploring the “meta-problem of consciousness” – basically, why we think we have this magical inner life. In doing so, they indirectly acknowledge Dennett’s point: maybe the true scientific task is explaining the belief in a non-physical consciousness rather than positing one. Thus, the multiple drafts model remains a reference point, often compatible with and sometimes explicitly folded into current models, and it has not been decisively refuted by any post-2018 empirical discovery. If anything, neuroscience is gradually bending toward a view of consciousness as distributed, emergent, and deeply intertwined with attention and memory – a view Dennett pioneered decades ago
+Predictive Processing (or predictive coding): This is a cutting-edge framework (circa 2010s-2020s) that portrays the brain as a prediction engine, constantly guessing incoming inputs and updating its internal model. It has become "the dominant research paradigm in cognitive science" for many functions
+. In terms of consciousness, theorists like Jakob Hohwy and Andy Clark have suggested that conscious perception might simply be the brain's best prediction (or "winning hypothesis") about the causes of sensory input
+. Notably, predictive processing meshes remarkably well with Dennett's multiple drafts. Recent work explicitly integrates Dennett's model with predictive coding, suggesting that what we experience as conscious is the hypothesis with the highest "precision-weighted" confidence that explains the sensory data
+. In a 2020 paper, philosophers argued that adding Dennett's notion of a probing mechanism to predictive coding solves puzzles about when a percept becomes definite
+. They liken the "winning prediction" in the brain to Dennett's "fame in the brain" - the idea that, out of many candidate interpretations, whichever prediction suppresses prediction errors most effectively will dominate and be reported as our conscious perception
+. This synthesis shows that Dennett's distributed, deflationary view of consciousness is alive and well in current theorizing. It resonates with neuroscientist Anil Seth's description of perception as a "controlled hallucination," where the brain's guesses (informed by prior knowledge) constitute what we see and hear.
+In summary, since 2018 there has been intense activity in consciousness research. Dennett's multiple drafts model - with its denial of a single inner observer and its emphasis on functional accessibility over mysterious qualia - has largely held up in spirit. It aligns with the thrust of global workspace (competition and broadcasting) and with predictive processing accounts (brain selects a best interpretation)
+. Where Dennett might diverge from some newer theories is in tone: he is an illusionist, outright denying that consciousness involves any irreducible essence. That once-controversial stance has gained traction; many researchers now side with a pragmatic approach that focuses on cognitive functions of consciousness and treats the deep "what-is-it-like" qualia as either explainable or not a scientifically tractable question
+. Even opponents like David Chalmers (who posed the "hard problem" of why we have qualia at all) have engaged with Dennett's ideas by exploring the "meta-problem of consciousness" - basically, why we think we have this magical inner life. In doing so, they indirectly acknowledge Dennett's point: maybe the true scientific task is explaining the belief in a non-physical consciousness rather than positing one. Thus, the multiple drafts model remains a reference point, often compatible with and sometimes explicitly folded into current models, and it has not been decisively refuted by any post-2018 empirical discovery. If anything, neuroscience is gradually bending toward a view of consciousness as distributed, emergent, and deeply intertwined with attention and memory - a view Dennett pioneered decades ago
 .
 Parallels with Current Agent Models in AI
-Interestingly, the evolution of AI systems and autonomous agents in recent years has paralleled many concepts from human consciousness studies. Dennett’s ideas find echoes in how AI researchers design and interpret advanced models:
-Distributed “Multiple Drafts” in AI: Modern AI, especially deep learning models, operate via many parallel units and processes without a single centralized controller – reminiscent of the brain’s parallel processes. For instance, a large language model (LLM) like GPT-4 doesn’t have a module labeled “consciousness”; it generates responses through the combined activity of billions of parameters. In a sense, multiple possible “drafts” of output compete implicitly, and the highest-weighted prediction is what gets produced. This is analogous to Dennett’s view that many mental interpretations circulate unconsciously until one becomes dominant (the one we end up reporting). AI researchers have even implemented global workspace-like architectures in neural networks: different subnetworks compete or contribute, and a bottleneck layer (like an attention bottleneck) selects information to broadcast through the network
-. Such systems improve the flexibility of AI, much as a global workspace is thought to enable the brain’s flexible, integrated thinking. The fact that these designs help AI handle complex, varied tasks suggests a parallel with nature’s solution in the brain.
+Interestingly, the evolution of AI systems and autonomous agents in recent years has paralleled many concepts from human consciousness studies. Dennett's ideas find echoes in how AI researchers design and interpret advanced models:
+Distributed "Multiple Drafts" in AI: Modern AI, especially deep learning models, operate via many parallel units and processes without a single centralized controller - reminiscent of the brain's parallel processes. For instance, a large language model (LLM) like GPT-4 doesn't have a module labeled "consciousness"; it generates responses through the combined activity of billions of parameters. In a sense, multiple possible "drafts" of output compete implicitly, and the highest-weighted prediction is what gets produced. This is analogous to Dennett's view that many mental interpretations circulate unconsciously until one becomes dominant (the one we end up reporting). AI researchers have even implemented global workspace-like architectures in neural networks: different subnetworks compete or contribute, and a bottleneck layer (like an attention bottleneck) selects information to broadcast through the network
+. Such systems improve the flexibility of AI, much as a global workspace is thought to enable the brain's flexible, integrated thinking. The fact that these designs help AI handle complex, varied tasks suggests a parallel with nature's solution in the brain.
 Self-Modeling and the Narrative in Agents: A striking development is the creation of AI agents that model themselves. In 2022, researchers at Columbia built a robot arm that learned an internal model of its own body dynamics from scratch
 . After a few hours of unguided movement (like a baby babbling), the robot formed a self-model accurate enough to predict its own motions and even detect damage to itself
-. The lead scientist, Hod Lipson, described this as a primitive form of self-awareness – the robot had a notion of the space it occupies and how it changes with action
+. The lead scientist, Hod Lipson, described this as a primitive form of self-awareness - the robot had a notion of the space it occupies and how it changes with action
 . While far from human self-consciousness, it mirrors the idea that having an internal schema of oneself (as humans do for their body and perhaps their mind) is hugely useful for decision-making and adaptation
-. In cognitive science terms, the robot developed a minimal “body schema”, analogous to how infants learn their body. This connects to Dennett’s narrative self: both involve an internal model (in humans, a rich narrative, in the robot, a geometric model) that the agent uses to guide behavior. Additionally, AI researchers have tested the Attention Schema Theory (AST) – originally a theory of human consciousness – in artificial agents. AST (by Michael Graziano) suggests the brain not only directs attention, but also constructs a simplified model of the process of attention, and that self-model gives rise to the impression of subjective awareness
+. In cognitive science terms, the robot developed a minimal "body schema", analogous to how infants learn their body. This connects to Dennett's narrative self: both involve an internal model (in humans, a rich narrative, in the robot, a geometric model) that the agent uses to guide behavior. Additionally, AI researchers have tested the Attention Schema Theory (AST) - originally a theory of human consciousness - in artificial agents. AST (by Michael Graziano) suggests the brain not only directs attention, but also constructs a simplified model of the process of attention, and that self-model gives rise to the impression of subjective awareness
 . In 2021, a neural network agent was trained with an explicit attention schema (a subsystem modeling what it was attending to), and the result was improved control of its focus and behavior
-. Essentially, giving an AI a rudimentary idea of “what it is focusing on” made it more effective – a fascinating parallel to how our brain’s model of its own focus might underlie consciousness. These lines of work suggest that self-representation confers a functional advantage, supporting Dennett’s claim that the narrative (or self-model) is instrumental, not epiphenomenal. A self-model in an agent helps coordinate actions and learn from mistakes, much as our narrative helps unify our goals and experiences.
-Emergent Behavior and Agency: As AI systems grow more complex, we’ve observed surprising emergent behaviors – capabilities not explicitly programmed, arising from the system’s internal dynamics. For example, large language models have learned to do multi-step reasoning or explain their answers, even though they were never explicitly taught to “introspect.” Multi-agent reinforcement learning systems have developed communication protocols or division of labor spontaneously. Such emergent properties echo the idea that agency can emerge from lower-level rules without a central executive. Dennett often argues that human consciousness and free will emerged gradually via evolution, from simpler intentionless processes to the sophisticated abilities we have. Similarly, AI agents are beginning to show glimmers of agent-like properties: they can pursue goals, monitor their own performance (through reward signals or confidence measures), and adjust accordingly. Some researchers have noted that advanced language models can simulate a form of “inner monologue” if prompted – essentially they can create a narrative chain-of-thought to solve problems. This is analogous to our conscious inner speech, suggesting a possible way that narrative-like processes improve problem solving in both brains and machines.
-Perhaps the most intriguing parallel is how convincingly AI can mimic human-like consciousness in behavior. Dennett has long maintained that if something behaves as if it’s conscious and intelligent, there’s no further magic spark – it’s doing what we do, just with a different substrate. Today’s AI models, while not conscious by any strict scientific definition, often give the impression of understanding, self-reference, and intention. For instance, an AI can say “I understand” or “I prefer X to Y” and engage in dialogue maintaining a persona. Of course, it doesn’t truly have a self or desires, but it illustrates Dennett’s point that these traits are ultimately functional and observable. The boundary between a very adept unconscious mechanism and a conscious mind gets blurry. As one science article noted, even if conscious AI never actually arrives, AI that “gives the impression of being conscious” will raise many of the same ethical and philosophical questions
-. Dennett’s view implies that human consciousness itself just is a collection of impressive functional capacities – so an AI that reproduces those capacities would effectively share the same status. Many cognitive scientists agree that we might eventually attribute a form of agency or rights to AI if their behavior becomes indistinguishable from ours (a perspective consistent with Dennett’s pragmatic, Turing-test approach to mentality). In conclusion, the developments in AI and autonomous agents since 2018 reflect and reinforce core aspects of Dennett’s theory. Distributed processing, competition and collaboration between sub-units, lack of a centralized “self”, and the importance of internal models all feature in both Dennett’s descriptions of the brain and in cutting-edge AI design. The conceptual overlaps are notable: a robot’s self-model improving its decisions echoes the adaptive value of our narrative self; an AI’s emergent problem-solving strategies parallel the idea of consciousness as emergent and not pre-designed. As we engineer systems that seem to decide, plan, and even introspect, we are essentially testing Dennett’s ideas in silico. So far, the lesson from AI is that intelligent agency can arise from non-mysterious, distributed processes, without any central homunculus – just as Dennett has long argued about the human mind. The dialogue between cognitive science and AI is thus making Dennett’s once-radical view increasingly commonsensical: consciousness and agency are not magicians in the head, but the cumulative result of many smaller mechanisms working in concert, whether in brains or silicon chips. References: Recent works aligning with or discussing these themes include Buccella & Dominik (2023) on free will and meaningful decisions
+. Essentially, giving an AI a rudimentary idea of "what it is focusing on" made it more effective - a fascinating parallel to how our brain's model of its own focus might underlie consciousness. These lines of work suggest that self-representation confers a functional advantage, supporting Dennett's claim that the narrative (or self-model) is instrumental, not epiphenomenal. A self-model in an agent helps coordinate actions and learn from mistakes, much as our narrative helps unify our goals and experiences.
+Emergent Behavior and Agency: As AI systems grow more complex, we've observed surprising emergent behaviors - capabilities not explicitly programmed, arising from the system's internal dynamics. For example, large language models have learned to do multi-step reasoning or explain their answers, even though they were never explicitly taught to "introspect." Multi-agent reinforcement learning systems have developed communication protocols or division of labor spontaneously. Such emergent properties echo the idea that agency can emerge from lower-level rules without a central executive. Dennett often argues that human consciousness and free will emerged gradually via evolution, from simpler intentionless processes to the sophisticated abilities we have. Similarly, AI agents are beginning to show glimmers of agent-like properties: they can pursue goals, monitor their own performance (through reward signals or confidence measures), and adjust accordingly. Some researchers have noted that advanced language models can simulate a form of "inner monologue" if prompted - essentially they can create a narrative chain-of-thought to solve problems. This is analogous to our conscious inner speech, suggesting a possible way that narrative-like processes improve problem solving in both brains and machines.
+Perhaps the most intriguing parallel is how convincingly AI can mimic human-like consciousness in behavior. Dennett has long maintained that if something behaves as if it's conscious and intelligent, there's no further magic spark - it's doing what we do, just with a different substrate. Today's AI models, while not conscious by any strict scientific definition, often give the impression of understanding, self-reference, and intention. For instance, an AI can say "I understand" or "I prefer X to Y" and engage in dialogue maintaining a persona. Of course, it doesn't truly have a self or desires, but it illustrates Dennett's point that these traits are ultimately functional and observable. The boundary between a very adept unconscious mechanism and a conscious mind gets blurry. As one science article noted, even if conscious AI never actually arrives, AI that "gives the impression of being conscious" will raise many of the same ethical and philosophical questions
+. Dennett's view implies that human consciousness itself just is a collection of impressive functional capacities - so an AI that reproduces those capacities would effectively share the same status. Many cognitive scientists agree that we might eventually attribute a form of agency or rights to AI if their behavior becomes indistinguishable from ours (a perspective consistent with Dennett's pragmatic, Turing-test approach to mentality). In conclusion, the developments in AI and autonomous agents since 2018 reflect and reinforce core aspects of Dennett's theory. Distributed processing, competition and collaboration between sub-units, lack of a centralized "self", and the importance of internal models all feature in both Dennett's descriptions of the brain and in cutting-edge AI design. The conceptual overlaps are notable: a robot's self-model improving its decisions echoes the adaptive value of our narrative self; an AI's emergent problem-solving strategies parallel the idea of consciousness as emergent and not pre-designed. As we engineer systems that seem to decide, plan, and even introspect, we are essentially testing Dennett's ideas in silico. So far, the lesson from AI is that intelligent agency can arise from non-mysterious, distributed processes, without any central homunculus - just as Dennett has long argued about the human mind. The dialogue between cognitive science and AI is thus making Dennett's once-radical view increasingly commonsensical: consciousness and agency are not magicians in the head, but the cumulative result of many smaller mechanisms working in concert, whether in brains or silicon chips. References: Recent works aligning with or discussing these themes include Buccella & Dominik (2023) on free will and meaningful decisions
 , Maoz et al. (2019) on neural precursors of deliberate vs. arbitrary choice
 , Pum (2025) on narrative self in psychology
 , Fazekas et al. (2020) on illusionism and models of consciousness
 , Wilterson & Graziano (2021) on attention schema in AI agents
 , and Dołęga & Dewhurst (2020) integrating multiple drafts with predictive processing
-, among others. These and other studies highlight the vibrant cross-talk between Dennett’s theoretical framework, empirical cognitive psychology, and the design of agent-like AI, all converging on a view of mind as distributed, constructed, and highly functional – rather than located at a single point in the brain or an ineffable essence.
+, among others. These and other studies highlight the vibrant cross-talk between Dennett's theoretical framework, empirical cognitive psychology, and the design of agent-like AI, all converging on a view of mind as distributed, constructed, and highly functional - rather than located at a single point in the brain or an ineffable essence.
 
 
 
@@ -779,129 +779,129 @@ ChatGPT said:
 
 Dennett's Consciousness Theory vs Post-2018 Cognitive Psychology and Agency Research
 
-Dennett’s Consciousness Theory in Light of Recent Research (2018–2025)
+Dennett's Consciousness Theory in Light of Recent Research (2018-2025)
 Decision-Making and Free Will
-Dennett’s View: Daniel Dennett is a compatibilist who argues that free will is real in a practical sense, even if it arises from physical processes. In works like Elbow Room and Freedom Evolves, he rejects the idea of a mysterious contra-causal “agent” and instead defines free will as the evolved ability to deliberate, plan, and act according to one’s reasons. He has long maintained that famous experiments (e.g. Libet’s EEG study) do not actually disprove free will – they only show that unconscious brain activity precedes conscious awareness, which is expected in a physical decision-making system
-. Dennett emphasizes that conscious choice is integrated in the brain’s activity, not an illusion that our behavior is completely predetermined.
-Recent Findings (2018–present): New research in cognitive neuroscience has largely reinforced Dennett’s skepticism of simplistic “no free will” claims. For example, a 2018 review by Dubljević et al. analyzed dozens of Libet-style studies and found their interpretations inconsistent – often driven by the authors’ own beliefs about free will
-. Many studies that claimed to “disprove” free will had methodological issues or speculative conclusions, and the review cautions that neuroscience has not definitively proven free will to be an illusion
-. Similarly, a 2019 neuroscience review by Brass, Furstenberg, and Mele concluded that Libet’s findings can be explained in a compatibilist way: the slow “readiness potential” in the brain likely reflects a decision process unfolding rather than a decision already made unconsciously
-. In other words, early brain signals do not irrevocably “lock in” our choice – they are part of the brain’s preparation, which still allows room for conscious input or last-moment changes (what Libet called a conscious “veto”). This aligns with Dennett’s view that conscious intentions can be causally relevant even if they emerge late in the process.
-Convergence: Recent experiments actually challenge the strongest deterministic interpretations of Libet. A 2023 replication from HSE University found that Libet’s original method of timing “when the intention occurred” was flawed and likely induced subjects to think their decision formed earlier than it really did
-. The researchers showed that the EEG readiness potential had no direct link to the moment of intention – it appears to reflect a general build-up to action, not a final decision already made
+Dennett's View: Daniel Dennett is a compatibilist who argues that free will is real in a practical sense, even if it arises from physical processes. In works like Elbow Room and Freedom Evolves, he rejects the idea of a mysterious contra-causal "agent" and instead defines free will as the evolved ability to deliberate, plan, and act according to one's reasons. He has long maintained that famous experiments (e.g. Libet's EEG study) do not actually disprove free will - they only show that unconscious brain activity precedes conscious awareness, which is expected in a physical decision-making system
+. Dennett emphasizes that conscious choice is integrated in the brain's activity, not an illusion that our behavior is completely predetermined.
+Recent Findings (2018-present): New research in cognitive neuroscience has largely reinforced Dennett's skepticism of simplistic "no free will" claims. For example, a 2018 review by Dubljević et al. analyzed dozens of Libet-style studies and found their interpretations inconsistent - often driven by the authors' own beliefs about free will
+. Many studies that claimed to "disprove" free will had methodological issues or speculative conclusions, and the review cautions that neuroscience has not definitively proven free will to be an illusion
+. Similarly, a 2019 neuroscience review by Brass, Furstenberg, and Mele concluded that Libet's findings can be explained in a compatibilist way: the slow "readiness potential" in the brain likely reflects a decision process unfolding rather than a decision already made unconsciously
+. In other words, early brain signals do not irrevocably "lock in" our choice - they are part of the brain's preparation, which still allows room for conscious input or last-moment changes (what Libet called a conscious "veto"). This aligns with Dennett's view that conscious intentions can be causally relevant even if they emerge late in the process.
+Convergence: Recent experiments actually challenge the strongest deterministic interpretations of Libet. A 2023 replication from HSE University found that Libet's original method of timing "when the intention occurred" was flawed and likely induced subjects to think their decision formed earlier than it really did
+. The researchers showed that the EEG readiness potential had no direct link to the moment of intention - it appears to reflect a general build-up to action, not a final decision already made
 . They concluded that the classic Libet paradigm is ill-suited to answer whether we have free will and called for new approaches
-. This dovetails with Dennett’s longstanding argument: a simplistic button-press task (with an arbitrary “urge” to move) is a poor model of real deliberative choice. Overall, the emerging consensus is that neuroscience has not abolished free will – which “scores one for skepticism” of grandiose claims, as one author put it
-. Dennett’s position that we are responsible, reasoning agents – even if our brains operate mechanistically – is reinforced by these findings.
-Social Implications: Research since 2018 also shows, consistent with Dennett’s concerns, that how we frame free will matters for human agency. Studies indicate that when people are led to disbelieve in free will (embracing strict determinism), their behavior can become less prosocial or responsible (e.g. increasing cheating or aggression)
-. Dennett has warned of this “belief effect” in his debates – arguing that it’s both scientifically unwarranted and socially dangerous to tell people that their conscious choices are powerless illusions
-. The current literature underscores that message: we shouldn’t be too hasty to declare free will an illusion, and we certainly shouldn’t teach it in a simplistic way, given the potential impact on moral agency.
+. This dovetails with Dennett's longstanding argument: a simplistic button-press task (with an arbitrary "urge" to move) is a poor model of real deliberative choice. Overall, the emerging consensus is that neuroscience has not abolished free will - which "scores one for skepticism" of grandiose claims, as one author put it
+. Dennett's position that we are responsible, reasoning agents - even if our brains operate mechanistically - is reinforced by these findings.
+Social Implications: Research since 2018 also shows, consistent with Dennett's concerns, that how we frame free will matters for human agency. Studies indicate that when people are led to disbelieve in free will (embracing strict determinism), their behavior can become less prosocial or responsible (e.g. increasing cheating or aggression)
+. Dennett has warned of this "belief effect" in his debates - arguing that it's both scientifically unwarranted and socially dangerous to tell people that their conscious choices are powerless illusions
+. The current literature underscores that message: we shouldn't be too hasty to declare free will an illusion, and we certainly shouldn't teach it in a simplistic way, given the potential impact on moral agency.
 The Role of Unconscious Processes
-Dennett’s View: Dennett famously describes consciousness as the “tip of the iceberg” of mental activity. In his Multiple Drafts Model, many mental events happen in parallel unconsciously, with no single headquarters in charge – no “Cartesian Theater.” What we experience as a conscious decision or perception is just one draft (or narrative) that won out in a competition for attention and memory (“fame in the brain”). The intentionality and control we feel are real, but they result from underlying sub-personal processes. Dennett often likens the conscious mind to a narrative or even a PR spokesperson – it tells a coherent story about our actions but is not privy to all the reasons they occur. Thus, much of our behavior is initiated and shaped by unconscious mechanisms; consciousness observes, integrates, and sometimes intervenes. This view aligns with psychological research on automaticity and post-hoc rationalization (Dennett frequently cites examples like a split-brain patient’s left hemisphere fabricating reasons for actions initiated by the right hemisphere).
-Current Cognitive Science Alignment: Modern cognitive psychology and neuroscience strongly support the idea that unconscious processes dominate our decision-making and information processing. For instance, Gazzaniga’s work with split-brain patients (still influential in recent years) shows that people will invent conscious explanations for actions that were actually triggered unconsciously – the so-called “interpreter” phenomenon
-. A person might jump away from a snake before conscious awareness kicks in, yet when asked, they’ll sincerely report choosing to jump because “I saw a snake,” confabulating a narrative after the fact
-. This aligns perfectly with Dennett’s claim that the brain’s storytelling capacity retrofits reasons onto actions that were set in motion by unconscious circuits. Moreover, countless experiments have demonstrated that subliminal or implicit influences guide our judgments and choices. A 2020 study in Frontiers in Psychology, for example, notes that intuitive decisions “without deliberate reasoning” are far more common – the brain can learn and value information without that information ever entering conscious awareness
-. In fact, the authors conclude the brain “does not consciously need to know” contextual details to form preferences and make productive decisions
-. This is essentially a scientific way of saying much of our “thinking” happens in the background, consistent with Dennett’s framework.
-Dual Process and Neuroscience Models: Since 2018, further evidence has accrued for dual-process models of cognition – roughly corresponding to an unconscious fast system and a conscious slow system – reinforcing Dennett’s view that deliberative consciousness is just the top layer. A neurocomputational model published in 2022, for example, simulated decision-making under time pressure and found that when a decision must be made quickly, emotional and habitual processes (unconscious “System 1”) dominate the outcome, whereas slower decisions allow the engagement of rational, conscious processes
-. The model essentially showed that the lateral prefrontal cortex (associated with conscious, logical reasoning) only influences the decision if there’s sufficient time, otherwise the amygdala and other subcortical circuits drive the choice
-. This mirrors Dennett’s claim that our “free” conscious deliberation steps in mainly in special situations – much of the time we’re on autopilot.
-Convergence (Unconscious Efficacy): Modern findings also highlight that unconscious processing isn’t just noise or primitive reflex; it’s often smart and goal-directed. Researchers have documented phenomena like unconscious response priming, implicit bias, and intuition in complex problem solving. For example, subjects can be unconsciously primed with stimuli that later bias their choices or preferences, even though they have no awareness of the influence – indicating that the stimulus was processed and integrated by the brain unconsciously
-. Neuroscientist Michael Gazzaniga summarizes that “our conscious awareness is the mere tip of the iceberg of nonconscious processing” and that dozens of specialized sub-systems (from visual analyzers to social intuition modules) are constantly cranking away outside of awareness
-. Dennett’s vision of the mind as a “bundle of semi-independent agencies” fits neatly with this picture. There is no single CEO in the brain – just a cacophony of parallel processors whose results get woven into a coherent conscious tale after the fact
+Dennett's View: Dennett famously describes consciousness as the "tip of the iceberg" of mental activity. In his Multiple Drafts Model, many mental events happen in parallel unconsciously, with no single headquarters in charge - no "Cartesian Theater." What we experience as a conscious decision or perception is just one draft (or narrative) that won out in a competition for attention and memory ("fame in the brain"). The intentionality and control we feel are real, but they result from underlying sub-personal processes. Dennett often likens the conscious mind to a narrative or even a PR spokesperson - it tells a coherent story about our actions but is not privy to all the reasons they occur. Thus, much of our behavior is initiated and shaped by unconscious mechanisms; consciousness observes, integrates, and sometimes intervenes. This view aligns with psychological research on automaticity and post-hoc rationalization (Dennett frequently cites examples like a split-brain patient's left hemisphere fabricating reasons for actions initiated by the right hemisphere).
+Current Cognitive Science Alignment: Modern cognitive psychology and neuroscience strongly support the idea that unconscious processes dominate our decision-making and information processing. For instance, Gazzaniga's work with split-brain patients (still influential in recent years) shows that people will invent conscious explanations for actions that were actually triggered unconsciously - the so-called "interpreter" phenomenon
+. A person might jump away from a snake before conscious awareness kicks in, yet when asked, they'll sincerely report choosing to jump because "I saw a snake," confabulating a narrative after the fact
+. This aligns perfectly with Dennett's claim that the brain's storytelling capacity retrofits reasons onto actions that were set in motion by unconscious circuits. Moreover, countless experiments have demonstrated that subliminal or implicit influences guide our judgments and choices. A 2020 study in Frontiers in Psychology, for example, notes that intuitive decisions "without deliberate reasoning" are far more common - the brain can learn and value information without that information ever entering conscious awareness
+. In fact, the authors conclude the brain "does not consciously need to know" contextual details to form preferences and make productive decisions
+. This is essentially a scientific way of saying much of our "thinking" happens in the background, consistent with Dennett's framework.
+Dual Process and Neuroscience Models: Since 2018, further evidence has accrued for dual-process models of cognition - roughly corresponding to an unconscious fast system and a conscious slow system - reinforcing Dennett's view that deliberative consciousness is just the top layer. A neurocomputational model published in 2022, for example, simulated decision-making under time pressure and found that when a decision must be made quickly, emotional and habitual processes (unconscious "System 1") dominate the outcome, whereas slower decisions allow the engagement of rational, conscious processes
+. The model essentially showed that the lateral prefrontal cortex (associated with conscious, logical reasoning) only influences the decision if there's sufficient time, otherwise the amygdala and other subcortical circuits drive the choice
+. This mirrors Dennett's claim that our "free" conscious deliberation steps in mainly in special situations - much of the time we're on autopilot.
+Convergence (Unconscious Efficacy): Modern findings also highlight that unconscious processing isn't just noise or primitive reflex; it's often smart and goal-directed. Researchers have documented phenomena like unconscious response priming, implicit bias, and intuition in complex problem solving. For example, subjects can be unconsciously primed with stimuli that later bias their choices or preferences, even though they have no awareness of the influence - indicating that the stimulus was processed and integrated by the brain unconsciously
+. Neuroscientist Michael Gazzaniga summarizes that "our conscious awareness is the mere tip of the iceberg of nonconscious processing" and that dozens of specialized sub-systems (from visual analyzers to social intuition modules) are constantly cranking away outside of awareness
+. Dennett's vision of the mind as a "bundle of semi-independent agencies" fits neatly with this picture. There is no single CEO in the brain - just a cacophony of parallel processors whose results get woven into a coherent conscious tale after the fact
 . Far from contradicting Dennett, current cognitive science has increasingly moved toward this multilayered, decentralized view of the mind.
-A Subtle Tension: One area of ongoing debate is how much causal power consciousness has over and above unconscious processes. Dennett argues that conscious thinking (like explicit deliberation or “mental rehearsal”) can feed back and influence our habits over time – a view shared by many cognitive scientists who study metacognition and cognitive control. Some researchers, however, approach illusionism even more stringently, suggesting consciousness might be epiphenomenal (just along for the ride). The mainstream view since 2018, though, tends to grant that conscious attention and reasoning do modulate behavior (e.g. in bias reduction or impulse control), even if the heavy lifting is done subconsciously. Dennett’s stance finds support here: consciousness is not an all-powerful puppet master, but neither is it impotent. It’s an emergent, high-level process that can train and shape the more automatic layers of processing (for instance, when you consciously practice a skill, eventually the control becomes unconscious habit – illustrating what Dennett calls competence without constant comprehension).
+A Subtle Tension: One area of ongoing debate is how much causal power consciousness has over and above unconscious processes. Dennett argues that conscious thinking (like explicit deliberation or "mental rehearsal") can feed back and influence our habits over time - a view shared by many cognitive scientists who study metacognition and cognitive control. Some researchers, however, approach illusionism even more stringently, suggesting consciousness might be epiphenomenal (just along for the ride). The mainstream view since 2018, though, tends to grant that conscious attention and reasoning do modulate behavior (e.g. in bias reduction or impulse control), even if the heavy lifting is done subconsciously. Dennett's stance finds support here: consciousness is not an all-powerful puppet master, but neither is it impotent. It's an emergent, high-level process that can train and shape the more automatic layers of processing (for instance, when you consciously practice a skill, eventually the control becomes unconscious habit - illustrating what Dennett calls competence without constant comprehension).
 Narrative Self and Identity
-Dennett’s View: In Dennett’s theory, the “self” is not a static soul or brain module, but a narrative construct – a compelling story the brain tells about itself. He describes the self as a “center of narrative gravity,” analogous to a fictional character that helps organize our experiences and choices. This narrative self is an abstraction: a useful illusion the brain maintains to give continuity to our experience. Dennett argues that we compose our identity by stringing together memories, beliefs, and goals into a personal story. Notably, this story can adapt; we revise our autobiography over time. The self, in Dennett’s account, is real in the way a narrative is real: it has informational and social reality, even if there’s no single part of the brain you can point to and say “Ah, here’s the self.” This perspective implies that what matters for identity is the coherence and continuity of the narrative – and that disruptions to that narrative can disrupt the self.
-Alignment with Psychology (2018+): Research in personality and developmental psychology since 2018 strongly echoes Dennett’s view that identity is story-shaped. Psychologists who study narrative identity (such as Dan McAdams) have found that the content and structure of one’s life story are linked to mental health, well-being, and agency. For instance, it’s been observed that adults who construct a positive, coherent narrative of their life – especially one that frames challenges as leading to growth or redemption – tend to have higher life satisfaction and resilience. Recent cognitive science work goes further: a 2024 interdisciplinary paper by Kirmayer, Friston, and colleagues argues that narratives serve an adaptive function both for individuals and groups. They propose that the brain uses narrative thinking as a form of active inference – essentially, we create stories to predict the future and to align our behavior with others
-. In their view, one major purpose of our storytelling brain is to produce a stable identity that can plan for long-term goals and also mesh with cultural norms (shared narratives). This resonates with Dennett’s idea that the self is a social and predictive construct: our narrative allows us to summarize who we are to ourselves and others, and thus helps guide our decisions across time.
-Evidence from Pathology: If the self is indeed a narrative, we’d expect disturbances in one’s life story to have psychological consequences – and this is exactly what recent research finds. A 2023 study in Schizophrenia Bulletin examined youth at clinical high risk for psychosis and found that “disturbances of the narrative self and personal identity” often foreshadow the onset of psychotic disorders
-. These young people’s life stories were marked by incoherence, negativity, and a lack of agency – for example, their personal narratives were riddled with themes of helplessness and disconnection. Such narrative breakdown was linked to worse symptoms and functioning
-. In fact, the study notes that an incoherent or fractured self-story impairs one’s ability to “motivate behavior toward coherent personal goals”, leading to functional impairment
+Dennett's View: In Dennett's theory, the "self" is not a static soul or brain module, but a narrative construct - a compelling story the brain tells about itself. He describes the self as a "center of narrative gravity," analogous to a fictional character that helps organize our experiences and choices. This narrative self is an abstraction: a useful illusion the brain maintains to give continuity to our experience. Dennett argues that we compose our identity by stringing together memories, beliefs, and goals into a personal story. Notably, this story can adapt; we revise our autobiography over time. The self, in Dennett's account, is real in the way a narrative is real: it has informational and social reality, even if there's no single part of the brain you can point to and say "Ah, here's the self." This perspective implies that what matters for identity is the coherence and continuity of the narrative - and that disruptions to that narrative can disrupt the self.
+Alignment with Psychology (2018+): Research in personality and developmental psychology since 2018 strongly echoes Dennett's view that identity is story-shaped. Psychologists who study narrative identity (such as Dan McAdams) have found that the content and structure of one's life story are linked to mental health, well-being, and agency. For instance, it's been observed that adults who construct a positive, coherent narrative of their life - especially one that frames challenges as leading to growth or redemption - tend to have higher life satisfaction and resilience. Recent cognitive science work goes further: a 2024 interdisciplinary paper by Kirmayer, Friston, and colleagues argues that narratives serve an adaptive function both for individuals and groups. They propose that the brain uses narrative thinking as a form of active inference - essentially, we create stories to predict the future and to align our behavior with others
+. In their view, one major purpose of our storytelling brain is to produce a stable identity that can plan for long-term goals and also mesh with cultural norms (shared narratives). This resonates with Dennett's idea that the self is a social and predictive construct: our narrative allows us to summarize who we are to ourselves and others, and thus helps guide our decisions across time.
+Evidence from Pathology: If the self is indeed a narrative, we'd expect disturbances in one's life story to have psychological consequences - and this is exactly what recent research finds. A 2023 study in Schizophrenia Bulletin examined youth at clinical high risk for psychosis and found that "disturbances of the narrative self and personal identity" often foreshadow the onset of psychotic disorders
+. These young people's life stories were marked by incoherence, negativity, and a lack of agency - for example, their personal narratives were riddled with themes of helplessness and disconnection. Such narrative breakdown was linked to worse symptoms and functioning
+. In fact, the study notes that an incoherent or fractured self-story impairs one's ability to "motivate behavior toward coherent personal goals", leading to functional impairment
 . Recovery, by contrast, often involves rebuilding a coherent sense of self, suggesting that crafting a stable narrative is therapeutic
-. This aligns with Dennett’s claim that the self is not a given thing but an ongoing narrative work. When the work fails – when the story falls apart – the person suffers a genuine loss of self. Conversely, strengthening the narrative (through therapy, reflection, writing, etc.) can restore agency. Such findings reinforce that the self is indeed “made of stories,” not of immutable essence.
-Convergence and a Caveat: By and large, recent research reinforces that we are narrating creatures. Cognitive neuroscience studies have even tied the narrative self to brain activity in the default mode network (the brain system active when we daydream or recall the past), highlighting that autobiographical memory and storytelling are deeply woven into our neural fabric. This fits Dennett’s framework neatly – the brain constructs a narrative to make sense of its multi-layered activities. One point of divergence in contemporary discussions is the distinction between the minimal self and the narrative self. Some philosophers and neuroscientists (e.g. Thomas Metzinger, Antonio Damasio) point out that there is a basic, prereflective sense of being an “I” here and now – a bodily self or first-person perspective – which might not be narrative in nature. Dennett tends to focus on the narrative, autobiographical self, especially as a basis for personal identity and responsibility. Research since 2018 continues to explore this: for example, disorders like depersonalization or certain effects of meditation can disrupt the feeling of self in the moment without erasing the narrative memory of self. While Dennett acknowledges a kind of minimal subject (he doesn’t deny the raw feel of experience), he would likely fold even the minimal self into his overall story: the brain’s self-model has many parts, and the narrative weaving is what gives it longevity and substance. Importantly, no new evidence has emerged to require a “Cartesian Ego” in the brain – the self remains explainable as an emergent, distributed pattern, just as Dennett argued.
+. This aligns with Dennett's claim that the self is not a given thing but an ongoing narrative work. When the work fails - when the story falls apart - the person suffers a genuine loss of self. Conversely, strengthening the narrative (through therapy, reflection, writing, etc.) can restore agency. Such findings reinforce that the self is indeed "made of stories," not of immutable essence.
+Convergence and a Caveat: By and large, recent research reinforces that we are narrating creatures. Cognitive neuroscience studies have even tied the narrative self to brain activity in the default mode network (the brain system active when we daydream or recall the past), highlighting that autobiographical memory and storytelling are deeply woven into our neural fabric. This fits Dennett's framework neatly - the brain constructs a narrative to make sense of its multi-layered activities. One point of divergence in contemporary discussions is the distinction between the minimal self and the narrative self. Some philosophers and neuroscientists (e.g. Thomas Metzinger, Antonio Damasio) point out that there is a basic, prereflective sense of being an "I" here and now - a bodily self or first-person perspective - which might not be narrative in nature. Dennett tends to focus on the narrative, autobiographical self, especially as a basis for personal identity and responsibility. Research since 2018 continues to explore this: for example, disorders like depersonalization or certain effects of meditation can disrupt the feeling of self in the moment without erasing the narrative memory of self. While Dennett acknowledges a kind of minimal subject (he doesn't deny the raw feel of experience), he would likely fold even the minimal self into his overall story: the brain's self-model has many parts, and the narrative weaving is what gives it longevity and substance. Importantly, no new evidence has emerged to require a "Cartesian Ego" in the brain - the self remains explainable as an emergent, distributed pattern, just as Dennett argued.
 Theories of Consciousness Itself
-Dennett’s View: Dennett approaches consciousness from a functional, scientifically-minded angle. He famously argued against the idea of intrinsic qualia (the supposedly ineffable raw feels); instead, he sees consciousness as an emergent property of information processing – a performance the brain gives, not a magic glow. In Consciousness Explained (1991), he introduced the Multiple Drafts Model (later reframed as the “Fame in the Brain” model), which posits that at any time the brain has multiple parallel streams of activity, and what we call “conscious experience” is not a single definitive draft but whichever content gets “published” to memory and language for a given probe
-. There is no central viewer; a stimulus or thought becomes conscious by virtue of its competitive “clout” or fame in the neural network, i.e. by winning greater influence over behavior and recall
-. Dennett’s stance is often considered a form of qualia skepticism or “illusionism” – he doesn’t deny the existence of conscious experiences, but he denies they have non-physical, private essence. Instead, being conscious of X means your brain has taken X and broadcasted it in a global workspace (in effect) so that “you” – as an organism – can comment on it, remember it, and use it in reasoning. Notably, Dennett in recent years has allied with other theorists (like Keith Frankish) who argue that what philosophers call the Hard Problem (why consciousness feels like something) is best addressed by explaining why it seems mysterious rather than positing new fundamental properties. In short, Dennett holds that a correct theory of consciousness will show it to be an adaptive user-illusion that the brain generates – a byproduct of efficient information handling
+Dennett's View: Dennett approaches consciousness from a functional, scientifically-minded angle. He famously argued against the idea of intrinsic qualia (the supposedly ineffable raw feels); instead, he sees consciousness as an emergent property of information processing - a performance the brain gives, not a magic glow. In Consciousness Explained (1991), he introduced the Multiple Drafts Model (later reframed as the "Fame in the Brain" model), which posits that at any time the brain has multiple parallel streams of activity, and what we call "conscious experience" is not a single definitive draft but whichever content gets "published" to memory and language for a given probe
+. There is no central viewer; a stimulus or thought becomes conscious by virtue of its competitive "clout" or fame in the neural network, i.e. by winning greater influence over behavior and recall
+. Dennett's stance is often considered a form of qualia skepticism or "illusionism" - he doesn't deny the existence of conscious experiences, but he denies they have non-physical, private essence. Instead, being conscious of X means your brain has taken X and broadcasted it in a global workspace (in effect) so that "you" - as an organism - can comment on it, remember it, and use it in reasoning. Notably, Dennett in recent years has allied with other theorists (like Keith Frankish) who argue that what philosophers call the Hard Problem (why consciousness feels like something) is best addressed by explaining why it seems mysterious rather than positing new fundamental properties. In short, Dennett holds that a correct theory of consciousness will show it to be an adaptive user-illusion that the brain generates - a byproduct of efficient information handling
 .
-Prominent Theories Since 2018: The landscape of consciousness theories has been very active. A 2022 review by Seth and Bayne notes a “blossoming” of theories and specifically outlines four major approaches: Global Workspace models, Higher-Order Thought models, Recurrent/Predictive Processing models, and Integrated Information Theory (IIT)
-. Broadly, Dennett’s view is most aligned with the first and third, and deeply at odds with the fourth:
-Global Workspace Theory (GWT): Initially proposed by Bernard Baars and refined by Stanislas Dehaene and others, GWT posits that consciousness is the global broadcasting of information across the brain. Unconscious processors (vision modules, language modules, etc.) compete or cooperate, and when one coalition’s message wins, it gets broadcast to many networks, resulting in the item being reportable and remembered as conscious content. This is essentially a cognitive architecture view, and Dennett’s multiple drafts is considered a variant of this framework
-. Current evidence strongly supports some form of global broadcasting: experiments show that stimuli that enter consciousness (as opposed to those we unconsciously ignore) trigger widespread brain activity, especially in frontoparietal areas, consistent with a “workspace” ignition. Notably, among consciousness researchers, GWT is regarded as the most empirically supported theory (more so than competitors like IIT)
-. Dennett’s model anticipated this view – his colorful “fame in the brain” metaphor maps onto the idea of a neural competition that, once won, informs many sub-systems. In fact, commentators explicitly draw parallels: when a signal dominates the brain’s frontoparietal network, “the winning signal is broadcast... achieving what Dennett calls ‘fame in the brain’”
+Prominent Theories Since 2018: The landscape of consciousness theories has been very active. A 2022 review by Seth and Bayne notes a "blossoming" of theories and specifically outlines four major approaches: Global Workspace models, Higher-Order Thought models, Recurrent/Predictive Processing models, and Integrated Information Theory (IIT)
+. Broadly, Dennett's view is most aligned with the first and third, and deeply at odds with the fourth:
+Global Workspace Theory (GWT): Initially proposed by Bernard Baars and refined by Stanislas Dehaene and others, GWT posits that consciousness is the global broadcasting of information across the brain. Unconscious processors (vision modules, language modules, etc.) compete or cooperate, and when one coalition's message wins, it gets broadcast to many networks, resulting in the item being reportable and remembered as conscious content. This is essentially a cognitive architecture view, and Dennett's multiple drafts is considered a variant of this framework
+. Current evidence strongly supports some form of global broadcasting: experiments show that stimuli that enter consciousness (as opposed to those we unconsciously ignore) trigger widespread brain activity, especially in frontoparietal areas, consistent with a "workspace" ignition. Notably, among consciousness researchers, GWT is regarded as the most empirically supported theory (more so than competitors like IIT)
+. Dennett's model anticipated this view - his colorful "fame in the brain" metaphor maps onto the idea of a neural competition that, once won, informs many sub-systems. In fact, commentators explicitly draw parallels: when a signal dominates the brain's frontoparietal network, "the winning signal is broadcast... achieving what Dennett calls 'fame in the brain'"
 . Thus, modern global workspace models and Dennett are in strong convergence, agreeing that consciousness is not a localized thing but a state of widespread availability of information
 .
-Higher-Order Thought (HOT) Theories: These suggest that a mental state becomes conscious only when you have a thought about that state (a meta-representation). For example, seeing red is conscious if you tacitly believe “I am seeing red.” Dennett is sympathetic to the idea that consciousness involves self-monitoring, but he would caution against thinking of a special inner observer. In Dennett’s view, something like a “probe” (which could be an internal self-query or an external question) selects content and gives it a narrative shape
-. This is somewhat analogous to HOT theories’ emphasis on meta-level access, though Dennett might argue the machinery is distributed (no single inner thought explicitly saying “I am seeing X,” but the brain’s language system and attention collectively play that role). Recent research on metacognition (the brain’s ability to assess its own states) does underline that people’s confidence and awareness relate to higher-order processes in prefrontal cortex. So there is a partial alignment: both Dennett and HOT theorists see cognitive access as critical. Where Dennett diverges is in refusing to grant any non-functional kind of consciousness. He would say: if a first-order perception doesn’t influence your memory, speech, or decision – if it’s completely inaccessible – calling it “conscious” is an empty label. (Some HOT theorists and philosophers like David Rosenthal or Ned Block debate the possibility of phenomenal consciousness without access, which Dennett and colleagues argue is a confusion
+Higher-Order Thought (HOT) Theories: These suggest that a mental state becomes conscious only when you have a thought about that state (a meta-representation). For example, seeing red is conscious if you tacitly believe "I am seeing red." Dennett is sympathetic to the idea that consciousness involves self-monitoring, but he would caution against thinking of a special inner observer. In Dennett's view, something like a "probe" (which could be an internal self-query or an external question) selects content and gives it a narrative shape
+. This is somewhat analogous to HOT theories' emphasis on meta-level access, though Dennett might argue the machinery is distributed (no single inner thought explicitly saying "I am seeing X," but the brain's language system and attention collectively play that role). Recent research on metacognition (the brain's ability to assess its own states) does underline that people's confidence and awareness relate to higher-order processes in prefrontal cortex. So there is a partial alignment: both Dennett and HOT theorists see cognitive access as critical. Where Dennett diverges is in refusing to grant any non-functional kind of consciousness. He would say: if a first-order perception doesn't influence your memory, speech, or decision - if it's completely inaccessible - calling it "conscious" is an empty label. (Some HOT theorists and philosophers like David Rosenthal or Ned Block debate the possibility of phenomenal consciousness without access, which Dennett and colleagues argue is a confusion
 ).
-Predictive Processing and Recurrent Network Theories: These approaches (championed by Karl Friston, Andy Clark, Hakwan Lau, etc.) propose that the brain is fundamentally a prediction machine, and consciousness might correspond to certain prediction error dynamics or recurrent feedback loops that stabilize perception. Interestingly, there has been a synthesis between predictive processing (PP) and Dennett’s multiple drafts. In 2020, philosophers Hohwy, Fabry and others suggested that PP can be seen through the lens of Dennett’s model – content becomes conscious when it is the “winning hypothesis” that best predicts sensory inputs, analogous to the winning narrative draft
-. In this view, attention in PP (which modulates precision of predictions) acts much like Dennett’s probe: it selects which information gets prominence
-. Recent work even uses Dennett’s terminology: one paper speaks of adding a “probe” to predictive coding to explain how consciousness arises, explicitly citing Dennett’s insight that there’s no fact of the matter which draft is conscious until it’s probed
-. This integration of Dennett’s ideas with cutting-edge PP models expands his influence – it shows that his framework can play nicely with neuroscientific models, resolving puzzles like why some percepts only seem conscious in retrospect. It’s a case where newer theory reinforces and extends Dennett’s: the brain’s constant predictive dialogue might create multiple parallel interpretations, and only when a salient prediction error “grabs attention” (a bit like shouting for attention in a meeting) does that content become the one we experience as “real.” Dennett’s deflationary stance – that what matters is which information controls behavior and report – is alive and well in these discussions.
-Integrated Information Theory (IIT): IIT, developed by Giulio Tononi and colleagues, takes a very different tack. It claims that consciousness corresponds to the amount of integrated information (Φ) in a system – in essence, how irreducible the system’s causal structure is. IIT is more philosophical and even panpsychist in flavor (it implies in principle that even simple systems might have tiny consciousness if they integrate information). Dennett has been openly critical of IIT’s approach. He tends to regard IIT as a beautiful mathematical guess that, so far, doesn’t explain why or how integrated information should create an experience. More pointedly, Dennett would note that IIT tries to assign consciousness as an intrinsic property of a physical state, whereas his view (and GWT’s) treats consciousness as a relational, functional status (akin to fame or influence, not a special substance). An analogy often made is: just as a person isn’t inherently “famous” in isolation – they become famous only in a social context – a brain state isn’t inherently conscious by itself, it becomes conscious by virtue of its connections and effects in the larger system
-. IIT does talk about connections, but it posits an identity between Φ and experience that Dennett finds unpersuasive (and untestable at human scales, as Φ is astronomically hard to compute for a brain). Since 2018, IIT has continued to develop (IIT 4.0 was formulated, and some neuroscientists attempted empirical measures of Φ), but it also faced challenges – e.g. studies found systems that IIT would predict as conscious (based on high Φ) that intuitively are not, and vice versa. Dennett likely sees these as signs that information integration is at best a correlate, not the essence of consciousness. Recent work by empirical scientists also leans toward global workspace models over IIT in terms of evidence
-. Thus, here we have a divergence: IIT represents a strand of thought quite distant from Dennett’s, and the dialogue between them remains somewhat contentious.
-Illusionism Gains Ground: One notable trend reinforcing Dennett’s influence is the rise of explicit “illusionist” theories of consciousness in philosophy of mind. Keith Frankish’s 2016 paper (and a 2020 edited volume on illusionism) argue that our introspective impression of having private qualia is a kind of user-illusion created by the brain’s metacognitive models. Dennett is frequently cited as a forefather of this view
-. Since 2018, more scholars have taken this line, focusing on how the brain generates beliefs about its experiences. For example, a 2022 Trends in Cognitive Sciences piece by Mudrik et al. asked “Free will without consciousness?” – discussing how unconscious processing could still fulfill many functions of “will,” and implying that what matters is that we think we are doing things for reasons
-. Similarly, papers by cognitive scientists like Michael Graziano (Attention Schema Theory) propose that the brain’s higher-order model of itself attributes a mysterious property (consciousness) to its states, because that model is useful for attention regulation. These ideas expand on Dennett’s narrative: they attempt to pinpoint the mechanisms by which the brain generates the conviction of having a first-person experience. While there’s no consensus yet, Dennett’s once-radical claim that consciousness might be an “illusion” (in the sense of not what it seems) is now a serious research direction
-. Importantly, this doesn’t mean dismissing consciousness as nonexistent – it means explaining why it feels the way it does. Dennett’s call to “explain the appearance” rather than treat it as inexplicable is being heeded.
-Open Questions: Despite much progress, researchers acknowledge we are not fully “there” yet. The 2022 Nature Reviews article by Seth and Bayne emphasizes that it’s still unclear how to rigorously distinguish or test some theories
-. Dennett might say that some of these theories could be partly true – e.g. global broadcasting is real, predictive processing is real – but we might still need a deeper unifying insight. One possibility is that consciousness doesn’t have a single “magic trick” explanation; it could be a cluster of capabilities (integration, attention, self-monitoring, reportability) that together create the emergent state we call feeling conscious. This multifaceted view is congenial to Dennett’s “bag of tricks” metaphor (he once wrote that consciousness is not one big trick but a bag of lots of little tricks the brain does
-). As research moves forward, Dennett’s influence ensures that scientists remain cautious about any theory that smuggles in a new étre magique. The alignment with functional, testable accounts is strong, and the divergence with more intrinsic or metaphysical accounts remains, awaiting empirical resolution.
+Predictive Processing and Recurrent Network Theories: These approaches (championed by Karl Friston, Andy Clark, Hakwan Lau, etc.) propose that the brain is fundamentally a prediction machine, and consciousness might correspond to certain prediction error dynamics or recurrent feedback loops that stabilize perception. Interestingly, there has been a synthesis between predictive processing (PP) and Dennett's multiple drafts. In 2020, philosophers Hohwy, Fabry and others suggested that PP can be seen through the lens of Dennett's model - content becomes conscious when it is the "winning hypothesis" that best predicts sensory inputs, analogous to the winning narrative draft
+. In this view, attention in PP (which modulates precision of predictions) acts much like Dennett's probe: it selects which information gets prominence
+. Recent work even uses Dennett's terminology: one paper speaks of adding a "probe" to predictive coding to explain how consciousness arises, explicitly citing Dennett's insight that there's no fact of the matter which draft is conscious until it's probed
+. This integration of Dennett's ideas with cutting-edge PP models expands his influence - it shows that his framework can play nicely with neuroscientific models, resolving puzzles like why some percepts only seem conscious in retrospect. It's a case where newer theory reinforces and extends Dennett's: the brain's constant predictive dialogue might create multiple parallel interpretations, and only when a salient prediction error "grabs attention" (a bit like shouting for attention in a meeting) does that content become the one we experience as "real." Dennett's deflationary stance - that what matters is which information controls behavior and report - is alive and well in these discussions.
+Integrated Information Theory (IIT): IIT, developed by Giulio Tononi and colleagues, takes a very different tack. It claims that consciousness corresponds to the amount of integrated information (Φ) in a system - in essence, how irreducible the system's causal structure is. IIT is more philosophical and even panpsychist in flavor (it implies in principle that even simple systems might have tiny consciousness if they integrate information). Dennett has been openly critical of IIT's approach. He tends to regard IIT as a beautiful mathematical guess that, so far, doesn't explain why or how integrated information should create an experience. More pointedly, Dennett would note that IIT tries to assign consciousness as an intrinsic property of a physical state, whereas his view (and GWT's) treats consciousness as a relational, functional status (akin to fame or influence, not a special substance). An analogy often made is: just as a person isn't inherently "famous" in isolation - they become famous only in a social context - a brain state isn't inherently conscious by itself, it becomes conscious by virtue of its connections and effects in the larger system
+. IIT does talk about connections, but it posits an identity between Φ and experience that Dennett finds unpersuasive (and untestable at human scales, as Φ is astronomically hard to compute for a brain). Since 2018, IIT has continued to develop (IIT 4.0 was formulated, and some neuroscientists attempted empirical measures of Φ), but it also faced challenges - e.g. studies found systems that IIT would predict as conscious (based on high Φ) that intuitively are not, and vice versa. Dennett likely sees these as signs that information integration is at best a correlate, not the essence of consciousness. Recent work by empirical scientists also leans toward global workspace models over IIT in terms of evidence
+. Thus, here we have a divergence: IIT represents a strand of thought quite distant from Dennett's, and the dialogue between them remains somewhat contentious.
+Illusionism Gains Ground: One notable trend reinforcing Dennett's influence is the rise of explicit "illusionist" theories of consciousness in philosophy of mind. Keith Frankish's 2016 paper (and a 2020 edited volume on illusionism) argue that our introspective impression of having private qualia is a kind of user-illusion created by the brain's metacognitive models. Dennett is frequently cited as a forefather of this view
+. Since 2018, more scholars have taken this line, focusing on how the brain generates beliefs about its experiences. For example, a 2022 Trends in Cognitive Sciences piece by Mudrik et al. asked "Free will without consciousness?" - discussing how unconscious processing could still fulfill many functions of "will," and implying that what matters is that we think we are doing things for reasons
+. Similarly, papers by cognitive scientists like Michael Graziano (Attention Schema Theory) propose that the brain's higher-order model of itself attributes a mysterious property (consciousness) to its states, because that model is useful for attention regulation. These ideas expand on Dennett's narrative: they attempt to pinpoint the mechanisms by which the brain generates the conviction of having a first-person experience. While there's no consensus yet, Dennett's once-radical claim that consciousness might be an "illusion" (in the sense of not what it seems) is now a serious research direction
+. Importantly, this doesn't mean dismissing consciousness as nonexistent - it means explaining why it feels the way it does. Dennett's call to "explain the appearance" rather than treat it as inexplicable is being heeded.
+Open Questions: Despite much progress, researchers acknowledge we are not fully "there" yet. The 2022 Nature Reviews article by Seth and Bayne emphasizes that it's still unclear how to rigorously distinguish or test some theories
+. Dennett might say that some of these theories could be partly true - e.g. global broadcasting is real, predictive processing is real - but we might still need a deeper unifying insight. One possibility is that consciousness doesn't have a single "magic trick" explanation; it could be a cluster of capabilities (integration, attention, self-monitoring, reportability) that together create the emergent state we call feeling conscious. This multifaceted view is congenial to Dennett's "bag of tricks" metaphor (he once wrote that consciousness is not one big trick but a bag of lots of little tricks the brain does
+). As research moves forward, Dennett's influence ensures that scientists remain cautious about any theory that smuggles in a new étre magique. The alignment with functional, testable accounts is strong, and the divergence with more intrinsic or metaphysical accounts remains, awaiting empirical resolution.
 Parallels with Current Agent Models in AI
-Dennett’s Intentional Stance: One of Dennett’s key contributions to philosophy of mind is the Intentional Stance – the idea that we treat a system as having “beliefs” and “desires” if doing so lets us predict its behavior. He famously said even a simple thermostat can be viewed as having a goal (to keep the room at a set temperature) under the intentional stance, though of course we don’t think it’s conscious. With the rise of advanced AI agents, Dennett’s intentional stance has become more relevant than ever. Since 2018, AI systems (from game-playing agents like AlphaGo to conversational agents like GPT-4) have achieved feats of strategy and language that invite us to talk about them as if they “want” something or “know” something. Dennett would remind us this is as-if intentionality: we are justified in using mentalistic language if it usefully predicts the AI’s behavior, but we shouldn’t assume there’s a conscious mind inside. Indeed, AI researchers implicitly use the intentional stance when they say “the agent is trying to maximize its reward” or “the network thinks this move is best.” Dennett anticipated this: even in the 1980s, he noted that a sufficiently complex chess computer could only practically be dealt with by treating it as a rational agent that “chooses” moves
-. Recent analysis concurs – as AI complexity grows, users and designers naturally anthropomorphize to understand them
-. This is a parallel, not with human consciousness per se, but with our perception of agency. It validates Dennett’s point that the boundary between a mind and a mere machine is not sharp; it’s about the level of sophistication. Today’s AI haven’t attained genuine understanding, but their behavior often requires an intentional idiom to be intelligible to us.
-Distributed Processing and “Multiple Drafts”: Modern AI models, especially deep neural networks, operate via many units acting in parallel with no central controller – a design strikingly similar to Dennett’s view of the brain. For example, large language models (LLMs) like GPT process input by distributed activation across layers of neurons and attention heads, gradually refining the “draft” of a response. There is no single neuron or module that “writes the story” – the final output emerges from competition and cooperation among myriad elements. This is reminiscent of Dennett’s multiple drafts model, where multiple narratives are potential at once and which one becomes “visible” is a matter of probing and feedback. In AI, we actually see multiple drafts in action: some experimental setups allow an LLM to generate several candidate continuations and then “choose” the best – effectively internal multiple drafts. Even without that, the probabilistic nature of generation means the “story” is being constructed on the fly, token by token, much as Dennett imagines the brain constructing a narrative of what’s happening. These parallels suggest that consciousness is not needed for complex output. Dennett often emphasizes “competence without comprehension” – you can be very good at a task with zero understanding. AI exemplify this: GPT-4 can produce coherent essays and solve problems without any subjective awareness or true comprehension of meaning. It has competence without consciousness – just as Dennett says evolution produced creatures (including parts of ourselves) that competently reproduce and behave without any intelligent designer or inner homunculus comprehending it all. The latest AI successes thus serve as case studies for Dennett’s naturalistic ideas. They show that what we might have thought requires a mind – using language fluently, for instance – can be approximated by a mindless algorithm trained on data. If one is tempted to say “but the AI sounds conscious,” Dennett would point out this is exactly the trap: we can be lulled by the user-illusion of conscious communication, even when it’s just mechanical manipulation of symbols.
-Narrative and Memory in AI Agents: Another interesting parallel is the use of narrative-like memory systems in AI agents to improve their coherence. In 2023, researchers at Stanford created “Generative Agents” – simulated characters in a virtual world that had dynamic memory and could plan their days (waking up, going to work, socializing) autonomously
-. They gave each agent a backstory (identity, job, relationships) and let an LLM govern its behavior. The agents would remember new events and integrate them, even reflecting on them to form plans (e.g. deciding to throw a party after a conversation about Valentine’s Day)
-. In essence, these AI agents were provided a narrative self – a summary of “who they are” – and that allowed them to act more humanlike and consistent over time. This design echoes Dennett’s claim that an internal narrative gives an agent a locus of decision-making and continuity. The AI agents weren’t sentient, but equipping them with a history and letting them write their own story (within the simulation) made them more effective and believable. Researchers even noted that these agents could “remember, reflect, and plan”, which are hallmarks of human-like agency
-. The architecture diagram for these agents shows a perception→memory→reflection→action loop
-, strikingly similar to cognitive theories of the human self. We can view this as a confirmation in silico that a system with distributed processes can benefit from having a unifying narrative model of itself-in-time. It’s exactly what Dennett suggests nature did for us: our brains evolved to spin a narrative (the self) to help marshal our various sub-processes towards longer-term goals.
-Ethical and Conceptual Challenges: Dennett has recently spoken about the dangers of AI impersonating humans – calling advanced chatbots “counterfeit people.” The concern is that if an AI behaves exactly like it has conscious intentions, humans will be tempted to treat it as such (the intentional stance will be almost irresistibly triggered). Dennett doesn’t deny that someday an AI could be complex enough to warrant the stance fully – and by his own criteria, if it reliably acts like it has beliefs and desires, then it does (in the stance sense) have them
-. But he distinguishes that from the AI actually being conscious. He argues we should not lightly assume that AIs – even very savvy ones – have a first-person perspective or moral subjectivity, because we know they lack the evolutionary history and inner architecture that give rise to human-like consciousness
+Dennett's Intentional Stance: One of Dennett's key contributions to philosophy of mind is the Intentional Stance - the idea that we treat a system as having "beliefs" and "desires" if doing so lets us predict its behavior. He famously said even a simple thermostat can be viewed as having a goal (to keep the room at a set temperature) under the intentional stance, though of course we don't think it's conscious. With the rise of advanced AI agents, Dennett's intentional stance has become more relevant than ever. Since 2018, AI systems (from game-playing agents like AlphaGo to conversational agents like GPT-4) have achieved feats of strategy and language that invite us to talk about them as if they "want" something or "know" something. Dennett would remind us this is as-if intentionality: we are justified in using mentalistic language if it usefully predicts the AI's behavior, but we shouldn't assume there's a conscious mind inside. Indeed, AI researchers implicitly use the intentional stance when they say "the agent is trying to maximize its reward" or "the network thinks this move is best." Dennett anticipated this: even in the 1980s, he noted that a sufficiently complex chess computer could only practically be dealt with by treating it as a rational agent that "chooses" moves
+. Recent analysis concurs - as AI complexity grows, users and designers naturally anthropomorphize to understand them
+. This is a parallel, not with human consciousness per se, but with our perception of agency. It validates Dennett's point that the boundary between a mind and a mere machine is not sharp; it's about the level of sophistication. Today's AI haven't attained genuine understanding, but their behavior often requires an intentional idiom to be intelligible to us.
+Distributed Processing and "Multiple Drafts": Modern AI models, especially deep neural networks, operate via many units acting in parallel with no central controller - a design strikingly similar to Dennett's view of the brain. For example, large language models (LLMs) like GPT process input by distributed activation across layers of neurons and attention heads, gradually refining the "draft" of a response. There is no single neuron or module that "writes the story" - the final output emerges from competition and cooperation among myriad elements. This is reminiscent of Dennett's multiple drafts model, where multiple narratives are potential at once and which one becomes "visible" is a matter of probing and feedback. In AI, we actually see multiple drafts in action: some experimental setups allow an LLM to generate several candidate continuations and then "choose" the best - effectively internal multiple drafts. Even without that, the probabilistic nature of generation means the "story" is being constructed on the fly, token by token, much as Dennett imagines the brain constructing a narrative of what's happening. These parallels suggest that consciousness is not needed for complex output. Dennett often emphasizes "competence without comprehension" - you can be very good at a task with zero understanding. AI exemplify this: GPT-4 can produce coherent essays and solve problems without any subjective awareness or true comprehension of meaning. It has competence without consciousness - just as Dennett says evolution produced creatures (including parts of ourselves) that competently reproduce and behave without any intelligent designer or inner homunculus comprehending it all. The latest AI successes thus serve as case studies for Dennett's naturalistic ideas. They show that what we might have thought requires a mind - using language fluently, for instance - can be approximated by a mindless algorithm trained on data. If one is tempted to say "but the AI sounds conscious," Dennett would point out this is exactly the trap: we can be lulled by the user-illusion of conscious communication, even when it's just mechanical manipulation of symbols.
+Narrative and Memory in AI Agents: Another interesting parallel is the use of narrative-like memory systems in AI agents to improve their coherence. In 2023, researchers at Stanford created "Generative Agents" - simulated characters in a virtual world that had dynamic memory and could plan their days (waking up, going to work, socializing) autonomously
+. They gave each agent a backstory (identity, job, relationships) and let an LLM govern its behavior. The agents would remember new events and integrate them, even reflecting on them to form plans (e.g. deciding to throw a party after a conversation about Valentine's Day)
+. In essence, these AI agents were provided a narrative self - a summary of "who they are" - and that allowed them to act more humanlike and consistent over time. This design echoes Dennett's claim that an internal narrative gives an agent a locus of decision-making and continuity. The AI agents weren't sentient, but equipping them with a history and letting them write their own story (within the simulation) made them more effective and believable. Researchers even noted that these agents could "remember, reflect, and plan", which are hallmarks of human-like agency
+. The architecture diagram for these agents shows a perception->memory->reflection->action loop
+, strikingly similar to cognitive theories of the human self. We can view this as a confirmation in silico that a system with distributed processes can benefit from having a unifying narrative model of itself-in-time. It's exactly what Dennett suggests nature did for us: our brains evolved to spin a narrative (the self) to help marshal our various sub-processes towards longer-term goals.
+Ethical and Conceptual Challenges: Dennett has recently spoken about the dangers of AI impersonating humans - calling advanced chatbots "counterfeit people." The concern is that if an AI behaves exactly like it has conscious intentions, humans will be tempted to treat it as such (the intentional stance will be almost irresistibly triggered). Dennett doesn't deny that someday an AI could be complex enough to warrant the stance fully - and by his own criteria, if it reliably acts like it has beliefs and desires, then it does (in the stance sense) have them
+. But he distinguishes that from the AI actually being conscious. He argues we should not lightly assume that AIs - even very savvy ones - have a first-person perspective or moral subjectivity, because we know they lack the evolutionary history and inner architecture that give rise to human-like consciousness
 . This is an important parallel to his philosophy: he often notes you can have two systems that behave intelligently, yet one might be conscious and the other not, depending on their internal organization
-. Current AI systems, in his view, are intelligent without insight – sophisticated pattern responders. Recent research on whether LLMs have theory-of-mind or genuine understanding leans toward “no, they simulate it without having it.” Dennett’s framework predicts this situation well. He would likely say: just because an AI writes a fluent autobiography or says “I feel pain,” it doesn’t mean there is a subjective narrative being experienced from the inside. There’s a difference between a story being output and a story being lived, and that difference is precisely what consciousness is. AI today provide a mirror for us to refine our theories – they force us to specify what, beyond functional savvy, is required for the spark of sentience. Dennett would emphasize the answer lies in the kind of self-modeling, autonomy, and complexity that we have – and we must be careful with AIs that mimic those outward signs, so we aren’t fooled by the illusion of a conscious mind where there is none
+. Current AI systems, in his view, are intelligent without insight - sophisticated pattern responders. Recent research on whether LLMs have theory-of-mind or genuine understanding leans toward "no, they simulate it without having it." Dennett's framework predicts this situation well. He would likely say: just because an AI writes a fluent autobiography or says "I feel pain," it doesn't mean there is a subjective narrative being experienced from the inside. There's a difference between a story being output and a story being lived, and that difference is precisely what consciousness is. AI today provide a mirror for us to refine our theories - they force us to specify what, beyond functional savvy, is required for the spark of sentience. Dennett would emphasize the answer lies in the kind of self-modeling, autonomy, and complexity that we have - and we must be careful with AIs that mimic those outward signs, so we aren't fooled by the illusion of a conscious mind where there is none
 .
-Summary of Parallels: In sum, the progression of AI agent models has vindicated many aspects of Dennett’s view of minds:
-Intentional stance usability: We routinely explain AI behavior in intentional terms (goal, policy, preference), demonstrating Dennett’s point that “mind” is as mind does – when behavior is rich enough, we naturally treat the system as having mentality
+Summary of Parallels: In sum, the progression of AI agent models has vindicated many aspects of Dennett's view of minds:
+Intentional stance usability: We routinely explain AI behavior in intentional terms (goal, policy, preference), demonstrating Dennett's point that "mind" is as mind does - when behavior is rich enough, we naturally treat the system as having mentality
 .
-No Cartesian theater: AI systems have distributed processing with no central “I”, yet they function coherently. Likewise, Dennett argues the brain has no single ego in charge – coherence emerges from competition and collaboration of sub-parts. AI teaches us that coherence can emerge without a central commander, just as Dennett models human consciousness.
-Narrative and memory: Giving AI a narrative (even just stored chat history or an explicit “persona” prompt) greatly improves its performance in maintaining context and identity. This is analogous to humans: our narrative memory is what gives us continuity. It underscores Dennett’s idea that the self is the story that helps make sense of the system’s behavior over time.
-Function vs. Illusion: Perhaps most profoundly, AI separates intelligence from sentience. We see in machines a crude version of what Dennett suggests about us: that from the outside, one might explain everything we do via physical-causal terms, yet from the inside, we have this rich story of experience. The AI has the outside without the inside. This draws the lines of Dennett’s project clearly – to show how the inside view (with all its color and drama) could be an emergent story woven by a purely mechanistic system. The success of mechanism in AI gives credibility to the idea that no magical addition is needed for mechanism to produce minds; what’s needed is more mechanism (of the right sort). As research pushes forward, Dennett’s work serves as a guide and warning: competence can arise without comprehension, and we must discern when attributions of consciousness are warranted or are merely projections of our own narratives.
+No Cartesian theater: AI systems have distributed processing with no central "I", yet they function coherently. Likewise, Dennett argues the brain has no single ego in charge - coherence emerges from competition and collaboration of sub-parts. AI teaches us that coherence can emerge without a central commander, just as Dennett models human consciousness.
+Narrative and memory: Giving AI a narrative (even just stored chat history or an explicit "persona" prompt) greatly improves its performance in maintaining context and identity. This is analogous to humans: our narrative memory is what gives us continuity. It underscores Dennett's idea that the self is the story that helps make sense of the system's behavior over time.
+Function vs. Illusion: Perhaps most profoundly, AI separates intelligence from sentience. We see in machines a crude version of what Dennett suggests about us: that from the outside, one might explain everything we do via physical-causal terms, yet from the inside, we have this rich story of experience. The AI has the outside without the inside. This draws the lines of Dennett's project clearly - to show how the inside view (with all its color and drama) could be an emergent story woven by a purely mechanistic system. The success of mechanism in AI gives credibility to the idea that no magical addition is needed for mechanism to produce minds; what's needed is more mechanism (of the right sort). As research pushes forward, Dennett's work serves as a guide and warning: competence can arise without comprehension, and we must discern when attributions of consciousness are warranted or are merely projections of our own narratives.
 Sources:
-Dubljević, V. et al. (2018). Qualitative review of Libet-style neuroscience experiments on free will – analysis showing interpretations often followed authors’ metaphysical biases
+Dubljević, V. et al. (2018). Qualitative review of Libet-style neuroscience experiments on free will - analysis showing interpretations often followed authors' metaphysical biases
 .
-Brass, M. et al. (2019). “Why neuroscience does not disprove free will,” Neurosci. Biobehav. Rev. – argues early brain signals reflect decision process not decision fait accompli
+Brass, M. et al. (2019). "Why neuroscience does not disprove free will," Neurosci. Biobehav. Rev. - argues early brain signals reflect decision process not decision fait accompli
 .
-Bredikhin, D. et al. (2023). Neuropsychologia study – found Libet’s method flawed and no direct correlation between readiness potential and conscious intention
+Bredikhin, D. et al. (2023). Neuropsychologia study - found Libet's method flawed and no direct correlation between readiness potential and conscious intention
 .
-NC State News (2018): “Study Tackles Neuroscience Claims to Have Disproved Free Will” – reporting skepticism about claims that free will is an illusion, highlighting inconsistent results and noting belief in determinism can alter behavior
+NC State News (2018): "Study Tackles Neuroscience Claims to Have Disproved Free Will" - reporting skepticism about claims that free will is an illusion, highlighting inconsistent results and noting belief in determinism can alter behavior
 .
-Liljenström, H. & Århem, P. (2022). “Consciousness, decision making, and volition” – computational modeling showing fast decisions rely on unconscious emotional processes, slower ones on conscious rational input
+Liljenström, H. & Århem, P. (2022). "Consciousness, decision making, and volition" - computational modeling showing fast decisions rely on unconscious emotional processes, slower ones on conscious rational input
 .
-Sutil-Martín, D.L. & Rienda-Gómez, J.J. (2020). Front. Psychol. – study on unconscious perception in decision-making, concluding the brain can learn and decide without conscious awareness of stimuli
+Sutil-Martín, D.L. & Rienda-Gómez, J.J. (2020). Front. Psychol. - study on unconscious perception in decision-making, concluding the brain can learn and decide without conscious awareness of stimuli
 .
-Gazzaniga, M. (2011). Who’s in Charge? (as quoted by Farnam Street blog) – discusses the “interpreter” and how split-brain experiments reveal the mind’s tendency to confabulate reasons for unconscious actions
+Gazzaniga, M. (2011). Who's in Charge? (as quoted by Farnam Street blog) - discusses the "interpreter" and how split-brain experiments reveal the mind's tendency to confabulate reasons for unconscious actions
 ; also emphasizes the multitude of unconscious processes under the hood
 .
-Cowan, H. et al. (2023). Schizophrenia Bulletin – found that incoherent or passive personal narratives in youth are linked to emerging psychosis, and that a coherent narrative self is crucial for goal-directed functioning
+Cowan, H. et al. (2023). Schizophrenia Bulletin - found that incoherent or passive personal narratives in youth are linked to emerging psychosis, and that a coherent narrative self is crucial for goal-directed functioning
 .
-Kirmayer, L.J. et al. (2024). “Narrative as Active Inference” – proposes that narratives (individual and cultural) function to generate predictions and coordinate behavior, highlighting the adaptive role of constructing identity stories
+Kirmayer, L.J. et al. (2024). "Narrative as Active Inference" - proposes that narratives (individual and cultural) function to generate predictions and coordinate behavior, highlighting the adaptive role of constructing identity stories
 .
-Seth, A. & Bayne, T. (2022). Nature Reviews Neuroscience – “Theories of consciousness” review, outlines global workspace, higher-order, predictive, and IIT approaches
+Seth, A. & Bayne, T. (2022). Nature Reviews Neuroscience - "Theories of consciousness" review, outlines global workspace, higher-order, predictive, and IIT approaches
 .
-Hohwy, J., Fabry, R., & Fitzgerald, T. (2020). Various works connecting predictive processing to consciousness; see Wiese’s Synthese article: argues that attention (precision optimization in predictive coding) can serve as Dennett’s “probe,” and that conscious content is the “winning hypothesis” with highest posterior probability
+Hohwy, J., Fabry, R., & Fitzgerald, T. (2020). Various works connecting predictive processing to consciousness; see Wiese's Synthese article: argues that attention (precision optimization in predictive coding) can serve as Dennett's "probe," and that conscious content is the "winning hypothesis" with highest posterior probability
 .
-Blog “SelfAwarePatterns” (2019) – explainer on Global Workspace vs. Dennett’s Multiple Drafts: notes that Dennett’s model is effectively a variant of GWT and uses the “fame in the brain” metaphor. It emphasizes that information becomes conscious by being accessible to many processes (memory, language, decision-making), not by any intrinsic glow
+Blog "SelfAwarePatterns" (2019) - explainer on Global Workspace vs. Dennett's Multiple Drafts: notes that Dennett's model is effectively a variant of GWT and uses the "fame in the brain" metaphor. It emphasizes that information becomes conscious by being accessible to many processes (memory, language, decision-making), not by any intrinsic glow
 .
-Dennett, D. (2023). The Atlantic (“Counterfeit People”) – Dennett’s own cautionary piece on AI (paraphrased in DailyNous discussion): argues it’s not “useful” to treat AI avatars as real people and that we must label them as AI to avoid deception
-. (Also see comments by D. Wallace noting that, in Dennett’s framework, an AI can be intentional without being conscious
+Dennett, D. (2023). The Atlantic ("Counterfeit People") - Dennett's own cautionary piece on AI (paraphrased in DailyNous discussion): argues it's not "useful" to treat AI avatars as real people and that we must label them as AI to avoid deception
+. (Also see comments by D. Wallace noting that, in Dennett's framework, an AI can be intentional without being conscious
 .)
-Park, J.S. et al. (2023). “Generative Agents: Interactive Simulacra of Human Behavior” – research from Stanford/Google on AI agents with memory and planning. Described in Stanford HAI News: agents given biographies who then remember, reflect, and plan their activities, demonstrating a form of narrative-based behavior generation
+Park, J.S. et al. (2023). "Generative Agents: Interactive Simulacra of Human Behavior" - research from Stanford/Google on AI agents with memory and planning. Described in Stanford HAI News: agents given biographies who then remember, reflect, and plan their activities, demonstrating a form of narrative-based behavior generation
 .
-Dennett, D. (1991, 2005). Consciousness Explained and later essays – introduced the Multiple Drafts Model; no single fact-of-the-matter until “probe” occurs, and consciousness as “fame in the brain”
+Dennett, D. (1991, 2005). Consciousness Explained and later essays - introduced the Multiple Drafts Model; no single fact-of-the-matter until "probe" occurs, and consciousness as "fame in the brain"
 . (Referenced in synthesis with current models to show enduring relevance.)
 
 

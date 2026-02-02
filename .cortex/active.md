@@ -4,7 +4,7 @@
 
 | Agent | Task | Branch | Files Touched | Started |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| - | - | - | - | - |
 
 ## Reserved Files
 
