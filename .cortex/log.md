@@ -4,6 +4,10 @@
 
 ---
 
+## 2026-02-02 codex -- cleanup bom in source
+
+- Removed UTF-8 BOM markers from core source files to avoid import issues
+
 ## 2026-02-02 codex -- multi-calendar support
 
 - Added multi-calendar support via GOOGLE_CALENDAR_IDS and calendarIds option
