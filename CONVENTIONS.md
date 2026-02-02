@@ -75,9 +75,10 @@ dennis: update SYSTEM.md with new requirements
 - Write in imperative mood: "add", "fix", "update", not "added", "fixed", "updated"
 
 ### Merging
-- **Dennis merges to main** -- human in the loop, always
-- Agents create branches and do their work there
-- If a branch is ready, the agent notes it in `.cortex/log.md` and `.cortex/active.md`
+- **Agents can merge their own branches to main** after tests pass and Dennis confirms the work is correct
+- Merge with `git checkout main && git merge [branch] --no-ff` (preserve branch history)
+- After merging, clean up: delete the merged branch, update `.cortex/log.md`
+- If there are merge conflicts, stop and surface to Dennis -- don't force-resolve
 
 ---
 

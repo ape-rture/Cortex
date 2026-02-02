@@ -10,6 +10,7 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
+- **Multi-calendar support for /gm** -- Agent: codex -- Dennis has 2 Google Calendars. Update `fetchTodayEvents()` in `src/integrations/google-calendar.ts` to accept multiple calendar IDs, fetch from all, merge events by start time, and deduplicate. Add env var `GOOGLE_CALENDAR_IDS` (comma-separated) as alternative to `GOOGLE_CALENDAR_ID`. Keep backward-compatible (single ID still works). Update `src/cli/gm.ts` to use the multi-calendar fetch. Branch: `codex/multi-calendar`.
 
 ## In Progress
 
