@@ -34,6 +34,11 @@
 
 ---
 
+## 2026-02-02 codex -- markdown utils
+
+- Added src/utils/markdown.ts with task queue parsing/serialization and contact parsing
+- Added src/utils/index.ts exports
+
 ## 2026-02-02 codex -- scaffold TypeScript project
 
 - Added package.json (ESM, strict TypeScript) with Anthropic + OpenAI SDK deps
