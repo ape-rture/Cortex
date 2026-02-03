@@ -10,10 +10,7 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Implement session snapshot store** -- Agent: codex -- Implement `SessionSnapshotStore` from `src/core/types/session.ts`. Read/write `.cortex/snapshot.md` as structured markdown. Parse on load, serialize on capture. Branch: `codex/session-snapshot`.
-- **Implement daily digest generator** -- Agent: codex -- Implement `DigestGenerator` from `src/core/types/daily-digest.ts`. Collect data from `.cortex/log.md` (today's entries), `actions/queue.md`, `actions/pending.md`, and `git log --since=midnight`. Write output to `daily/YYYY-MM-DD.md`. Add `npm run digest` CLI command. Prompt spec at `src/agents/prompts/daily-digest.md`. Branch: `codex/daily-digest`.
-- **Implement git push monitor** -- Agent: codex -- Implement `GitMonitor` from `src/core/types/git-monitor.ts`. Shell out to `git log @{push}..` to detect unpushed commits. Start with just the Cortex repo path. Integrate into `src/cli/gm.ts` -- add a "Git" section to the morning briefing. Branch: `codex/git-monitor`.
-- **Wire snapshot into /gm** -- Agent: codex -- Update `src/cli/gm.ts` to load the latest session snapshot and include a "Picking Up Where We Left Off" section in the morning briefing. Depends on: session-snapshot. Branch: `codex/gm-snapshot`.
+- **Implement alias store and detector** -- Agent: codex -- Implement `AliasStore` and `AliasPatternDetector` from `src/core/types/alias.ts`. Parse/serialize `context/aliases.md`. Add `expand()` method for alias resolution. Pattern detector tracks phrase frequency and generates suggestions per `src/agents/prompts/alias-suggester.md`. Branch: `codex/alias-system`.
 
 ## In Progress
 
@@ -35,3 +32,7 @@
 - **Define how other LLM agents participate** -- Agent: claude -- Added "Adding a New LLM Agent" section to CONVENTIONS.md covering instruction files, registration, coordination, and safe edit boundaries.
 - **Document redaction flow for local-only data** -- Agent: claude -- Added redaction workflow to context/model-routing.md: identify, redact with typed placeholders, send, rehydrate, discard map.
 - **Multi-calendar support for /gm** -- Agent: codex -- Branch: `codex/multi-calendar`. Added GOOGLE_CALENDAR_IDS support and calendar source display.
+- **Implement session snapshot store** -- Agent: codex -- Branch: `codex/session-snapshot`. Added MarkdownSessionSnapshotStore with snapshot parser/serializer and tests.
+- **Implement daily digest generator** -- Agent: codex -- Branch: `codex/daily-digest`. Added MarkdownDigestGenerator, CLI entrypoint, and tests.
+- **Implement git push monitor** -- Agent: codex -- Branch: `codex/git-monitor`. Added SimpleGitMonitor with unpushed commit detection, /gm Git section, and tests.
+- **Wire snapshot into /gm** -- Agent: codex -- Branch: `codex/git-monitor`. Added snapshot load to /gm and "Picking Up Where We Left Off" section.

@@ -4,6 +4,47 @@
 
 ---
 
+## 2026-02-03 codex -- merge git monitor + gm snapshot
+
+- Merged branch `codex/git-monitor` into `main`
+- /gm now includes Git status and session snapshot sections
+- Tests: npm run test:unit (10/10 passed)
+
+## 2026-02-03 claude -- shorthand/alias system design
+
+- Designed alias file format in `context/aliases.md` (active, suggested, categories, rules)
+- Created `src/core/types/alias.ts` with full type definitions (Alias, AliasSuggestion, AliasStore, AliasPatternDetector)
+- Created `src/agents/prompts/alias-suggester.md` for background pattern analysis
+- Added Codex task for implementation
+
+### Key design decisions:
+- Aliases have 5 categories: command, entity, phrase, path, status
+- Pattern detection: 3+ words, 3+ occurrences in 7 days
+- Suggestions go to "Suggested Aliases" section, user approves before activation
+- Alias expansion works at input (user typing) and output (token reduction)
+
+### For Codex:
+- Types are in `src/core/types/alias.ts`
+- Implement `AliasStore` (parse/serialize aliases.md) and `AliasPatternDetector`
+- Detection prompt at `src/agents/prompts/alias-suggester.md`
+
+## 2026-02-03 codex -- git monitor
+
+- Added src/core/git-monitor.ts (SimpleGitMonitor)
+- Added src/core/git-monitor.test.ts
+- Integrated git section into /gm
+
+## 2026-02-03 codex -- daily digest generator
+
+- Added src/core/daily-digest.ts (MarkdownDigestGenerator + git/log/queue/pending aggregation)
+- Added src/cli/digest.ts and npm script `digest`
+- Added src/core/daily-digest.test.ts
+- Tests: npm run test:unit (9/9 passed)
+
+## 2026-02-02 codex -- session snapshot store
+
+- Added src/core/session-snapshot.ts with markdown-backed store
+- Added src/core/session-snapshot.test.ts
 ## 2026-02-02 codex -- cleanup bom in source
 
 - Removed UTF-8 BOM markers from core source files to avoid import issues
