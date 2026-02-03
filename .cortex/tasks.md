@@ -10,7 +10,6 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Phase 2b: Decay detector + /gm** -- Agent: codex -- Implement `DecayDetector` in `src/core/decay-detector.ts`. Scan contacts, find those with lastContact > 30 days. Add "Relationship Alerts" section to `/gm`. Add tests. Depends on: ContactStore. Branch: `codex/decay-detector`.
 
 ## In Progress
 
@@ -41,3 +40,4 @@
 - **Web terminal: API endpoints** -- Agent: codex -- Branch: `codex/web-terminal`. Added session CRUD + chat SSE, wired ConfigRouter + SYSTEM.md prompt.
 - **Phase 2a: Enhance contact parser** -- Agent: codex -- Branch: `codex/contact-parser`. Updated parseContactFile to full CRM template + serializeContact; tests added.
 - **Phase 2a: Create ContactStore** -- Agent: codex -- Branch: `codex/contact-parser`. Added MarkdownContactStore + tests.
+- **Phase 2b: Decay detector + /gm** -- Agent: codex -- Branch: `codex/decay-detector`. Added SimpleDecayDetector + /gm Relationship Alerts section + tests.

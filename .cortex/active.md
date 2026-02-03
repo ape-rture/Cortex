@@ -2,14 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Phase 2b relationship decay detector + gm alerts
-Branch: codex/decay-detector
-Files:
-  - src/core/decay-detector.ts
-  - src/core/decay-detector.test.ts
-  - src/cli/gm.ts
-Started: 2026-02-03T15:10Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 

@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-02-03 codex -- Phase 2b decay detector
+
+- Added SimpleDecayDetector to flag stale relationships
+- /gm now shows Relationship Alerts section
+- Added unit tests for decay detector
+- Tests: npm run test:unit (15/15 passed)
+
 ## 2026-02-03 codex -- Phase 2a contact parser + store
 
 - Enhanced parseContactFile to support CRM template + serializeContact
