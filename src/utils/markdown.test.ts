@@ -27,11 +27,42 @@ test("serializeTaskQueue groups by status", () => {
 });
 
 test("parseContactFile extracts sections", () => {
-  const content = `# Jane Doe\n**Company**: Example Inc\n**Role**: CTO\n**Type**: partner\n**Attio ID**: abc123\n\n## Context\nMet at the summit.\n\n## History\n- [2026-02-01]: Intro call\n\n## Notes\nFollow up next week.\n`;
+  const content = `# Jane Doe
+**Company**: Example Inc
+**Role**: CTO
+**Type**: partner
+**Attio ID**: abc123
+
+## Contact Info
+- Email: jane@example.com
+- LinkedIn: linkedin.com/in/janedoe
+- Phone:
+
+## Context
+Met at the summit.
+
+## Relationship
+**Status**: active
+**Last Contact**: 2026-02-01
+**Next Follow-up**: 2026-02-10
+
+## Interaction History
+### 2026-02-01 - Call
+- Summary: Intro call
+- Key points: Interested in platform; Wants pricing
+- Follow-up needed: Send proposal
+
+## Notes
+Follow up next week.
+`;
   const contact = parseContactFile(content);
   assert.equal(contact.name, "Jane Doe");
   assert.equal(contact.company, "Example Inc");
   assert.equal(contact.role, "CTO");
   assert.equal(contact.attioId, "abc123");
-  assert.equal(contact.history?.length, 1);
+  assert.equal(contact.contactInfo?.email, "jane@example.com");
+  assert.equal(contact.relationshipStatus, "active");
+  assert.equal(contact.lastContact, "2026-02-01");
+  assert.equal(contact.history.length, 1);
+  assert.equal(contact.history[0].type, "call");
 });

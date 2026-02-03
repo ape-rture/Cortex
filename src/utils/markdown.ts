@@ -1,17 +1,14 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { Task, TaskPriority, TaskStatus, TaskSource } from "../core/types/task-queue.js";
-
-export interface ContactRecord {
-  name: string;
-  company?: string;
-  role?: string;
-  type?: string;
-  attioId?: string;
-  context?: string;
-  history?: Array<{ date: string; note: string }>;
-  notes?: string;
-}
+import type {
+  Contact,
+  ContactInfo,
+  ContactType,
+  InteractionRecord,
+  InteractionType,
+  RelationshipStatus,
+} from "../core/types/crm.js";
 
 const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "failed", "cancelled"] as const;
 
@@ -277,18 +274,66 @@ export function serializeTaskQueue(tasks: readonly Task[]): string {
   return output.join("\n").trimEnd() + "\n";
 }
 
-export function parseContactFile(content: string): ContactRecord {
+function parseContactType(value: string | undefined): ContactType {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return "other";
+  if (normalized === "customer" || normalized === "lead" || normalized === "partner" || normalized === "investor" || normalized === "other") {
+    return normalized as ContactType;
+  }
+  return "other";
+}
+
+function parseRelationshipStatus(value: string | undefined): RelationshipStatus {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return "active";
+  if (normalized === "active" || normalized === "nurturing" || normalized === "dormant" || normalized === "churned") {
+    return normalized as RelationshipStatus;
+  }
+  return "active";
+}
+
+function parseInteractionType(value: string | undefined): InteractionType {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return "other";
+  if (normalized === "meeting" || normalized === "email" || normalized === "call" || normalized === "slack" || normalized === "telegram" || normalized === "other") {
+    return normalized as InteractionType;
+  }
+  return "other";
+}
+
+function parseKeyPoints(value: string | undefined): string[] | undefined {
+  if (!value) return undefined;
+  const items = value
+    .split(/[;,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return items.length > 0 ? items : undefined;
+}
+
+export function parseContactFile(content: string, filePath = ""): Contact {
   const lines = content.split(/\r?\n/);
   let name = "";
   let company: string | undefined;
   let role: string | undefined;
-  let type: string | undefined;
+  let type: ContactType = "other";
   let attioId: string | undefined;
   let context: string | undefined;
   let notes: string | undefined;
-  const history: Array<{ date: string; note: string }> = [];
+  let contactInfo: ContactInfo | undefined;
+  let relationshipStatus: RelationshipStatus = "active";
+  let lastContact: string | undefined;
+  let nextFollowUp: string | undefined;
+  const history: InteractionRecord[] = [];
 
-  let section: "context" | "history" | "notes" | undefined;
+  let section: "contactInfo" | "context" | "relationship" | "history" | "notes" | undefined;
+  let currentInteraction: InteractionRecord | undefined;
+
+  const flushInteraction = () => {
+    if (currentInteraction) {
+      history.push(currentInteraction);
+      currentInteraction = undefined;
+    }
+  };
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
@@ -303,21 +348,47 @@ export function parseContactFile(content: string): ContactRecord {
       const value = fieldMatch[2].trim();
       if (key === "company") company = value;
       if (key === "role") role = value;
-      if (key === "type") type = value;
+      if (key === "type") type = parseContactType(value);
       if (key === "attio id") attioId = value;
+      if (key === "status") relationshipStatus = parseRelationshipStatus(value);
+      if (key === "last contact") lastContact = value;
+      if (key === "next follow-up") nextFollowUp = value;
       continue;
     }
 
-    if (line.toLowerCase() === "## context") {
+    const lower = line.toLowerCase();
+    if (lower === "## contact info") {
+      section = "contactInfo";
+      continue;
+    }
+    if (lower === "## context") {
       section = "context";
       continue;
     }
-    if (line.toLowerCase() === "## history") {
+    if (lower === "## relationship") {
+      section = "relationship";
+      continue;
+    }
+    if (lower === "## interaction history" || lower === "## history") {
+      flushInteraction();
       section = "history";
       continue;
     }
-    if (line.toLowerCase() === "## notes") {
+    if (lower === "## notes") {
       section = "notes";
+      continue;
+    }
+
+    if (section === "contactInfo" && line.startsWith("- ")) {
+      const infoMatch = line.match(/^-\s+([^:]+):\s*(.*)$/);
+      if (infoMatch) {
+        const infoKey = infoMatch[1].trim().toLowerCase();
+        const infoValue = infoMatch[2].trim();
+        contactInfo = contactInfo ?? {};
+        if (infoKey === "email") contactInfo.email = infoValue || contactInfo.email;
+        if (infoKey === "linkedin") contactInfo.linkedin = infoValue || contactInfo.linkedin;
+        if (infoKey === "phone") contactInfo.phone = infoValue || contactInfo.phone;
+      }
       continue;
     }
 
@@ -326,10 +397,29 @@ export function parseContactFile(content: string): ContactRecord {
       continue;
     }
 
-    if (section === "history" && line.startsWith("- ")) {
-      const match = line.match(/^-\s+\[(.+?)\]:\s*(.*)$/);
-      if (match) {
-        history.push({ date: match[1].trim(), note: match[2].trim() });
+    if (section === "history") {
+      if (line.startsWith("### ")) {
+        flushInteraction();
+        const heading = line.replace(/^###\s+/, "").trim();
+        const parts = heading.split(" - ").map((part) => part.trim());
+        const date = parts[0] ?? "";
+        const typeValue = parts[1] ?? "other";
+        currentInteraction = {
+          date,
+          type: parseInteractionType(typeValue),
+          summary: "",
+        };
+        continue;
+      }
+
+      if (line.startsWith("- ") && currentInteraction) {
+        const detailMatch = line.match(/^-\s+([^:]+):\s*(.*)$/);
+        if (!detailMatch) continue;
+        const detailKey = detailMatch[1].trim().toLowerCase();
+        const detailValue = detailMatch[2].trim();
+        if (detailKey === "summary") currentInteraction.summary = detailValue;
+        if (detailKey === "key points") currentInteraction.keyPoints = parseKeyPoints(detailValue);
+        if (detailKey === "follow-up needed") currentInteraction.followUpNeeded = detailValue;
       }
       continue;
     }
@@ -339,14 +429,72 @@ export function parseContactFile(content: string): ContactRecord {
     }
   }
 
+  flushInteraction();
+
   return {
     name,
     company,
     role,
     type,
     attioId,
+    contactInfo,
     context,
-    history: history.length > 0 ? history : undefined,
+    relationshipStatus,
+    lastContact,
+    nextFollowUp,
+    history,
     notes,
+    filePath,
   };
+}
+
+export function serializeContact(contact: Contact): string {
+  const lines: string[] = [];
+  lines.push(`# ${contact.name}`);
+  if (contact.company) lines.push(`\n**Company**: ${contact.company}`);
+  if (contact.role) lines.push(`**Role**: ${contact.role}`);
+  lines.push(`**Type**: ${contact.type}`);
+  lines.push(`**Attio ID**: ${contact.attioId ?? ""}`);
+
+  lines.push("\n## Contact Info");
+  lines.push(`- Email: ${contact.contactInfo?.email ?? ""}`);
+  lines.push(`- LinkedIn: ${contact.contactInfo?.linkedin ?? ""}`);
+  lines.push(`- Phone: ${contact.contactInfo?.phone ?? ""}`);
+
+  lines.push("\n## Context");
+  if (contact.context) {
+    lines.push(contact.context);
+  }
+
+  lines.push("\n## Relationship");
+  lines.push(`**Status**: ${contact.relationshipStatus}`);
+  if (contact.lastContact) lines.push(`**Last Contact**: ${contact.lastContact}`);
+  if (contact.nextFollowUp) lines.push(`**Next Follow-up**: ${contact.nextFollowUp}`);
+
+  lines.push("\n## Interaction History");
+  if (contact.history.length === 0) {
+    lines.push("");
+  } else {
+    for (const interaction of contact.history) {
+      lines.push(`### ${interaction.date} - ${interaction.type}`);
+      lines.push(`- Summary: ${interaction.summary}`);
+      if (interaction.keyPoints && interaction.keyPoints.length > 0) {
+        lines.push(`- Key points: ${interaction.keyPoints.join("; ")}`);
+      }
+      if (interaction.followUpNeeded) {
+        lines.push(`- Follow-up needed: ${interaction.followUpNeeded}`);
+      }
+      lines.push("");
+    }
+  }
+
+  if (contact.notes) {
+    lines.push("\n## Notes");
+    lines.push(contact.notes);
+  }
+
+  lines.push("\n---\n");
+  lines.push("*Update after every interaction. Sync important updates to Attio.*");
+
+  return lines.join("\n").trimEnd() + "\n";
 }
