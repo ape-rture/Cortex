@@ -2,14 +2,19 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Implement alias store + pattern detector
-Branch: codex/alias-system
+*No agent currently working.*
+
+<!-- When starting work, replace the line above with:
+
+Agent: claude (or codex)
+Task: short description of what you're doing
+Branch: claude/task-slug (or "main" for shared files only)
 Files:
-  - src/core/alias-store.ts
-  - src/core/alias-detector.ts
-  - src/core/alias-store.test.ts
-Started: 2026-02-03T13:45Z
+  - path/to/file1.ts
+  - path/to/file2.md
+Started: YYYY-MM-DDTHH:MMZ
+
+-->
 
 ---
 
