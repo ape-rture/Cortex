@@ -172,9 +172,18 @@
       const [error, setError] = useState(null);
       const eventSourceRef = useRef(null);
 
-      // Load sessions on mount
+      // Load sessions on mount, auto-create one if empty
       useEffect(() => {
-        api.getSessions().then(data => setSessions(data.sessions || []));
+        api.getSessions().then(async (data) => {
+          const existing = data.sessions || [];
+          if (existing.length === 0) {
+            const newSession = await api.createSession('Session 1');
+            setSessions([newSession]);
+            setActiveSessionId(newSession.id);
+          } else {
+            setSessions(existing);
+          }
+        });
       }, []);
 
       // Load active session when selection changes
@@ -187,10 +196,14 @@
       }, [activeSessionId]);
 
       const handleCreateSession = async () => {
-        const name = `Session ${sessions.length + 1}`;
-        const newSession = await api.createSession(name);
-        setSessions([...sessions, newSession]);
-        setActiveSessionId(newSession.id);
+        try {
+          const name = `Session ${sessions.length + 1}`;
+          const newSession = await api.createSession(name);
+          setSessions([...sessions, newSession]);
+          setActiveSessionId(newSession.id);
+        } catch (err) {
+          setError(`Failed to create session: ${err.message}`);
+        }
       };
 
       const handleDeleteSession = async (id) => {

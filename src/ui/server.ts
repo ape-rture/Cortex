@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -17,7 +18,10 @@ async function start(): Promise<void> {
   console.log(`Cortex UI listening on http://localhost:${port}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from "node:url";
+
+const isMain = fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   start().catch((err) => {
     console.error("Failed to start UI server:", err instanceof Error ? err.message : err);
     process.exit(1);
