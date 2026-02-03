@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-02-03 codex -- Phase 2a contact parser + store
+
+- Enhanced parseContactFile to support CRM template + serializeContact
+- Added MarkdownContactStore with CRUD/search + interaction updates
+- Added unit tests for parser and contact store
+- Tests: npm run test:unit (14/14 passed)
+
 ## 2026-02-03 codex -- web terminal backend
 
 - Added Hono server + in-memory session store

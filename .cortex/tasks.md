@@ -10,8 +10,6 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Phase 2a: Enhance contact parser** -- Agent: codex -- Enhance `parseContactFile` in `src/utils/markdown.ts` to parse full contact template (contactInfo, relationshipStatus, lastContact, nextFollowUp, proper history format). Add `serializeContact` function. Types at `src/core/types/crm.ts`. Test contact at `contacts/arjun-mukherjee.md`. Branch: `codex/contact-parser`.
-- **Phase 2a: Create ContactStore** -- Agent: codex -- Implement `ContactStore` interface from `src/core/types/crm.ts` in `src/utils/contact-store.ts`. CRUD for contact files, search by name/email/attioId. Add tests. Depends on: enhanced contact parser. Branch: `codex/contact-store`.
 - **Phase 2b: Decay detector + /gm** -- Agent: codex -- Implement `DecayDetector` in `src/core/decay-detector.ts`. Scan contacts, find those with lastContact > 30 days. Add "Relationship Alerts" section to `/gm`. Add tests. Depends on: ContactStore. Branch: `codex/decay-detector`.
 
 ## In Progress
@@ -41,3 +39,5 @@
 - **Implement alias store and detector** -- Agent: codex -- Branch: `codex/alias-system`. Added MarkdownAliasStore, SimpleAliasPatternDetector, and tests.
 - **Web terminal: server foundation** -- Agent: codex -- Branch: `codex/web-terminal`. Added Hono server, in-memory store, static serving, and `dev:ui` script.
 - **Web terminal: API endpoints** -- Agent: codex -- Branch: `codex/web-terminal`. Added session CRUD + chat SSE, wired ConfigRouter + SYSTEM.md prompt.
+- **Phase 2a: Enhance contact parser** -- Agent: codex -- Branch: `codex/contact-parser`. Updated parseContactFile to full CRM template + serializeContact; tests added.
+- **Phase 2a: Create ContactStore** -- Agent: codex -- Branch: `codex/contact-parser`. Added MarkdownContactStore + tests.
