@@ -18,6 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
     "@hono/node-server": "^1.14.0",
+    "dotenv": "^17.2.3",
     "googleapis": "^171.1.0",
     "hono": "^4.6.12",
     "openai": "^6.17.0"

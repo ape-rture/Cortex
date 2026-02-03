@@ -1,4 +1,5 @@
-﻿import { MarkdownDigestGenerator } from "../core/daily-digest.js";
+﻿import "dotenv/config";
+import { MarkdownDigestGenerator } from "../core/daily-digest.js";
 
 export async function runDailyDigest(): Promise<string> {
   const generator = new MarkdownDigestGenerator();
@@ -6,7 +7,10 @@ export async function runDailyDigest(): Promise<string> {
   return generator.toMarkdown(digest);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from "node:url";
+
+const isMain = fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   const generator = new MarkdownDigestGenerator();
   generator
     .generate()

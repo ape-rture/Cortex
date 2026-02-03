@@ -1,3 +1,4 @@
+import "dotenv/config";
 import path from "node:path";
 import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
@@ -87,7 +88,10 @@ export async function runMorningBriefing(): Promise<string> {
   return output.join("\n").trimEnd() + "\n";
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from "node:url";
+
+const isMain = fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   runMorningBriefing()
     .then((text) => {
       console.log(text);
