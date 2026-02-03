@@ -2,7 +2,15 @@
 
 ## Currently Active
 
-*No agent currently working.*
+Agent: codex
+Task: Phase 2a CRM parser + contact store
+Branch: codex/contact-parser
+Files:
+  - src/utils/markdown.ts
+  - src/utils/contact-store.ts
+  - src/utils/contact-store.test.ts
+  - src/utils/markdown.test.ts
+Started: 2026-02-03T14:35Z
 
 <!-- When starting work, replace the line above with:
 
