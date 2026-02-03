@@ -291,3 +291,11 @@
 - Deployment: Local primary + cheap VPS for Slack bot + Telegram listener
 - Security: Layered by phase, human-in-the-loop for public actions
 - See `decisions/2026-02-02-blocking-decisions.md` for full details
+
+## 2026-02-03 codex -- wire /gm in UI
+
+- Added UI chat command routing so gm/good morning runs the real morning briefing instead of LLM stub
+- Files changed: src/ui/handlers/chat.ts
+- Tests: not run (behavioral change in UI handler)
+- Branch merged: codex/ui-gm
+

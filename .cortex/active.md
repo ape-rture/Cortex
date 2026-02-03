@@ -2,13 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: wire /gm command in UI terminal
-Branch: codex/ui-gm
-Files:
-  - src/ui/handlers/chat.ts
-  - src/cli/gm.ts
-Started: 2026-02-03T17:20Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 
