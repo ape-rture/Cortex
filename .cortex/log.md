@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-02-03 claude -- Phase 2c meeting prep design
+
+- Added `MeetingPrepGenerator` interface and `MeetingPrepConfig` to `src/core/types/crm.ts`
+- Created `src/agents/prompts/meeting-prep.md` with LLM prompt for generating talking points
+- Added two Codex tasks for implementation:
+  1. `MeetingPrepGenerator` in `src/core/meeting-prep.ts`
+  2. `/prep` CLI command in `src/cli/prep.ts`
+
+### Key design decisions:
+- Generator takes ContactStore, TaskQueue, and ConfigRouter as dependencies
+- Searches task queue for open action items mentioning contact name/company
+- LLM generates 3-5 talking points + context summary
+- Output format: JSON with `talking_points[]` and `context_summary`
+
+### For Codex:
+- Interface at `src/core/types/crm.ts:MeetingPrepGenerator`
+- Prompt at `src/agents/prompts/meeting-prep.md`
+- Follow pattern from `src/cli/gm.ts` for CLI structure
+- Add npm script `prep` to package.json
+
 ## 2026-02-03 codex -- Phase 2b decay detector
 
 - Added SimpleDecayDetector to flag stale relationships

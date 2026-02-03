@@ -21,19 +21,19 @@
 | **Morning routine** (gm command) | P0 | Designed | Calendar + pending + queue + FOCUS alerts + Attio decay |
 | **Session snapshots & warm handoff** | P0 | Designed | Auto-capture mental state on session end, reconstruct on start |
 | **Daily digest** | P1 | Designed | EOD summary -> `/daily/`, what happened, what's open |
-| **Git push reminders** | P1 | Confirmed | Detect unpushed commits, remind |
-| **Shorthand/alias system** | P2 | Confirmed | Emerge from patterns, Cortex suggests, tracked in `/context/aliases.md` |
+| **Git push reminders** | P1 | Designed | Detect unpushed commits, remind |
+| **Shorthand/alias system** | P2 | Designed | Emerge from patterns, Cortex suggests, tracked in `/context/aliases.md` |
 | **Agent output schema** | P1 | Designed | Standardized JSON schema all runtime agents return. Foundation for orchestrator |
 
 ## Phase 2: Relationships & Sales
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
-| **CRM auto-sync** (Attio) | P0 | Confirmed | After any interaction, update contact file + Attio |
-| **Relationship decay alerts** | P1 | Confirmed | 30-day silence detection, last topic recall, check-in suggestion |
-| **Meeting prep autopilot** | P1 | Confirmed | One-page brief: recent interactions, company news, action items, talking points |
-| **FOCUS integration** | P1 | Confirmed | Build API -> surface open alerts, stale messages, follow-ups |
-| **Telegram sales tracking** | P2 | Confirmed | Track relationship context from Telegram conversations |
+| **CRM auto-sync** (Attio) | P0 | Designed | Local-only first, then Attio sync. Types at `src/core/types/crm.ts` |
+| **Relationship decay alerts** | P1 | Designed | 30-day silence detection, integrated into /gm |
+| **Meeting prep autopilot** | P1 | In Progress | One-page brief via /prep command. Interface + prompt done, Codex implementing |
+| **FOCUS integration** | P1 | Deferred | Needs FOCUS API built first |
+| **Telegram sales tracking** | P2 | Deferred | Phase 2d, complex parsing |
 
 ## Phase 3: Content Pipeline
 
@@ -71,12 +71,70 @@
 | **Model performance tracking** | P2 | Confirmed | Per-task metrics (latency, tokens, success rate, cost) -> tune routing |
 | **Routing optimization** | P2 | Confirmed | Suggest model switches based on accumulated performance data |
 
+## Phase 5.5: Memory Flywheel
+
+| Feature | Priority | Status | Notes |
+|---|---|---|---|
+| **Atomic fact schema** | P0 | Designed | `items.json` per entity: id, fact, category, timestamp, source, status, supersededBy. See `research/03-clawdbot-memory-system.md` |
+| **Real-time extraction** | P0 | Designed | Haiku-class sub-agent extracts durable facts from conversations (~30 min intervals, ~$0.001/run) |
+| **Knowledge graph structure** | P1 | Designed | Entity-based storage: `summary.md` (living summary) + `items.json` (atomic facts) per entity |
+| **Weekly synthesis** | P1 | Designed | Sunday job: rewrite summaries, mark superseded facts, surface stale items |
+| **Generalized decay detection** | P1 | Designed | Extend SimpleDecayDetector beyond contacts to all knowledge graph entities |
+| **Tiered retrieval** | P2 | Designed | Load summaries first, drill into items.json only when detail is needed. Token-efficient |
+
 ## Phase 6: Meta-Productivity
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
 | **Weekly review ritual** | P1 | Confirmed | Sunday/Monday: shipped, slipped, patterns, pending decisions, contacts |
 | **Energy-aware scheduling** | P2 | Confirmed | Detect work patterns, suggest optimal time blocks via Calendar |
+
+## Phase 1.5: Web Terminal MVP
+
+| Feature | Priority | Status | Notes |
+|---|---|---|---|
+| **Browser chat interface** | P0 | Done | Localhost Hono server + Preact frontend. Multi-session support for parallel testing |
+| **SSE streaming** | P1 | Done | Server-Sent Events for response streaming. Full response for MVP, token streaming later |
+| **Session management** | P1 | Done | In-memory session store. No auth (localhost only) |
+| **CLI command parity** | P1 | In Progress | Wire `/gm`, `/digest` to real functions. Quick wire-up first, then full registry |
+
+### Command Registry Architecture (Future)
+
+Full plan for bringing CLI parity to web terminal:
+
+**1. Command Registry** (`src/ui/commands.ts`)
+```typescript
+type CommandHandler = (args?: string) => Promise<string>;
+const commands: Record<string, CommandHandler> = {
+  "/gm": () => runMorningBriefing(),
+  "/digest": () => runDailyDigest(),
+  "/prep": (args) => runMeetingPrep(args),  // future
+  "/tasks": () => showTaskQueue(),           // future
+  "/contacts": (args) => searchContacts(args), // future
+  "/snapshot": () => showSnapshot(),         // future
+};
+```
+
+**2. Chat Handler Intercept** (in `chat.ts` before LLM routing)
+- Check if message starts with `/`
+- Look up handler in registry
+- If found: execute, return result directly (skip LLM)
+- If not found: pass through to LLM
+
+**3. Hybrid Mode** (optional enhancement)
+- `/gm` → raw briefing output
+- `/gm summarize` → briefing + LLM summary
+- Useful for commands that benefit from LLM interpretation
+
+**4. Future Commands**
+| Command | Function | Priority |
+|---------|----------|----------|
+| `/gm` | Morning briefing | P0 - now |
+| `/digest` | Daily digest | P0 - now |
+| `/prep <name>` | Meeting prep | P1 - after Phase 2c |
+| `/tasks` | Show task queue | P2 |
+| `/contacts <query>` | Search contacts | P2 |
+| `/snapshot` | Current session snapshot | P2 |
 
 ## Phase 7: Interface & Always-On
 
@@ -99,6 +157,16 @@
 | **Shareable skills** | P2 | Idea | Claude Code skills that others can drop in |
 | **Agent templates** | P3 | Idea | Publishable agent configurations with docs |
 | **Swarm pattern template** | P3 | Idea | The orchestrator + agents pattern itself as a shareable open-source framework |
+
+## Phase 9: Intelligent Retrieval
+
+| Feature | Priority | Status | Notes |
+|---|---|---|---|
+| **ACT-R activation scoring** | P1 | Idea | Memories ranked by recency × frequency, power-law decay. Generalizes Dennett's "fame threshold" |
+| **Content corpus integration** | P1 | Idea | Index personal + Indexing Co content for retrieval and recycling |
+| **Vector embeddings** | P2 | Idea | Semantic search across markdown files, facts, and content |
+| **Hybrid retrieval (RRF)** | P2 | Idea | Combine vector + FTS with Reciprocal Rank Fusion for best-of-both search |
+| **Dynamic user modeling** | P3 | Idea | Learn patterns from memory access, predict context needs |
 
 ---
 

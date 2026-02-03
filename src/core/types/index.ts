@@ -71,3 +71,32 @@ export type {
   GitMonitor,
   GitMonitorConfig,
 } from "./git-monitor.js";
+
+export type {
+  AliasCategory,
+  AliasStatus,
+  Alias,
+  AliasSuggestion,
+  PhraseOccurrence,
+  AliasDetectionConfig,
+  AliasStore,
+  AliasPatternDetector,
+} from "./alias.js";
+
+export { DEFAULT_ALIAS_DETECTION_CONFIG } from "./alias.js";
+
+export type {
+  ContactType,
+  RelationshipStatus,
+  ContactInfo,
+  InteractionType,
+  InteractionRecord,
+  Contact,
+  DecayAlert,
+  DecayConfig,
+  MeetingPrepBrief,
+  ContactStore,
+  DecayDetector,
+} from "./crm.js";
+
+export { DEFAULT_DECAY_CONFIG } from "./crm.js";

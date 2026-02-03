@@ -7,9 +7,28 @@
 ## Queued
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
-<!-- Example:
-- **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
--->
+
+- **Add /digest command to web terminal** -- Agent: codex -- Wire `/digest` in `src/ui/handlers/chat.ts` same pattern as `/gm`. Import `runDailyDigest()` from `src/cli/digest.ts`, add `isDigestCommand()` check, return with `modelUsed: "local:digest"`.
+
+- **Hybrid mode for /gm command** -- Agent: codex -- Extend `/gm` in `src/ui/handlers/chat.ts` to support LLM interpretation. Requirements:
+  - `/gm` (no args) → return raw briefing as now
+  - `/gm <instruction>` (e.g., `/gm summarize`, `/gm priorities`, `/gm blockers`) → fetch briefing, then pass to LLM via ConfigRouter with prompt: "Here's my morning briefing:\n\n{briefing}\n\nUser request: {instruction}"
+  - Use a simple system prompt like "You're a personal assistant. Help with the user's request based on their briefing."
+  - Return `modelUsed: "hybrid:gm+{model}"` to show it used both local data and LLM
+
+- **Phase 2c: Implement MeetingPrepGenerator** -- Agent: codex -- Create `src/core/meeting-prep.ts` implementing `MeetingPrepGenerator` interface from `src/core/types/crm.ts`. Requirements:
+  - Constructor takes `ContactStore`, `TaskQueue`, and `ConfigRouter`
+  - `generateBrief(query)` searches for contact, gets recent interactions (max 5), searches task queue for action items mentioning contact name/company
+  - Calls LLM via ConfigRouter with prompt from `src/agents/prompts/meeting-prep.md` to generate talking points
+  - Returns `MeetingPrepBrief` with contact, interactions, action items, LLM-generated talking points
+  - Add unit tests (mock the ConfigRouter LLM call)
+
+- **Phase 2c: Create /prep CLI command** -- Agent: codex -- Create `src/cli/prep.ts` for meeting prep. Requirements:
+  - Takes contact name as CLI argument: `npm run prep "Arjun"`
+  - Instantiates MeetingPrepGenerator with real stores and router
+  - Outputs formatted brief to console (similar to /gm format)
+  - Add npm script `"prep": "node --import tsx src/cli/prep.ts"` to package.json
+  - Handle errors gracefully (contact not found, LLM failure)
 
 ## In Progress
 

@@ -124,6 +124,35 @@ dennis: update SYSTEM.md with new requirements
 4. **If the task involves feature code**: create a branch (`claude/[slug]` or `codex/[slug]`)
 5. **If the task is shared-files only** (docs, types, prompts, coordination): stay on `main`
 
+### File Reservation Format
+
+When reserving files in `.cortex/active.md`, use this format:
+
+```
+## Currently Active
+
+Agent: claude
+Task: implementing alias system types
+Files:
+  - context/aliases.md
+  - src/core/types/index.ts
+  - src/core/types/alias.ts
+Started: 2026-02-03T14:00Z
+```
+
+**Be specific about file paths.** Vague reservations like "working on types" don't help other agents know what to avoid.
+
+### Handling Unexpected Changes
+
+If you see local changes in files you didn't modify:
+
+1. **Check `.cortex/active.md`** -- is another agent working on those files?
+2. **Check `.cortex/log.md`** (last 3-5 entries) -- did another agent log work on those files recently?
+3. **If yes to either**: assume the other agent made the changes. Work around those files or wait.
+4. **If no reservation AND no recent log entry**: ask Dennis how to proceed.
+
+This allows parallel work while still catching genuinely unexpected changes (e.g., external edits, corruption).
+
 ### While Working
 
 - Feature code: stay on your branch
