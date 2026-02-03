@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-02-03 codex -- alias store + detector
+
+- Added MarkdownAliasStore (context/aliases.md parser + expansion + save)
+- Added SimpleAliasPatternDetector (phrase tracking + suggestion generation)
+- Added unit tests for alias store and detector
+- Tests: npm run test:unit (13/13 passed)
+
+## 2026-02-03 claude -- web terminal MVP design + frontend
+
+- Planned MVP browser chat interface (Hono + Preact + SSE)
+- Created `src/ui/types.ts` with session and message types
+- Created `src/ui/static/index.html` with full Preact SPA (no build step, CDN imports)
+- Created `src/ui/static/style.css` with dark theme
+- Added Phase 1.5 to feature roadmap
+- Added Codex tasks for server foundation and API endpoints
+
+### Stack choices:
+- Hono (ESM-native, tiny, TypeScript-first)
+- Preact + htm from CDN (no bundler)
+- SSE for response streaming
+- In-memory session store
+
+### For Codex:
+- Add hono deps, create `src/ui/server.ts` and `src/ui/store.ts`
+- Implement session CRUD and chat handlers
+- Wire ConfigRouter for LLM calls
+- See plan at `.claude/plans/resilient-orbiting-stroustrup.md`
+
 ## 2026-02-03 codex -- merge git monitor + gm snapshot
 
 - Merged branch `codex/git-monitor` into `main`

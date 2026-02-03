@@ -10,7 +10,8 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Implement alias store and detector** -- Agent: codex -- Implement `AliasStore` and `AliasPatternDetector` from `src/core/types/alias.ts`. Parse/serialize `context/aliases.md`. Add `expand()` method for alias resolution. Pattern detector tracks phrase frequency and generates suggestions per `src/agents/prompts/alias-suggester.md`. Branch: `codex/alias-system`.
+- **Web terminal: server foundation** -- Agent: codex -- Add `hono` and `@hono/node-server` deps. Create `src/ui/server.ts` (Hono app, static serving, health check), `src/ui/store.ts` (in-memory session Map). Add npm script `dev:ui`. Types already at `src/ui/types.ts`. Branch: `codex/web-terminal`.
+- **Web terminal: API endpoints** -- Agent: codex -- Implement session CRUD in `src/ui/handlers/sessions.ts` and chat+SSE in `src/ui/handlers/chat.ts`. Wire `ConfigRouter` for LLM calls. Load `SYSTEM.md` as shared system prompt. See plan at `.claude/plans/resilient-orbiting-stroustrup.md`. Depends on: web-terminal server foundation. Branch: `codex/web-terminal`.
 
 ## In Progress
 
@@ -36,3 +37,4 @@
 - **Implement daily digest generator** -- Agent: codex -- Branch: `codex/daily-digest`. Added MarkdownDigestGenerator, CLI entrypoint, and tests.
 - **Implement git push monitor** -- Agent: codex -- Branch: `codex/git-monitor`. Added SimpleGitMonitor with unpushed commit detection, /gm Git section, and tests.
 - **Wire snapshot into /gm** -- Agent: codex -- Branch: `codex/git-monitor`. Added snapshot load to /gm and "Picking Up Where We Left Off" section.
+- **Implement alias store and detector** -- Agent: codex -- Branch: `codex/alias-system`. Added MarkdownAliasStore, SimpleAliasPatternDetector, and tests.
