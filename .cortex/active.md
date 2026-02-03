@@ -2,20 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Web terminal MVP backend
-Branch: codex/web-terminal
-Files:
-  - src/ui/server.ts
-  - src/ui/store.ts
-  - src/ui/handlers/sessions.ts
-  - src/ui/handlers/chat.ts
-  - src/ui/handlers/index.ts
-  - src/ui/index.ts
-  - src/ui/utils.ts
-  - src/ui/server.test.ts
-  - package.json
-Started: 2026-02-03T14:05Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 

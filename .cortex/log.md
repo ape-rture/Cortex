@@ -4,6 +4,33 @@
 
 ---
 
+## 2026-02-03 codex -- web terminal backend
+
+- Added Hono server + in-memory session store
+- Implemented session CRUD + chat SSE endpoints wired to ConfigRouter
+- Added UI server entrypoint + dev script
+- Tests: npm run test:unit (13/13 passed)
+
+## 2026-02-03 claude -- Phase 2 planning + CRM types
+
+- Planned Phase 2: Relationships & Sales (local-only first, Attio deferred)
+- Created `src/core/types/crm.ts` with Contact, InteractionRecord, DecayAlert, MeetingPrepBrief types
+- Created `contacts/arjun-mukherjee.md` as test contact (lastContact: 2025-12-15 = 50+ days ago)
+- Added Codex tasks for: contact parser enhancement, ContactStore, decay detector
+- Updated feature roadmap with Phase 2 status
+
+### Key design decisions:
+- Local markdown files are source of truth
+- Attio sync deferred until local features work
+- 30-day threshold for decay alerts
+- Monitor customer + lead contact types
+
+### For Codex:
+- Enhance `parseContactFile` in `src/utils/markdown.ts` to handle full template
+- Implement `ContactStore` in `src/utils/contact-store.ts`
+- Implement `DecayDetector` in `src/core/decay-detector.ts`
+- Add "Relationship Alerts" section to /gm
+
 ## 2026-02-03 codex -- alias store + detector
 
 - Added MarkdownAliasStore (context/aliases.md parser + expansion + save)

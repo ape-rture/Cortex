@@ -10,8 +10,9 @@
 <!-- Example:
 - **Build Slack queue bot** -- Agent: codex -- Create minimal Slack bot that appends messages from #cortex to /actions/queue.md. See decisions/2026-02-02-blocking-decisions.md for specs.
 -->
-- **Web terminal: server foundation** -- Agent: codex -- Add `hono` and `@hono/node-server` deps. Create `src/ui/server.ts` (Hono app, static serving, health check), `src/ui/store.ts` (in-memory session Map). Add npm script `dev:ui`. Types already at `src/ui/types.ts`. Branch: `codex/web-terminal`.
-- **Web terminal: API endpoints** -- Agent: codex -- Implement session CRUD in `src/ui/handlers/sessions.ts` and chat+SSE in `src/ui/handlers/chat.ts`. Wire `ConfigRouter` for LLM calls. Load `SYSTEM.md` as shared system prompt. See plan at `.claude/plans/resilient-orbiting-stroustrup.md`. Depends on: web-terminal server foundation. Branch: `codex/web-terminal`.
+- **Phase 2a: Enhance contact parser** -- Agent: codex -- Enhance `parseContactFile` in `src/utils/markdown.ts` to parse full contact template (contactInfo, relationshipStatus, lastContact, nextFollowUp, proper history format). Add `serializeContact` function. Types at `src/core/types/crm.ts`. Test contact at `contacts/arjun-mukherjee.md`. Branch: `codex/contact-parser`.
+- **Phase 2a: Create ContactStore** -- Agent: codex -- Implement `ContactStore` interface from `src/core/types/crm.ts` in `src/utils/contact-store.ts`. CRUD for contact files, search by name/email/attioId. Add tests. Depends on: enhanced contact parser. Branch: `codex/contact-store`.
+- **Phase 2b: Decay detector + /gm** -- Agent: codex -- Implement `DecayDetector` in `src/core/decay-detector.ts`. Scan contacts, find those with lastContact > 30 days. Add "Relationship Alerts" section to `/gm`. Add tests. Depends on: ContactStore. Branch: `codex/decay-detector`.
 
 ## In Progress
 
@@ -38,3 +39,5 @@
 - **Implement git push monitor** -- Agent: codex -- Branch: `codex/git-monitor`. Added SimpleGitMonitor with unpushed commit detection, /gm Git section, and tests.
 - **Wire snapshot into /gm** -- Agent: codex -- Branch: `codex/git-monitor`. Added snapshot load to /gm and "Picking Up Where We Left Off" section.
 - **Implement alias store and detector** -- Agent: codex -- Branch: `codex/alias-system`. Added MarkdownAliasStore, SimpleAliasPatternDetector, and tests.
+- **Web terminal: server foundation** -- Agent: codex -- Branch: `codex/web-terminal`. Added Hono server, in-memory store, static serving, and `dev:ui` script.
+- **Web terminal: API endpoints** -- Agent: codex -- Branch: `codex/web-terminal`. Added session CRUD + chat SSE, wired ConfigRouter + SYSTEM.md prompt.
