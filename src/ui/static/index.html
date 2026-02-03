@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cortex Terminal</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Preact + htm from CDN (no build step) -->
+  <script type="module">
+    import { h, render } from 'https://esm.sh/preact@10.19.3';
+    import { useState, useEffect, useRef } from 'https://esm.sh/preact@10.19.3/hooks';
+    import htm from 'https://esm.sh/htm@3.1.1';
+
+    const html = htm.bind(h);
+
+    // API helpers
+    const api = {
+      async getSessions() {
+        const res = await fetch('/api/sessions');
+        return res.json();
+      },
+      async createSession(name) {
+        const res = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+        return res.json();
+      },
+      async getSession(id) {
+        const res = await fetch(`/api/sessions/${id}`);
+        return res.json();
+      },
+      async deleteSession(id) {
+        await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+      },
+      async sendMessage(sessionId, content) {
+        const res = await fetch(`/api/sessions/${sessionId}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content }),
+        });
+        return res.json();
+      },
+      connectStream(sessionId, onEvent) {
+        const es = new EventSource(`/api/sessions/${sessionId}/stream`);
+        es.addEventListener('message_start', (e) => onEvent('message_start', JSON.parse(e.data)));
+        es.addEventListener('delta', (e) => onEvent('delta', JSON.parse(e.data)));
+        es.addEventListener('message_end', (e) => onEvent('message_end', JSON.parse(e.data)));
+        es.addEventListener('error', (e) => {
+          if (e.data) onEvent('error', JSON.parse(e.data));
+          es.close();
+        });
+        es.onerror = () => es.close();
+        return es;
+      },
+    };
+
+    // Message component
+    function Message({ message }) {
+      const isUser = message.role === 'user';
+      return html`
+        <div class="message ${isUser ? 'user' : 'assistant'}">
+          <div class="message-role">${isUser ? 'You' : 'Cortex'}</div>
+          <div class="message-content">${message.content}</div>
+          ${message.model_used && html`
+            <div class="message-meta">${message.model_used} - ${message.latency_ms}ms</div>
+          `}
+        </div>
+      `;
+    }
+
+    // Session list component
+    function SessionList({ sessions, activeId, onSelect, onCreate, onDelete }) {
+      return html`
+        <div class="session-list">
+          <div class="session-header">
+            <span>Sessions</span>
+            <button class="btn-new" onClick=${onCreate}>+ New</button>
+          </div>
+          <div class="session-items">
+            ${sessions.map(s => html`
+              <div
+                class="session-item ${s.id === activeId ? 'active' : ''}"
+                onClick=${() => onSelect(s.id)}
+              >
+                <span class="session-name">${s.name}</span>
+                <button
+                  class="btn-delete"
+                  onClick=${(e) => { e.stopPropagation(); onDelete(s.id); }}
+                >x</button>
+              </div>
+            `)}
+          </div>
+        </div>
+      `;
+    }
+
+    // Chat pane component
+    function ChatPane({ session, onSend, isStreaming, streamingContent }) {
+      const [input, setInput] = useState('');
+      const messagesRef = useRef(null);
+
+      useEffect(() => {
+        if (messagesRef.current) {
+          messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }
+      }, [session?.messages, streamingContent]);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (input.trim() && !isStreaming) {
+          onSend(input.trim());
+          setInput('');
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          handleSubmit(e);
+        }
+      };
+
+      if (!session) {
+        return html`
+          <div class="chat-pane empty">
+            <p>Select or create a session to start chatting</p>
+          </div>
+        `;
+      }
+
+      return html`
+        <div class="chat-pane">
+          <div class="chat-header">${session.name}</div>
+          <div class="messages" ref=${messagesRef}>
+            ${session.messages.map(m => html`<${Message} message=${m} />`)}
+            ${isStreaming && streamingContent && html`
+              <div class="message assistant streaming">
+                <div class="message-role">Cortex</div>
+                <div class="message-content">${streamingContent}</div>
+              </div>
+            `}
+          </div>
+          <form class="input-area" onSubmit=${handleSubmit}>
+            <textarea
+              value=${input}
+              onInput=${(e) => setInput(e.target.value)}
+              onKeyDown=${handleKeyDown}
+              placeholder="Type your message..."
+              disabled=${isStreaming}
+              rows="2"
+            />
+            <button type="submit" disabled=${isStreaming || !input.trim()}>
+              ${isStreaming ? '...' : 'Send'}
+            </button>
+          </form>
+        </div>
+      `;
+    }
+
+    // Main App component
+    function App() {
+      const [sessions, setSessions] = useState([]);
+      const [activeSessionId, setActiveSessionId] = useState(null);
+      const [activeSession, setActiveSession] = useState(null);
+      const [isStreaming, setIsStreaming] = useState(false);
+      const [streamingContent, setStreamingContent] = useState('');
+      const [error, setError] = useState(null);
+      const eventSourceRef = useRef(null);
+
+      // Load sessions on mount
+      useEffect(() => {
+        api.getSessions().then(data => setSessions(data.sessions || []));
+      }, []);
+
+      // Load active session when selection changes
+      useEffect(() => {
+        if (activeSessionId) {
+          api.getSession(activeSessionId).then(setActiveSession);
+        } else {
+          setActiveSession(null);
+        }
+      }, [activeSessionId]);
+
+      const handleCreateSession = async () => {
+        const name = `Session ${sessions.length + 1}`;
+        const newSession = await api.createSession(name);
+        setSessions([...sessions, newSession]);
+        setActiveSessionId(newSession.id);
+      };
+
+      const handleDeleteSession = async (id) => {
+        await api.deleteSession(id);
+        setSessions(sessions.filter(s => s.id !== id));
+        if (activeSessionId === id) {
+          setActiveSessionId(null);
+        }
+      };
+
+      const handleSendMessage = async (content) => {
+        if (!activeSessionId) return;
+
+        // Add user message optimistically
+        const userMessage = {
+          id: crypto.randomUUID(),
+          role: 'user',
+          content,
+          timestamp: new Date().toISOString(),
+        };
+        setActiveSession(prev => ({
+          ...prev,
+          messages: [...prev.messages, userMessage],
+        }));
+
+        // Send to server
+        setIsStreaming(true);
+        setStreamingContent('');
+
+        try {
+          await api.sendMessage(activeSessionId, content);
+
+          // Connect to SSE stream
+          if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+          }
+
+          let fullContent = '';
+          let messageId = '';
+          let model = '';
+          let latencyMs = 0;
+
+          eventSourceRef.current = api.connectStream(activeSessionId, (event, data) => {
+            if (event === 'message_start') {
+              messageId = data.message_id;
+              model = data.model;
+            } else if (event === 'delta') {
+              fullContent += data.content;
+              setStreamingContent(fullContent);
+            } else if (event === 'message_end') {
+              latencyMs = data.latency_ms;
+              // Add complete assistant message
+              const assistantMessage = {
+                id: messageId,
+                role: 'assistant',
+                content: fullContent,
+                timestamp: new Date().toISOString(),
+                model_used: model,
+                latency_ms: latencyMs,
+              };
+              setActiveSession(prev => ({
+                ...prev,
+                messages: [...prev.messages, assistantMessage],
+              }));
+              setIsStreaming(false);
+              setStreamingContent('');
+            } else if (event === 'error') {
+              setError(data.error);
+              setIsStreaming(false);
+            }
+          });
+        } catch (err) {
+          setError(err.message);
+          setIsStreaming(false);
+        }
+      };
+
+      return html`
+        <div class="app">
+          <header class="app-header">
+            <h1>Cortex Terminal</h1>
+            ${error && html`<div class="error">${error}</div>`}
+          </header>
+          <main class="app-main">
+            <${SessionList}
+              sessions=${sessions}
+              activeId=${activeSessionId}
+              onSelect=${setActiveSessionId}
+              onCreate=${handleCreateSession}
+              onDelete=${handleDeleteSession}
+            />
+            <${ChatPane}
+              session=${activeSession}
+              onSend=${handleSendMessage}
+              isStreaming=${isStreaming}
+              streamingContent=${streamingContent}
+            />
+          </main>
+        </div>
+      `;
+    }
+
+    // Mount the app
+    render(html`<${App} />`, document.getElementById('app'));
+  </script>
+</body>
+</html>

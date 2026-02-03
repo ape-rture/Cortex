@@ -12,11 +12,14 @@
     "test": "node scripts/validate-routing-config.mjs",
     "gm": "node --import tsx src/cli/gm.ts",
     "test:unit": "node --import tsx --test src/**/*.test.ts",
-    "digest": "node --import tsx src/cli/digest.ts"
+    "digest": "node --import tsx src/cli/digest.ts",
+    "dev:ui": "node --import tsx src/ui/server.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
+    "@hono/node-server": "^1.14.0",
     "googleapis": "^171.1.0",
+    "hono": "^4.6.12",
     "openai": "^6.17.0"
   },
   "devDependencies": {
