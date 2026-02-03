@@ -4,6 +4,13 @@
 
 ---
 
+## 2026-02-03 codex -- daily digest generator
+
+- Added src/core/daily-digest.ts (MarkdownDigestGenerator + git/log/queue/pending aggregation)
+- Added src/cli/digest.ts and npm script `digest`
+- Added src/core/daily-digest.test.ts
+- Tests: npm run test:unit (9/9 passed)
+
 ## 2026-02-02 codex -- session snapshot store
 
 - Added src/core/session-snapshot.ts with markdown-backed store
