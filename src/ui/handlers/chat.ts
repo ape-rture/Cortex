@@ -3,12 +3,33 @@ import type { SendMessageRequest } from "../types.js";
 import { jsonError, buildConversation } from "../utils.js";
 import { InMemorySessionStore } from "../store.js";
 import { ConfigRouter } from "../../core/routing.js";
+import { runMorningBriefing } from "../../cli/gm.js";
 
 type SSEEvent = "message_start" | "delta" | "message_end" | "error";
 
 function encodeEvent(event: SSEEvent, data: unknown): Uint8Array {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   return new TextEncoder().encode(payload);
+}
+
+function normalizeCommand(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function isMorningCommand(value: string): boolean {
+  const normalized = normalizeCommand(value);
+  return normalized === "gm"
+    || normalized === "/gm"
+    || normalized === "good morning"
+    || normalized === "morning";
+}
+
+async function resolveCommand(prompt: string): Promise<{ content: string; modelUsed: string } | null> {
+  if (isMorningCommand(prompt)) {
+    const content = await runMorningBriefing();
+    return { content, modelUsed: "local:gm" };
+  }
+  return null;
 }
 
 function buildPrompt(messages: readonly { role: string; content: string }[]): string {
@@ -46,10 +67,16 @@ export function registerChatHandlers(
         controller.enqueue(encodeEvent("message_start", { message_id: assistantMessage.id, model: "routing" }));
         try {
           const start = Date.now();
-          const response = await router.route({
-            prompt,
-            system_prompt: systemPrompt,
-          });
+          const commandResult = await resolveCommand(pendingPrompt);
+          const response = commandResult
+            ? {
+                content: commandResult.content,
+                model_used: commandResult.modelUsed,
+              }
+            : await router.route({
+                prompt,
+                system_prompt: systemPrompt,
+              });
           const latencyMs = Date.now() - start;
           const content = response.content ?? "";
           controller.enqueue(encodeEvent("delta", { content }));
