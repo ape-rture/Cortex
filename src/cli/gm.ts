@@ -3,6 +3,8 @@ import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
 import { SimpleGitMonitor } from "../core/git-monitor.js";
 import { MarkdownSessionSnapshotStore } from "../core/session-snapshot.js";
+import { MarkdownContactStore } from "../utils/contact-store.js";
+import { SimpleDecayDetector } from "../core/decay-detector.js";
 
 function formatSection(title: string, body: string): string {
   return `## ${title}\n${body.trim()}\n`;
@@ -38,18 +40,30 @@ function summarizeSnapshot(snapshot: { working_on: string; next_steps: readonly 
   return lines.join("\n");
 }
 
+function summarizeDecay(alerts: readonly { contact: { name: string; company?: string }; daysSinceContact: number; lastTopic?: string }[]): string {
+  if (alerts.length === 0) return "(no relationship alerts)";
+  return alerts
+    .map((alert) => {
+      const who = alert.contact.company ? `${alert.contact.name} (${alert.contact.company})` : alert.contact.name;
+      const topic = alert.lastTopic ? ` — ${alert.lastTopic}` : "";
+      return `- ${who}: ${alert.daysSinceContact} days since last contact${topic}`;
+    })
+    .join("\n");
+}
+
 export async function runMorningBriefing(): Promise<string> {
   const weeklyFocusPath = path.resolve("context", "weekly-focus.md");
   const pendingPath = path.resolve("actions", "pending.md");
   const queuePath = path.resolve("actions", "queue.md");
 
-  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, snapshot] = await Promise.all([
+  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, snapshot, decayAlerts] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
     fetchTodayEvents(),
     new SimpleGitMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
+    new SimpleDecayDetector(new MarkdownContactStore()).detectDecay().catch(() => []),
   ]);
 
   const calendarSummary = calendar.warning
@@ -67,6 +81,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
   output.push(formatSection("Git", summarizeGit(gitReports)));
+  output.push(formatSection("Relationship Alerts", summarizeDecay(decayAlerts)));
   output.push(formatSection("Picking Up Where We Left Off", summarizeSnapshot(snapshot)));
 
   return output.join("\n").trimEnd() + "\n";
