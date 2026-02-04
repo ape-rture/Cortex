@@ -12,23 +12,9 @@
 
 ### Phase 3b: Thread Builder + Podcast
 
-- **Implement LLMContentDraftGenerator** -- Agent: codex -- `src/core/content-draft-generator.ts` implementing `ContentDraftGenerator`. Use `content_drafting` task type for ConfigRouter. Load prompt from `src/agents/prompts/thread-builder.md`. Parse JSON response (`posts[]` for threads, `full_text` for singles). Unit tests required.
-
-- **Implement PodcastDistributionGenerator** -- Agent: codex -- `src/core/podcast-distribution.ts` implementing `PodcastDistributionGenerator`. Load prompt from `src/agents/prompts/podcast-distribution.md`. Takes `PodcastEpisode` input, returns `PodcastDistributionPack` (youtube_description + company_tweet + personal_post). Unit tests required.
-
-- **Add draft/revise/podcast subcommands to content CLI** -- Agent: codex -- Extend `src/cli/content.ts`: `draft <id>` generates draft for an idea using thread-builder. `revise <id> "feedback"` revises existing draft. `podcast <episode-number> "title"` interactive episode input, generates distribution pack, saves as linked content ideas (3 ideas in chain: YouTube desc + @indexingco tweet + @ape_rture post).
-
 ### Phase 3c: Seed Extraction + Granola
 
-- **Implement LLMContentSeedExtractor** -- Agent: codex -- `src/core/content-seed-extractor.ts` implementing `ContentSeedExtractor`. Load prompt from `src/agents/prompts/content-extractor.md`. Generate seed IDs (`seed-YYYY-MM-DD-NNN`). Filter by confidence threshold. Unit tests required.
-
-- **Implement Granola URL scraper** -- Agent: codex -- `src/integrations/granola.ts`. Fetch Granola shareable link, extract meeting transcript content (HTML scrape). Return structured text for the seed extractor. Handle errors gracefully. Unit tests required.
-
-- **Add extract/seeds/promote subcommands to content CLI** -- Agent: codex -- Extend `src/cli/content.ts`: `extract <file-or-url>` runs file or Granola URL through seed extractor. `seeds` lists unprocessed seeds. `promote <seed-id>` converts seed to content idea.
-
 ### Phase 3 Integration
-
-- **Add content pipeline section to /gm** -- Agent: codex -- In `src/cli/gm.ts`, add Content Pipeline section: idea counts by status, items in review/approved, unprocessed seed count. Follow existing /gm section pattern.
 
 ## In Progress
 
@@ -38,6 +24,7 @@
 
 ## Done
 
+- **Add unit tests for new generator modules** -- Agent: codex -- Branch: `codex/phase3-content`. Added tests for `src/core/content-draft-generator.ts`, `src/core/podcast-distribution.ts`, `src/core/content-seed-extractor.ts`, and `src/integrations/granola.ts`.
 - **Add content markdown utilities** -- Agent: codex -- Branch: `codex/phase3-content`. Added `parseContentIdeas`, `serializeContentIdeas`, `parseContentDraft`, `serializeContentDraft`, `parseContentSeeds`, and `serializeContentSeeds` in `src/utils/markdown.ts` with test coverage in `src/utils/markdown.test.ts`.
 - **Implement MarkdownContentStore** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/core/content-store.ts` implementing `ContentStore` interface for ideas/drafts/seeds/chains and tests in `src/core/content-store.test.ts`.
 - **Implement content CLI (list/add/status/pipeline)** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/cli/content.ts`, exported via `src/cli/index.ts`, and added `content` npm script in `package.json`.
@@ -67,4 +54,10 @@
 - **Phase 2a: Enhance contact parser** -- Agent: codex -- Branch: `codex/contact-parser`. Updated parseContactFile to full CRM template + serializeContact; tests added.
 - **Phase 2a: Create ContactStore** -- Agent: codex -- Branch: `codex/contact-parser`. Added MarkdownContactStore + tests.
 - **Phase 2b: Decay detector + /gm** -- Agent: codex -- Branch: `codex/decay-detector`. Added SimpleDecayDetector + /gm Relationship Alerts section + tests.
+- **Implement LLMContentDraftGenerator** -- Agent: claude -- `src/core/content-draft-generator.ts` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, parses JSON response (posts[] for threads, full_text for singles).
+- **Implement PodcastDistributionGenerator** -- Agent: claude -- `src/core/podcast-distribution.ts` implementing `PodcastDistributionGenerator`. Loads podcast-distribution.md prompt, generates youtube_description + company_tweet + personal_post from PodcastEpisode input.
+- **Implement LLMContentSeedExtractor** -- Agent: claude -- `src/core/content-seed-extractor.ts` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, generates seed IDs, filters by confidence threshold.
+- **Implement Granola URL scraper** -- Agent: claude -- `src/integrations/granola.ts`. Fetches Granola shareable link, extracts meeting transcript via HTML scraping.
+- **Add draft/revise/podcast/extract/seeds/promote CLI subcommands** -- Agent: claude -- Extended `src/cli/content.ts` with all Phase 3b+3c subcommands: draft, revise, podcast (interactive), extract (file/Granola URL), seeds, promote. Podcast creates 3-idea chain.
+- **Add content pipeline section to /gm** -- Agent: claude -- Added Content Pipeline section to `src/cli/gm.ts` showing idea counts by status and unprocessed seed count.
 

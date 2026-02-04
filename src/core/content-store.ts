@@ -10,9 +10,11 @@ import type {
   ContentStore,
 } from "./types/content.js";
 import {
+  parseContentChains,
   parseContentDraft,
   parseContentIdeas,
   parseContentSeeds,
+  serializeContentChains,
   serializeContentDraft,
   serializeContentIdeas,
   serializeContentSeeds,
@@ -29,21 +31,6 @@ type ContentStorePaths = {
   draftsDir: string;
   chainsPath: string;
 };
-
-function parseChains(content: string): ContentChain[] {
-  const fenced = content.match(/```json\s*([\s\S]*?)```/i);
-  if (!fenced) return [];
-  try {
-    const parsed = JSON.parse(fenced[1]);
-    return Array.isArray(parsed) ? parsed as ContentChain[] : [];
-  } catch {
-    return [];
-  }
-}
-
-function serializeChains(chains: readonly ContentChain[]): string {
-  return `# Content Chains\n\n\`\`\`json\n${JSON.stringify(chains, null, 2)}\n\`\`\`\n`;
-}
 
 function toIdeaId(index: number): string {
   return `content-${String(index).padStart(3, "0")}`;
@@ -152,7 +139,7 @@ export class MarkdownContentStore implements ContentStore {
   async loadChains(): Promise<readonly ContentChain[]> {
     try {
       const raw = await fs.readFile(this.paths.chainsPath, "utf8");
-      return parseChains(raw);
+      return parseContentChains(raw);
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
       throw err;
@@ -168,6 +155,6 @@ export class MarkdownContentStore implements ContentStore {
     } else {
       next[index] = chain;
     }
-    await fs.writeFile(this.paths.chainsPath, serializeChains(next), "utf8");
+    await fs.writeFile(this.paths.chainsPath, serializeContentChains(next), "utf8");
   }
 }

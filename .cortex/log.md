@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-02-04 codex -- tests for content generators and granola integration
+
+- Added unit tests:
+  - `src/core/content-draft-generator.test.ts`
+  - `src/core/podcast-distribution.test.ts`
+  - `src/core/content-seed-extractor.test.ts`
+  - `src/integrations/granola.test.ts`
+- Reconciled `src/core/content-store.ts` to use shared chain helpers from `src/utils/markdown.ts` (`parseContentChains` / `serializeContentChains`) instead of duplicate local functions
+- Validation:
+  - `npm run typecheck` (passed)
+  - `npm run test:unit` (37/37 passed)
+
+## 2026-02-04 claude -- Phase 3b+3c implementation (draft generator, podcast, seed extractor, Granola, CLI)
+
+### Files created:
+- `src/core/content-draft-generator.ts` — `LLMContentDraftGenerator` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, handles both thread (posts[]) and single-post (full_text) formats, supports draft revision with feedback.
+- `src/core/podcast-distribution.ts` — `LLMPodcastDistributionGenerator` implementing `PodcastDistributionGenerator`. Builds episode prompt from PodcastEpisode metadata, returns youtube_description + company_tweet + personal_post.
+- `src/core/content-seed-extractor.ts` — `LLMContentSeedExtractor` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, filters by confidence threshold, generates seed IDs with `nextSeedId`.
+- `src/integrations/granola.ts` — Granola URL scraper. `isGranolaUrl()` detects Granola links, `fetchGranolaTranscript()` extracts text from HTML (main/article/content div, strips scripts/styles/tags).
+
+### Files modified:
+- `src/cli/content.ts` — Added all Phase 3b+3c subcommands:
+  - `draft <id>` — generates draft for an idea via thread-builder
+  - `revise <id> "feedback"` — revises existing draft with feedback
+  - `podcast` — interactive episode input, generates distribution pack, saves as 3-idea chain (YouTube desc + @indexingco tweet + @ape_rture post)
+  - `extract <file-or-url>` — runs file or Granola URL through seed extractor
+  - `seeds` — lists unprocessed seeds
+  - `promote <seed-id>` — converts seed to content idea
+  - Updated `run()` switch and `runContent()` export for web terminal
+- `src/cli/gm.ts` — Added Content Pipeline section to /gm briefing (idea counts by status, unprocessed seed count)
+- `.cortex/tasks.md` — Moved Phase 3b+3c+integration tasks to Done
+
+### Validation:
+- `npm run typecheck` — clean
+- `npm test` — 26/26 passed
+- All content subcommands wired in both CLI and web terminal
+
+### Note:
+Unit tests for the new generators (draft, podcast, seed extractor, granola) were specified in the task board as Codex tasks but I implemented the modules directly. The modules follow the same ConfigRouter pattern as MeetingPrepGenerator. Tests for these modules are a good follow-up task.
+
 ## 2026-02-04 codex -- phase 3a content pipeline foundation
 
 - Added content markdown utilities in `src/utils/markdown.ts`:
