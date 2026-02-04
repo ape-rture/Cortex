@@ -5,6 +5,11 @@ import { InMemorySessionStore } from "../store.js";
 import { ConfigRouter } from "../../core/routing.js";
 import { runMorningBriefing } from "../../cli/gm.js";
 import { runDailyDigest } from "../../cli/digest.js";
+import { runMeetingPrep } from "../../cli/prep.js";
+import { runContent } from "../../cli/content.js";
+import { MarkdownTaskQueue } from "../../core/task-queue.js";
+import { MarkdownContactStore } from "../../utils/contact-store.js";
+import { MarkdownSessionSnapshotStore } from "../../core/session-snapshot.js";
 
 type SSEEvent = "message_start" | "delta" | "message_end" | "error";
 
@@ -13,17 +18,71 @@ function encodeEvent(event: SSEEvent, data: unknown): Uint8Array {
   return new TextEncoder().encode(payload);
 }
 
-function normalizeCommand(value: string): string {
-  return value.trim().toLowerCase();
-}
+// ---------------------------------------------------------------------------
+// Command registry
+// ---------------------------------------------------------------------------
 
-function isDigestCommand(value: string): boolean {
-  const normalized = normalizeCommand(value);
-  return normalized === "/digest" || normalized === "digest";
-}
+type CommandResult = { content: string; modelUsed: string };
+
+/** Simple slash commands: /command [args] -> local result */
+const commands: Record<string, (args: string) => Promise<string>> = {
+  "/digest": () => runDailyDigest(),
+  "/prep": (args) => {
+    if (!args.trim()) return Promise.resolve('Usage: /prep "Contact Name"');
+    return runMeetingPrep(args.trim());
+  },
+  "/content": (args) => {
+    const parts = args.trim().split(/\s+/);
+    return runContent(parts.filter(Boolean));
+  },
+  "/tasks": async () => {
+    const queue = new MarkdownTaskQueue();
+    const tasks = await queue.list();
+    if (tasks.length === 0) return "(no tasks in queue)";
+    const lines = ["# Task Queue", ""];
+    for (const task of tasks) {
+      lines.push(`- [${task.status}] **${task.title}** (${task.priority})`);
+      if (task.description) lines.push(`  ${task.description}`);
+    }
+    return lines.join("\n");
+  },
+  "/contacts": async (args) => {
+    const query = args.trim();
+    const store = new MarkdownContactStore();
+    if (!query) {
+      const all = await store.loadAll();
+      if (all.length === 0) return "(no contacts)";
+      return all.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} — ${c.type}`).join("\n");
+    }
+    const results = await store.search(query);
+    if (results.length === 0) return `No contacts matching "${query}"`;
+    return results.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} — ${c.type}`).join("\n");
+  },
+  "/snapshot": async () => {
+    const snapshot = await new MarkdownSessionSnapshotStore().load();
+    if (!snapshot) return "(no session snapshot)";
+    const lines = [
+      `# Session Snapshot`,
+      "",
+      `**Working on:** ${snapshot.working_on}`,
+      "",
+      "**Next steps:**",
+      ...snapshot.next_steps.map((s) => `- ${s}`),
+    ];
+    if (snapshot.open_questions?.length) {
+      lines.push("", "**Open questions:**");
+      for (const q of snapshot.open_questions) lines.push(`- ${q}`);
+    }
+    return lines.join("\n");
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Morning command (special: supports hybrid mode with LLM follow-up)
+// ---------------------------------------------------------------------------
 
 function parseMorningCommand(value: string): { instruction?: string } | null {
-  const normalized = normalizeCommand(value);
+  const normalized = value.trim().toLowerCase();
   if (normalized === "gm" || normalized === "/gm" || normalized === "good morning" || normalized === "morning") {
     return {};
   }
@@ -37,10 +96,15 @@ function parseMorningCommand(value: string): { instruction?: string } | null {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Resolve prompt to command
+// ---------------------------------------------------------------------------
+
 async function resolveCommand(
   prompt: string,
   router: ConfigRouter,
-): Promise<{ content: string; modelUsed: string } | null> {
+): Promise<CommandResult | null> {
+  // Morning briefing (special: hybrid mode)
   const morning = parseMorningCommand(prompt);
   if (morning) {
     const briefing = await runMorningBriefing();
@@ -59,13 +123,32 @@ async function resolveCommand(
     };
   }
 
-  if (isDigestCommand(prompt)) {
+  // Legacy aliases (no slash)
+  const normalized = prompt.trim().toLowerCase();
+  if (normalized === "digest") {
     const content = await runDailyDigest();
     return { content, modelUsed: "local:digest" };
   }
 
+  // Slash command registry
+  const match = prompt.trim().match(/^(\/\w+)(?:\s+(.*))?$/);
+  if (match) {
+    const cmd = match[1].toLowerCase();
+    const args = match[2] ?? "";
+    const handler = commands[cmd];
+    if (handler) {
+      const content = await handler(args);
+      const tag = cmd.slice(1); // remove leading /
+      return { content, modelUsed: `local:${tag}` };
+    }
+  }
+
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Route handlers
+// ---------------------------------------------------------------------------
 
 function buildPrompt(messages: readonly { role: string; content: string }[]): string {
   return buildConversation(messages);

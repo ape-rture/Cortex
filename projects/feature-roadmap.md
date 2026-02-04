@@ -17,21 +17,21 @@
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
-| **Task queue** (`/actions/queue.md`) | P0 | Designed | Async work between sessions, survives session boundaries |
-| **Morning routine** (gm command) | P0 | Designed | Calendar + pending + queue + FOCUS alerts + Attio decay |
-| **Session snapshots & warm handoff** | P0 | Designed | Auto-capture mental state on session end, reconstruct on start |
-| **Daily digest** | P1 | Designed | EOD summary -> `/daily/`, what happened, what's open |
-| **Git push reminders** | P1 | Designed | Detect unpushed commits, remind |
-| **Shorthand/alias system** | P2 | Designed | Emerge from patterns, Cortex suggests, tracked in `/context/aliases.md` |
-| **Agent output schema** | P1 | Designed | Standardized JSON schema all runtime agents return. Foundation for orchestrator |
+| **Task queue** (`/actions/queue.md`) | P0 | Done | `MarkdownTaskQueue` in `src/core/task-queue.ts` |
+| **Morning routine** (gm command) | P0 | Done | `npm run gm`. Calendar + tasks + git + decay + content pipeline + snapshot |
+| **Session snapshots & warm handoff** | P0 | Done | `MarkdownSessionSnapshotStore` in `src/core/session-snapshot.ts` |
+| **Daily digest** | P1 | Done | `npm run digest`. Generates EOD summary to `/daily/` |
+| **Git push reminders** | P1 | Done | `SimpleGitMonitor` in `src/core/git-monitor.ts`. Integrated into /gm |
+| **Shorthand/alias system** | P2 | Done | `MarkdownAliasStore` + `SimpleAliasPatternDetector` in `src/core/` |
+| **Agent output schema** | P1 | Done | `src/core/types/agent-output.ts`. JSON schema for all runtime agents |
 
 ## Phase 2: Relationships & Sales
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
-| **CRM auto-sync** (Attio) | P0 | Designed | Local-only first, then Attio sync. Types at `src/core/types/crm.ts` |
-| **Relationship decay alerts** | P1 | Designed | 30-day silence detection, integrated into /gm |
-| **Meeting prep autopilot** | P1 | In Progress | One-page brief via /prep command. Interface + prompt done, Codex implementing |
+| **CRM auto-sync** (Attio) | P0 | Partial | Local CRM done (`MarkdownContactStore`). Attio sync deferred |
+| **Relationship decay alerts** | P1 | Done | `SimpleDecayDetector` in `src/core/decay-detector.ts`. Integrated into /gm |
+| **Meeting prep autopilot** | P1 | Done | `npm run prep "Name"`. `LLMMeetingPrepGenerator` + `/prep` CLI |
 | **FOCUS integration** | P1 | Deferred | Needs FOCUS API built first |
 | **Telegram sales tracking** | P2 | Deferred | Phase 2d, complex parsing |
 
@@ -41,12 +41,12 @@ Sub-phases: 3a (ideas tracker + store), 3b (thread builder + podcast distributio
 
 | Feature | Sub-phase | Priority | Status | Notes |
 |---|---|---|---|---|
-| **Content ideas tracker + store** | 3a | P0 | Types done | `src/core/types/content.ts`. Table: `projects/content-ideas.md` |
-| **Thread/post builder** | 3b | P1 | Prompt done | `src/agents/prompts/thread-builder.md`. Dennis's voice, platform-specific rules |
-| **Podcast distribution (Block by Block)** | 3b | P1 | Prompt done | `src/agents/prompts/podcast-distribution.md`. 3 outputs per episode: YouTube desc + @indexingco tweet + @ape_rture post |
-| **Content seed extractor** | 3c | P1 | Prompt done | `src/agents/prompts/content-extractor.md`. Extract publishable takes from meetings/transcripts |
-| **Granola URL scraping** | 3c | P1 | Designed | Fetch Granola shareable link, extract transcript, feed to seed extractor |
-| **Cross-platform recycling** | 3d | P2 | Types done | `ContentChain`/`ContentChainNode` types. Track derivation chains |
+| **Content ideas tracker + store** | 3a | P0 | Done | `MarkdownContentStore` + `npm run content`. Full CRUD + pipeline view |
+| **Thread/post builder** | 3b | P1 | Done | `LLMContentDraftGenerator`. `npm run content draft/revise` |
+| **Podcast distribution (Block by Block)** | 3b | P1 | Done | `LLMPodcastDistributionGenerator`. `npm run content podcast`. 3-idea chain per episode |
+| **Content seed extractor** | 3c | P1 | Done | `LLMContentSeedExtractor`. `npm run content extract/seeds/promote` |
+| **Granola URL scraping** | 3c | P1 | Done | `src/integrations/granola.ts`. Auto-detected by `content extract` |
+| **Cross-platform recycling** | 3d | P2 | Types done | `ContentChain`/`ContentChainNode` types. Used by podcast command |
 | **Marketing tool integration** | 3d | P2 | Deferred | API connection to Indexing Co marketing tool, possibly shared RAG/content DB |
 | **Human in the loop** | — | P0 | Design principle | Draft -> approve -> publish. No auto-posting ever |
 | **Audience intelligence** (X analytics) | — | P3 | Later roadmap | Need to figure out Twitter analytics integration first |
@@ -103,45 +103,7 @@ Sub-phases: 3a (ideas tracker + store), 3b (thread builder + podcast distributio
 | **Browser chat interface** | P0 | Done | Localhost Hono server + Preact frontend. Multi-session support for parallel testing |
 | **SSE streaming** | P1 | Done | Server-Sent Events for response streaming. Full response for MVP, token streaming later |
 | **Session management** | P1 | Done | In-memory session store. No auth (localhost only) |
-| **CLI command parity** | P1 | In Progress | Wire `/gm`, `/digest` to real functions. Quick wire-up first, then full registry |
-
-### Command Registry Architecture (Future)
-
-Full plan for bringing CLI parity to web terminal:
-
-**1. Command Registry** (`src/ui/commands.ts`)
-```typescript
-type CommandHandler = (args?: string) => Promise<string>;
-const commands: Record<string, CommandHandler> = {
-  "/gm": () => runMorningBriefing(),
-  "/digest": () => runDailyDigest(),
-  "/prep": (args) => runMeetingPrep(args),  // future
-  "/tasks": () => showTaskQueue(),           // future
-  "/contacts": (args) => searchContacts(args), // future
-  "/snapshot": () => showSnapshot(),         // future
-};
-```
-
-**2. Chat Handler Intercept** (in `chat.ts` before LLM routing)
-- Check if message starts with `/`
-- Look up handler in registry
-- If found: execute, return result directly (skip LLM)
-- If not found: pass through to LLM
-
-**3. Hybrid Mode** (optional enhancement)
-- `/gm` → raw briefing output
-- `/gm summarize` → briefing + LLM summary
-- Useful for commands that benefit from LLM interpretation
-
-**4. Future Commands**
-| Command | Function | Priority |
-|---------|----------|----------|
-| `/gm` | Morning briefing | P0 - now |
-| `/digest` | Daily digest | P0 - now |
-| `/prep <name>` | Meeting prep | P1 - after Phase 2c |
-| `/tasks` | Show task queue | P2 |
-| `/contacts <query>` | Search contacts | P2 |
-| `/snapshot` | Current session snapshot | P2 |
+| **CLI command parity** | P1 | Done | Command registry in `chat.ts`. All commands wired: `/gm`, `/digest`, `/prep`, `/content`, `/tasks`, `/contacts`, `/snapshot` |
 
 ## Phase 7: Interface & Always-On
 

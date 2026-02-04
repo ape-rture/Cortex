@@ -8,13 +8,6 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-### Phase 3a: Content Ideas
-
-### Phase 3b: Thread Builder + Podcast
-
-### Phase 3c: Seed Extraction + Granola
-
-### Phase 3 Integration
 
 ## In Progress
 
