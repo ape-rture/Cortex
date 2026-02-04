@@ -17,6 +17,19 @@ export type {
 } from "./agent-output.js";
 
 export type {
+  AgentActionKind,
+  ActionPhase,
+  AgentAction,
+  StartedEvent,
+  ActionEvent,
+  CompletedEvent,
+  AgentEvent,
+  InterfaceType,
+  EventUsageStats,
+  AgentEventListener,
+} from "./events.js";
+
+export type {
   ApiPermission,
   PermissionEnvelope,
 } from "./permission.js";
@@ -35,6 +48,11 @@ export type {
   RouteRequest,
   RouteResponse,
   Router,
+  AgentAffinity,
+  AgentRouteConfig,
+  AgentRouteRequest,
+  AgentRouteResult,
+  AgentRouter,
 } from "./routing.js";
 
 export type {
@@ -43,6 +61,10 @@ export type {
   TaskSource,
   Task,
   TaskQueue,
+  ThreadKey,
+  ThreadSchedulerConfig,
+  ThreadStatus,
+  ThreadScheduler,
 } from "./task-queue.js";
 
 export type {
@@ -58,6 +80,9 @@ export type {
   SnapshotAgent,
   SessionSnapshot,
   SessionSnapshotStore,
+  InterfaceOrigin,
+  ResumeToken,
+  ResumeTokenStore,
 } from "./session.js";
 
 export type {
@@ -100,3 +125,31 @@ export type {
 } from "./crm.js";
 
 export { DEFAULT_DECAY_CONFIG } from "./crm.js";
+
+export type {
+  ContentFormat,
+  ContentPlatform,
+  ContentStatus,
+  SeedSource,
+  ContentSeed,
+  ContentIdea,
+  DraftRevision,
+  ContentDraft,
+  ContentChainNode,
+  ContentChain,
+  PodcastEpisode,
+  PodcastDistributionPack,
+  PodcastDistributionGenerator,
+  ContentStore,
+  DraftGeneratorConfig,
+  DraftGeneratorInput,
+  ContentDraftGenerator,
+  SeedExtractorConfig,
+  SeedExtractorInput,
+  ContentSeedExtractor,
+} from "./content.js";
+
+export {
+  DEFAULT_DRAFT_CONFIG,
+  DEFAULT_SEED_EXTRACTOR_CONFIG,
+} from "./content.js";

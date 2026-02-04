@@ -10,7 +10,8 @@ export async function readStaticFile(fileName: string): Promise<string> {
 }
 
 export function jsonError(c: Context, message: string, status = 400): Response {
-  return c.json({ error: message }, status);
+  c.status(status as never);
+  return c.json({ error: message });
 }
 
 export function buildConversation(messages: readonly { role: string; content: string }[]): string {

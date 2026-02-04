@@ -4,6 +4,115 @@
 
 ---
 
+## 2026-02-04 codex -- tests for content generators and granola integration
+
+- Added unit tests:
+  - `src/core/content-draft-generator.test.ts`
+  - `src/core/podcast-distribution.test.ts`
+  - `src/core/content-seed-extractor.test.ts`
+  - `src/integrations/granola.test.ts`
+- Reconciled `src/core/content-store.ts` to use shared chain helpers from `src/utils/markdown.ts` (`parseContentChains` / `serializeContentChains`) instead of duplicate local functions
+- Validation:
+  - `npm run typecheck` (passed)
+  - `npm run test:unit` (37/37 passed)
+
+## 2026-02-04 claude -- Phase 3b+3c implementation (draft generator, podcast, seed extractor, Granola, CLI)
+
+### Files created:
+- `src/core/content-draft-generator.ts` — `LLMContentDraftGenerator` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, handles both thread (posts[]) and single-post (full_text) formats, supports draft revision with feedback.
+- `src/core/podcast-distribution.ts` — `LLMPodcastDistributionGenerator` implementing `PodcastDistributionGenerator`. Builds episode prompt from PodcastEpisode metadata, returns youtube_description + company_tweet + personal_post.
+- `src/core/content-seed-extractor.ts` — `LLMContentSeedExtractor` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, filters by confidence threshold, generates seed IDs with `nextSeedId`.
+- `src/integrations/granola.ts` — Granola URL scraper. `isGranolaUrl()` detects Granola links, `fetchGranolaTranscript()` extracts text from HTML (main/article/content div, strips scripts/styles/tags).
+
+### Files modified:
+- `src/cli/content.ts` — Added all Phase 3b+3c subcommands:
+  - `draft <id>` — generates draft for an idea via thread-builder
+  - `revise <id> "feedback"` — revises existing draft with feedback
+  - `podcast` — interactive episode input, generates distribution pack, saves as 3-idea chain (YouTube desc + @indexingco tweet + @ape_rture post)
+  - `extract <file-or-url>` — runs file or Granola URL through seed extractor
+  - `seeds` — lists unprocessed seeds
+  - `promote <seed-id>` — converts seed to content idea
+  - Updated `run()` switch and `runContent()` export for web terminal
+- `src/cli/gm.ts` — Added Content Pipeline section to /gm briefing (idea counts by status, unprocessed seed count)
+- `.cortex/tasks.md` — Moved Phase 3b+3c+integration tasks to Done
+
+### Validation:
+- `npm run typecheck` — clean
+- `npm test` — 26/26 passed
+- All content subcommands wired in both CLI and web terminal
+
+### Note:
+Unit tests for the new generators (draft, podcast, seed extractor, granola) were specified in the task board as Codex tasks but I implemented the modules directly. The modules follow the same ConfigRouter pattern as MeetingPrepGenerator. Tests for these modules are a good follow-up task.
+
+## 2026-02-04 codex -- phase 3a content pipeline foundation
+
+- Added content markdown utilities in `src/utils/markdown.ts`:
+  - `parseContentIdeas` / `serializeContentIdeas`
+  - `parseContentDraft` / `serializeContentDraft`
+  - `parseContentSeeds` / `serializeContentSeeds`
+- Added `MarkdownContentStore` in `src/core/content-store.ts` implementing `ContentStore` for ideas, drafts, seeds, and chains
+- Added content CLI in `src/cli/content.ts` with `list`, `add`, `status`, and `pipeline` subcommands
+- Added npm script `"content": "node --import tsx src/cli/content.ts"` and CLI export in `src/cli/index.ts`
+- Added tests:
+  - `src/core/content-store.test.ts`
+  - extended `src/utils/markdown.test.ts` for content parsers/serializers
+- Validation:
+  - `npm run typecheck` (passed)
+  - `npm run test:unit` (26/26 passed)
+  - `npm run content list` (passed)
+  - `npm run content pipeline` (passed)
+
+## 2026-02-04 claude -- Phase 3 content pipeline design + Takopi patterns
+
+### Takopi Integration (completed earlier this session)
+- Created `src/core/types/events.ts` — normalized event model (StartedEvent, ActionEvent, CompletedEvent)
+- Extended `src/core/types/routing.ts` — agent auto-router types (AgentAffinity, AgentRouteConfig, AgentRouter)
+- Extended `src/core/types/session.ts` — resume tokens for cross-interface continuity
+- Extended `src/core/types/task-queue.ts` — ThreadScheduler for per-context serialization
+- Updated `src/core/types/orchestrator.ts` — integrated events + agent routing
+- Updated barrel exports in `src/core/types/index.ts`
+- Updated `projects/feature-roadmap.md` with Phase 5/7/8 additions
+- Updated `context/model-routing-spec.md` with agent routing schema
+- Created `decisions/2026-02-04-takopi-patterns.md`
+
+### Phase 3 Content Pipeline (designed this session)
+
+**Files created:**
+- `src/core/types/content.ts` — all content pipeline types: ContentIdea, ContentSeed, ContentDraft, ContentChain, PodcastEpisode, PodcastDistributionPack, plus Store/Generator/Extractor interfaces
+- `src/agents/prompts/thread-builder.md` — thread/post drafting prompt with Dennis's voice profile, platform rules, anti-patterns, examples
+- `src/agents/prompts/podcast-distribution.md` — Block by Block distribution pack prompt (YouTube desc + @indexingco tweet + @ape_rture longform). Absorbs `block-by-block-distribution.md` into Cortex agent system
+- `src/agents/prompts/content-extractor.md` — seed extraction prompt with confidence scoring, privacy rules, examples
+
+**Files modified:**
+- `src/core/types/index.ts` — added barrel exports for all content types
+- `projects/content-ideas.md` — upgraded table format (added ID and Source columns)
+- `projects/feature-roadmap.md` — Phase 3 now has sub-phases (3a/3b/3c/3d) with status tracking
+- `.cortex/tasks.md` — added 10 Codex tasks across Phase 3a/3b/3c + integration
+
+**Files created (templates):**
+- `projects/content-seeds.md` — seed tracking (unprocessed/promoted)
+- `projects/content-chains.md` — cross-platform recycling tracker
+- `projects/content-drafts/.gitkeep` — draft storage directory
+
+### For Codex (Phase 3a first):
+1. Content markdown utilities in `src/utils/markdown.ts`
+2. `MarkdownContentStore` in `src/core/content-store.ts`
+3. Content CLI in `src/cli/content.ts` (list/add/status/pipeline)
+
+Then Phase 3b (draft generator + podcast distribution) and 3c (seed extractor + Granola scraper).
+
+All types are at `src/core/types/content.ts`. All prompts are in `src/agents/prompts/`.
+
+## 2026-02-04 codex -- /digest + hybrid /gm + meeting prep
+
+- Added `/digest` command handling and local response path in `src/ui/handlers/chat.ts`
+- Added hybrid `/gm <instruction>` routing through ConfigRouter with `hybrid:gm+{model}` model tag in `src/ui/handlers/chat.ts`
+- Added `LLMMeetingPrepGenerator` in `src/core/meeting-prep.ts` with prompt loading, contact lookup, open action item matching, LLM JSON parsing, and fallback behavior
+- Added `/prep` CLI in `src/cli/prep.ts`, exported from `src/cli/index.ts`, and added npm script `prep` in `package.json`
+- Added unit tests in `src/core/meeting-prep.test.ts`
+- Follow-up stabilization: fixed repo-wide typecheck issues in `src/core/routing.ts`, `src/core/task-queue.test.ts`, `src/ui/index.ts`, `src/ui/store.ts`, `src/ui/utils.ts`, and `src/utils/markdown.ts`
+- Tests: `npm run typecheck` (passed), `npm run test:unit` (18/18 passed), `npm run prep "Arjun"` (passed)
+
 ## 2026-02-03 claude -- Phase 2c meeting prep design
 
 - Added `MeetingPrepGenerator` interface and `MeetingPrepConfig` to `src/core/types/crm.ts`
@@ -318,4 +427,5 @@
 - Files changed: src/ui/handlers/chat.ts
 - Tests: not run (behavioral change in UI handler)
 - Branch merged: codex/ui-gm
+
 

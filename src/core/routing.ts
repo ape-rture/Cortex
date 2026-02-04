@@ -352,10 +352,7 @@ export class ConfigRouter implements Router {
     if (params.provider === "openai") {
       if (!this.clients.openai) throw new Error("Missing OPENAI_API_KEY");
       const input = params.systemPrompt
-        ? [
-            { role: "system", content: params.systemPrompt },
-            { role: "user", content: params.prompt },
-          ]
+        ? `System:\n${params.systemPrompt}\n\nUser:\n${params.prompt}`
         : params.prompt;
       const response = await this.clients.openai.responses.create({
         model: params.apiModelId,

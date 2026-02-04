@@ -6,6 +6,7 @@ import { SimpleGitMonitor } from "../core/git-monitor.js";
 import { MarkdownSessionSnapshotStore } from "../core/session-snapshot.js";
 import { MarkdownContactStore } from "../utils/contact-store.js";
 import { SimpleDecayDetector } from "../core/decay-detector.js";
+import { MarkdownContentStore } from "../core/content-store.js";
 
 function formatSection(title: string, body: string): string {
   return `## ${title}\n${body.trim()}\n`;
@@ -41,6 +42,27 @@ function summarizeSnapshot(snapshot: { working_on: string; next_steps: readonly 
   return lines.join("\n");
 }
 
+function summarizeContentPipeline(
+  ideas: readonly { status: string }[],
+  seedCount: { unprocessed: number; promoted: number },
+): string {
+  if (ideas.length === 0 && seedCount.unprocessed === 0) return "(no content in pipeline)";
+
+  const statusCounts: Record<string, number> = {};
+  for (const idea of ideas) {
+    statusCounts[idea.status] = (statusCounts[idea.status] ?? 0) + 1;
+  }
+
+  const lines: string[] = [];
+  for (const [status, count] of Object.entries(statusCounts)) {
+    lines.push(`- ${status}: ${count}`);
+  }
+  if (seedCount.unprocessed > 0) {
+    lines.push(`- unprocessed seeds: ${seedCount.unprocessed}`);
+  }
+  return lines.join("\n");
+}
+
 function summarizeDecay(alerts: readonly { contact: { name: string; company?: string }; daysSinceContact: number; lastTopic?: string }[]): string {
   if (alerts.length === 0) return "(no relationship alerts)";
   return alerts
@@ -57,7 +79,9 @@ export async function runMorningBriefing(): Promise<string> {
   const pendingPath = path.resolve("actions", "pending.md");
   const queuePath = path.resolve("actions", "queue.md");
 
-  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, snapshot, decayAlerts] = await Promise.all([
+  const contentStore = new MarkdownContentStore();
+
+  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
@@ -65,6 +89,8 @@ export async function runMorningBriefing(): Promise<string> {
     new SimpleGitMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
     new SimpleDecayDetector(new MarkdownContactStore()).detectDecay().catch(() => []),
+    contentStore.loadIdeas().catch(() => [] as const),
+    contentStore.loadSeeds().catch(() => [] as const),
   ]);
 
   const calendarSummary = calendar.warning
@@ -83,6 +109,9 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
   output.push(formatSection("Git", summarizeGit(gitReports)));
   output.push(formatSection("Relationship Alerts", summarizeDecay(decayAlerts)));
+  const unprocessedSeeds = contentSeeds.filter((s) => !s.promoted).length;
+  const promotedSeeds = contentSeeds.length - unprocessedSeeds;
+  output.push(formatSection("Content Pipeline", summarizeContentPipeline(contentIdeas, { unprocessed: unprocessedSeeds, promoted: promotedSeeds })));
   output.push(formatSection("Picking Up Where We Left Off", summarizeSnapshot(snapshot)));
 
   return output.join("\n").trimEnd() + "\n";

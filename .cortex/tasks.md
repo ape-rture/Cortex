@@ -8,27 +8,13 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-- **Add /digest command to web terminal** -- Agent: codex -- Wire `/digest` in `src/ui/handlers/chat.ts` same pattern as `/gm`. Import `runDailyDigest()` from `src/cli/digest.ts`, add `isDigestCommand()` check, return with `modelUsed: "local:digest"`.
+### Phase 3a: Content Ideas
 
-- **Hybrid mode for /gm command** -- Agent: codex -- Extend `/gm` in `src/ui/handlers/chat.ts` to support LLM interpretation. Requirements:
-  - `/gm` (no args) → return raw briefing as now
-  - `/gm <instruction>` (e.g., `/gm summarize`, `/gm priorities`, `/gm blockers`) → fetch briefing, then pass to LLM via ConfigRouter with prompt: "Here's my morning briefing:\n\n{briefing}\n\nUser request: {instruction}"
-  - Use a simple system prompt like "You're a personal assistant. Help with the user's request based on their briefing."
-  - Return `modelUsed: "hybrid:gm+{model}"` to show it used both local data and LLM
+### Phase 3b: Thread Builder + Podcast
 
-- **Phase 2c: Implement MeetingPrepGenerator** -- Agent: codex -- Create `src/core/meeting-prep.ts` implementing `MeetingPrepGenerator` interface from `src/core/types/crm.ts`. Requirements:
-  - Constructor takes `ContactStore`, `TaskQueue`, and `ConfigRouter`
-  - `generateBrief(query)` searches for contact, gets recent interactions (max 5), searches task queue for action items mentioning contact name/company
-  - Calls LLM via ConfigRouter with prompt from `src/agents/prompts/meeting-prep.md` to generate talking points
-  - Returns `MeetingPrepBrief` with contact, interactions, action items, LLM-generated talking points
-  - Add unit tests (mock the ConfigRouter LLM call)
+### Phase 3c: Seed Extraction + Granola
 
-- **Phase 2c: Create /prep CLI command** -- Agent: codex -- Create `src/cli/prep.ts` for meeting prep. Requirements:
-  - Takes contact name as CLI argument: `npm run prep "Arjun"`
-  - Instantiates MeetingPrepGenerator with real stores and router
-  - Outputs formatted brief to console (similar to /gm format)
-  - Add npm script `"prep": "node --import tsx src/cli/prep.ts"` to package.json
-  - Handle errors gracefully (contact not found, LLM failure)
+### Phase 3 Integration
 
 ## In Progress
 
@@ -38,6 +24,14 @@
 
 ## Done
 
+- **Add unit tests for new generator modules** -- Agent: codex -- Branch: `codex/phase3-content`. Added tests for `src/core/content-draft-generator.ts`, `src/core/podcast-distribution.ts`, `src/core/content-seed-extractor.ts`, and `src/integrations/granola.ts`.
+- **Add content markdown utilities** -- Agent: codex -- Branch: `codex/phase3-content`. Added `parseContentIdeas`, `serializeContentIdeas`, `parseContentDraft`, `serializeContentDraft`, `parseContentSeeds`, and `serializeContentSeeds` in `src/utils/markdown.ts` with test coverage in `src/utils/markdown.test.ts`.
+- **Implement MarkdownContentStore** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/core/content-store.ts` implementing `ContentStore` interface for ideas/drafts/seeds/chains and tests in `src/core/content-store.test.ts`.
+- **Implement content CLI (list/add/status/pipeline)** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/cli/content.ts`, exported via `src/cli/index.ts`, and added `content` npm script in `package.json`.
+- **Add /digest command to web terminal** -- Agent: codex -- Branch: `main`. Added `/digest` command path in `src/ui/handlers/chat.ts` and wired `runDailyDigest()` response with `modelUsed: "local:digest"`.
+- **Hybrid mode for /gm command** -- Agent: codex -- Branch: `main`. Added `/gm <instruction>` hybrid flow in `src/ui/handlers/chat.ts`, routing briefing + user instruction through ConfigRouter and returning `modelUsed: "hybrid:gm+{model}"`.
+- **Phase 2c: Implement MeetingPrepGenerator** -- Agent: codex -- Branch: `main`. Added `LLMMeetingPrepGenerator` in `src/core/meeting-prep.ts` with contact lookup, recent interactions, queue action item matching, prompt loading, LLM JSON parsing, and fallback behavior. Added tests in `src/core/meeting-prep.test.ts`.
+- **Phase 2c: Create /prep CLI command** -- Agent: codex -- Branch: `main`. Added `src/cli/prep.ts`, wired export in `src/cli/index.ts`, and added npm script `prep` in `package.json`.
 - **Phase 1 contracts: types, schemas, /gm skill** -- Agent: claude -- Branch: `claude/phase1-contracts`. Created all TypeScript interfaces (agent output, routing, task queue, orchestrator, permissions) and /gm skill prompt.
 - **Scaffold TypeScript project** -- Agent: codex -- Branch: `codex/project-scaffold`. Added package.json, tsconfig.json, and ensured src structure (integrations/utils placeholders).
 - **Implement markdown read/write utils** -- Agent: codex -- Branch: `codex/markdown-utils`. Added markdown helpers for queue parsing/serialization, contact parsing, and file IO.
@@ -60,3 +54,10 @@
 - **Phase 2a: Enhance contact parser** -- Agent: codex -- Branch: `codex/contact-parser`. Updated parseContactFile to full CRM template + serializeContact; tests added.
 - **Phase 2a: Create ContactStore** -- Agent: codex -- Branch: `codex/contact-parser`. Added MarkdownContactStore + tests.
 - **Phase 2b: Decay detector + /gm** -- Agent: codex -- Branch: `codex/decay-detector`. Added SimpleDecayDetector + /gm Relationship Alerts section + tests.
+- **Implement LLMContentDraftGenerator** -- Agent: claude -- `src/core/content-draft-generator.ts` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, parses JSON response (posts[] for threads, full_text for singles).
+- **Implement PodcastDistributionGenerator** -- Agent: claude -- `src/core/podcast-distribution.ts` implementing `PodcastDistributionGenerator`. Loads podcast-distribution.md prompt, generates youtube_description + company_tweet + personal_post from PodcastEpisode input.
+- **Implement LLMContentSeedExtractor** -- Agent: claude -- `src/core/content-seed-extractor.ts` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, generates seed IDs, filters by confidence threshold.
+- **Implement Granola URL scraper** -- Agent: claude -- `src/integrations/granola.ts`. Fetches Granola shareable link, extracts meeting transcript via HTML scraping.
+- **Add draft/revise/podcast/extract/seeds/promote CLI subcommands** -- Agent: claude -- Extended `src/cli/content.ts` with all Phase 3b+3c subcommands: draft, revise, podcast (interactive), extract (file/Granola URL), seeds, promote. Podcast creates 3-idea chain.
+- **Add content pipeline section to /gm** -- Agent: claude -- Added Content Pipeline section to `src/cli/gm.ts` showing idea counts by status and unprocessed seed count.
+

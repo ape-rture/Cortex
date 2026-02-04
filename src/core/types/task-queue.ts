@@ -106,3 +106,73 @@ export interface TaskQueue {
   /** Serialize Task[] back to markdown for /actions/queue.md */
   toMarkdown(tasks: readonly Task[]): string;
 }
+
+// ---------------------------------------------------------------------
+// Thread Scheduler (Takopi-inspired)
+//
+// Groups tasks by thread/context key. Tasks within a thread execute
+// serially (FIFO); different threads execute in parallel. This prevents
+// race conditions on shared files within a project while allowing
+// independent workstreams to run concurrently.
+//
+// Composes around TaskQueue — adds thread isolation on top.
+//
+// Design source: research/12-takopi-telegram-bridge.md
+// Related: decisions/2026-02-04-takopi-patterns.md
+// ---------------------------------------------------------------------
+
+/**
+ * Thread key — identifies a serialization boundary.
+ * Format: "project:<name>" | "slack:<thread-id>" | "telegram:<chat-id>"
+ */
+export type ThreadKey = string;
+
+export interface ThreadSchedulerConfig {
+  /** Max threads that can execute in parallel */
+  readonly max_parallel_threads: number;
+
+  /** Max queued tasks per thread before rejecting new ones */
+  readonly max_queue_depth_per_thread: number;
+
+  /** Kill idle threads after this many ms with no new tasks */
+  readonly stale_thread_timeout_ms: number;
+}
+
+export interface ThreadStatus {
+  /** Thread identifier */
+  readonly thread: ThreadKey;
+
+  /** Number of tasks waiting to execute */
+  readonly queued: number;
+
+  /** Number of tasks currently executing (0 or 1) */
+  readonly in_progress: number;
+
+  /** ISO-8601 timestamp of the last task completion in this thread */
+  readonly last_activity?: string;
+}
+
+/**
+ * Thread-aware task scheduler.
+ *
+ * Extends TaskQueue with thread isolation:
+ * - enqueue() assigns a task to a thread
+ * - nextForThread() returns the next task for a specific thread
+ * - Different threads run in parallel; same-thread tasks are serial
+ */
+export interface ThreadScheduler extends TaskQueue {
+  /** Add a task to a specific thread's queue. Returns the task ID. */
+  enqueue(
+    thread: ThreadKey,
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at">,
+  ): Promise<string>;
+
+  /** Get the next queued task for a specific thread. */
+  nextForThread(thread: ThreadKey): Promise<Task | undefined>;
+
+  /** List all threads that have queued or in-progress tasks. */
+  activeThreads(): Promise<readonly ThreadKey[]>;
+
+  /** Get the status of a specific thread. */
+  threadStatus(thread: ThreadKey): Promise<ThreadStatus>;
+}

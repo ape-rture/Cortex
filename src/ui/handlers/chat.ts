@@ -4,6 +4,7 @@ import { jsonError, buildConversation } from "../utils.js";
 import { InMemorySessionStore } from "../store.js";
 import { ConfigRouter } from "../../core/routing.js";
 import { runMorningBriefing } from "../../cli/gm.js";
+import { runDailyDigest } from "../../cli/digest.js";
 
 type SSEEvent = "message_start" | "delta" | "message_end" | "error";
 
@@ -16,19 +17,53 @@ function normalizeCommand(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function isMorningCommand(value: string): boolean {
+function isDigestCommand(value: string): boolean {
   const normalized = normalizeCommand(value);
-  return normalized === "gm"
-    || normalized === "/gm"
-    || normalized === "good morning"
-    || normalized === "morning";
+  return normalized === "/digest" || normalized === "digest";
 }
 
-async function resolveCommand(prompt: string): Promise<{ content: string; modelUsed: string } | null> {
-  if (isMorningCommand(prompt)) {
-    const content = await runMorningBriefing();
-    return { content, modelUsed: "local:gm" };
+function parseMorningCommand(value: string): { instruction?: string } | null {
+  const normalized = normalizeCommand(value);
+  if (normalized === "gm" || normalized === "/gm" || normalized === "good morning" || normalized === "morning") {
+    return {};
   }
+
+  const slashWithArg = value.trim().match(/^\/gm\s+(.+)$/i);
+  if (slashWithArg) {
+    const instruction = slashWithArg[1].trim();
+    return instruction ? { instruction } : {};
+  }
+
+  return null;
+}
+
+async function resolveCommand(
+  prompt: string,
+  router: ConfigRouter,
+): Promise<{ content: string; modelUsed: string } | null> {
+  const morning = parseMorningCommand(prompt);
+  if (morning) {
+    const briefing = await runMorningBriefing();
+    if (!morning.instruction) {
+      return { content: briefing, modelUsed: "local:gm" };
+    }
+
+    const response = await router.route({
+      task_type: "complex_reasoning",
+      system_prompt: "You're a personal assistant. Help with the user's request based on their briefing.",
+      prompt: `Here's my morning briefing:\n\n${briefing}\n\nUser request: ${morning.instruction}`,
+    });
+    return {
+      content: response.content,
+      modelUsed: `hybrid:gm+${response.model_used}`,
+    };
+  }
+
+  if (isDigestCommand(prompt)) {
+    const content = await runDailyDigest();
+    return { content, modelUsed: "local:digest" };
+  }
+
   return null;
 }
 
@@ -64,10 +99,9 @@ export function registerChatHandlers(
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
-        controller.enqueue(encodeEvent("message_start", { message_id: assistantMessage.id, model: "routing" }));
         try {
           const start = Date.now();
-          const commandResult = await resolveCommand(pendingPrompt);
+          const commandResult = await resolveCommand(pendingPrompt, router);
           const response = commandResult
             ? {
                 content: commandResult.content,
@@ -77,6 +111,7 @@ export function registerChatHandlers(
                 prompt,
                 system_prompt: systemPrompt,
               });
+          controller.enqueue(encodeEvent("message_start", { message_id: assistantMessage.id, model: response.model_used }));
           const latencyMs = Date.now() - start;
           const content = response.content ?? "";
           controller.enqueue(encodeEvent("delta", { content }));
