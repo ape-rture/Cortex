@@ -17,6 +17,7 @@
 
 ## Done
 
+- **Implement web scraper module** -- Agent: codex -- Branch: `codex/web-scraper`. Added tiered web scraper (`src/integrations/web-scraper.ts`), tests (`src/integrations/web-scraper.test.ts`), dependencies, and barrel export.
 - **Add unit tests for new generator modules** -- Agent: codex -- Branch: `codex/phase3-content`. Added tests for `src/core/content-draft-generator.ts`, `src/core/podcast-distribution.ts`, `src/core/content-seed-extractor.ts`, and `src/integrations/granola.ts`.
 - **Add content markdown utilities** -- Agent: codex -- Branch: `codex/phase3-content`. Added `parseContentIdeas`, `serializeContentIdeas`, `parseContentDraft`, `serializeContentDraft`, `parseContentSeeds`, and `serializeContentSeeds` in `src/utils/markdown.ts` with test coverage in `src/utils/markdown.test.ts`.
 - **Implement MarkdownContentStore** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/core/content-store.ts` implementing `ContentStore` interface for ideas/drafts/seeds/chains and tests in `src/core/content-store.test.ts`.

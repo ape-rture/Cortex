@@ -429,3 +429,9 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Branch merged: codex/ui-gm
 
 
+## 2026-02-04 codex -- web scraper module
+
+- Implemented tiered web scraper module with browser escalation, robots caching, link extraction, and crawl limits.
+- Added tests for web scraper tiering, readability, link extraction, and crawl behaviors (browser escalation gated by TEST_BROWSER).
+- Files: src/integrations/web-scraper.ts, src/integrations/web-scraper.test.ts, src/integrations/index.ts, package.json, package-lock.json
+- Tests: npm run typecheck, npm run test:unit
