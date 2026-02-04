@@ -9,11 +9,27 @@ import type {
   InteractionType,
   RelationshipStatus,
 } from "../core/types/crm.js";
+import type {
+  ContentChain,
+  ContentChainNode,
+  ContentDraft,
+  ContentFormat,
+  ContentIdea,
+  ContentPlatform,
+  ContentSeed,
+  ContentStatus,
+  DraftRevision,
+  SeedSource,
+} from "../core/types/content.js";
 
 const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "failed", "cancelled"] as const;
 type MutableTask = { -readonly [K in keyof Task]: Task[K] };
 type MutableContactInfo = { -readonly [K in keyof ContactInfo]: ContactInfo[K] };
 type MutableInteractionRecord = { -readonly [K in keyof InteractionRecord]: InteractionRecord[K] };
+type MutableContentIdea = { -readonly [K in keyof ContentIdea]: ContentIdea[K] };
+type MutableContentSeed = { -readonly [K in keyof ContentSeed]: ContentSeed[K] };
+type MutableContentDraft = { -readonly [K in keyof ContentDraft]: ContentDraft[K] };
+type MutableDraftRevision = { -readonly [K in keyof DraftRevision]: DraftRevision[K] };
 
 function normalizeLine(line: string): string {
   return line.trim();
@@ -500,4 +516,489 @@ export function serializeContact(contact: Contact): string {
   lines.push("*Update after every interaction. Sync important updates to Attio.*");
 
   return lines.join("\n").trimEnd() + "\n";
+}
+
+function parseContentFormat(value: string | undefined): ContentFormat {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "thread":
+    case "post":
+    case "article":
+    case "newsletter":
+    case "video_script":
+    case "podcast_episode":
+    case "other":
+      return normalized;
+    default:
+      return "other";
+  }
+}
+
+function parseContentPlatform(value: string | undefined): ContentPlatform {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "x":
+    case "linkedin":
+    case "youtube":
+    case "spotify":
+    case "newsletter":
+    case "blog":
+    case "internal":
+    case "multi":
+      return normalized;
+    default:
+      return "internal";
+  }
+}
+
+function parseContentStatus(value: string | undefined): ContentStatus {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "idea":
+    case "outline":
+    case "draft":
+    case "review":
+    case "approved":
+    case "published":
+    case "killed":
+      return normalized;
+    default:
+      return "idea";
+  }
+}
+
+function parseSeedSource(value: string | undefined): SeedSource {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "meeting":
+    case "conversation":
+    case "reading":
+    case "observation":
+    case "existing":
+    case "granola":
+    case "manual":
+      return normalized;
+    default:
+      return "manual";
+  }
+}
+
+function parseTableCells(line: string): string[] {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) return [];
+  return trimmed
+    .slice(1, -1)
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function escapeTableCell(value: string): string {
+  return value.replace(/\|/g, "\\|");
+}
+
+function isSeparatorRow(cells: readonly string[]): boolean {
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+export function parseContentIdeas(content: string): ContentIdea[] {
+  const ideas: MutableContentIdea[] = [];
+  const lines = content.split(/\r?\n/);
+
+  for (const rawLine of lines) {
+    const cells = parseTableCells(rawLine);
+    if (cells.length < 8) continue;
+    if (cells[0].toLowerCase() === "id") continue;
+    if (isSeparatorRow(cells)) continue;
+
+    const id = cells[0];
+    const date = cells[1];
+    const topic = cells[2];
+    if (!id || !date || !topic) continue;
+
+    ideas.push({
+      id,
+      date,
+      topic,
+      format: parseContentFormat(cells[3]),
+      platform: parseContentPlatform(cells[4]),
+      status: parseContentStatus(cells[5]),
+      source: cells[6] || undefined,
+      notes: cells[7] || undefined,
+      tags: undefined,
+    });
+  }
+
+  return ideas;
+}
+
+export function serializeContentIdeas(ideas: readonly ContentIdea[]): string {
+  const lines: string[] = [];
+  lines.push("# Content Ideas");
+  lines.push("");
+  lines.push("Track content ideas through the pipeline: idea -> outline -> draft -> review -> approved -> published.");
+  lines.push("");
+  lines.push("| ID | Date | Topic | Format | Platform | Status | Source | Notes |");
+  lines.push("|---|---|---|---|---|---|---|---|");
+  for (const idea of ideas) {
+    lines.push(
+      `| ${escapeTableCell(idea.id)} | ${escapeTableCell(idea.date)} | ${escapeTableCell(idea.topic)} | ${idea.format} | ${idea.platform} | ${idea.status} | ${escapeTableCell(idea.source ?? "")} | ${escapeTableCell(idea.notes ?? "")} |`,
+    );
+  }
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+function parseFencedJson(content: string): unknown {
+  const fenced = content.match(/```json\s*([\s\S]*?)```/i);
+  if (!fenced) return undefined;
+  return JSON.parse(fenced[1]);
+}
+
+export function parseContentDraft(content: string): ContentDraft {
+  const parsed = parseFencedJson(content);
+  if (!parsed || typeof parsed !== "object") {
+    const fallback: MutableContentDraft = {
+      ideaId: "unknown",
+      format: "post",
+      platform: "internal",
+      currentText: content.trim(),
+      revisions: [],
+      threadPosts: undefined,
+      updatedAt: nowIso(),
+      reviewNotes: undefined,
+    };
+    return fallback;
+  }
+
+  const data = parsed as Record<string, unknown>;
+  const revisionsRaw = Array.isArray(data.revisions) ? data.revisions : [];
+  const revisions: MutableDraftRevision[] = revisionsRaw
+    .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
+    .map((item, idx) => {
+      const author = item.author === "llm" || item.author === "manual" || item.author === "edit"
+        ? item.author
+        : "manual";
+      return {
+        version: typeof item.version === "number" ? item.version : idx + 1,
+        timestamp: typeof item.timestamp === "string" ? item.timestamp : nowIso(),
+        text: typeof item.text === "string" ? item.text : "",
+        changeNote: typeof item.changeNote === "string" ? item.changeNote : undefined,
+        author,
+      };
+    });
+
+  const draft: MutableContentDraft = {
+    ideaId: typeof data.ideaId === "string" ? data.ideaId : "unknown",
+    format: parseContentFormat(typeof data.format === "string" ? data.format : undefined),
+    platform: parseContentPlatform(typeof data.platform === "string" ? data.platform : undefined),
+    currentText: typeof data.currentText === "string" ? data.currentText : "",
+    revisions,
+    threadPosts: Array.isArray(data.threadPosts)
+      ? data.threadPosts.filter((item): item is string => typeof item === "string")
+      : undefined,
+    updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : nowIso(),
+    reviewNotes: Array.isArray(data.reviewNotes)
+      ? data.reviewNotes.filter((item): item is string => typeof item === "string")
+      : undefined,
+  };
+
+  return draft;
+}
+
+export function serializeContentDraft(draft: ContentDraft): string {
+  const payload = {
+    ideaId: draft.ideaId,
+    format: draft.format,
+    platform: draft.platform,
+    currentText: draft.currentText,
+    revisions: draft.revisions,
+    threadPosts: draft.threadPosts ?? [],
+    updatedAt: draft.updatedAt,
+    reviewNotes: draft.reviewNotes ?? [],
+  };
+  return `# Content Draft: ${draft.ideaId}\n\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\`\n`;
+}
+
+export function parseContentSeeds(content: string): ContentSeed[] {
+  const lines = content.split(/\r?\n/);
+  const seeds: MutableContentSeed[] = [];
+  let section: "unprocessed" | "promoted" | undefined;
+  let current: MutableContentSeed | undefined;
+
+  const flush = () => {
+    if (!current) return;
+    if (section === "promoted") current.promoted = true;
+    if (current.promotedToId) current.promoted = true;
+    seeds.push(current);
+    current = undefined;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (line.toLowerCase() === "## unprocessed") {
+      flush();
+      section = "unprocessed";
+      continue;
+    }
+    if (line.toLowerCase() === "## promoted") {
+      flush();
+      section = "promoted";
+      continue;
+    }
+
+    const itemMatch = line.match(/^-\s+\[([ xX])\]\s+\*\*(.+?)\*\*:\s*(.+)$/);
+    if (itemMatch) {
+      flush();
+      const promoted = itemMatch[1].toLowerCase() === "x";
+      current = {
+        id: itemMatch[2].trim(),
+        insight: itemMatch[3].trim(),
+        source: "manual",
+        sourceRef: undefined,
+        contactRef: undefined,
+        suggestedAngles: undefined,
+        capturedAt: nowIso(),
+        promoted,
+        promotedToId: undefined,
+      };
+      continue;
+    }
+
+    if (!current) continue;
+    const kv = parseKeyValue(line);
+    if (!kv) continue;
+
+    switch (kv.key) {
+      case "source":
+        current.source = parseSeedSource(kv.value);
+        break;
+      case "source ref":
+        current.sourceRef = kv.value || undefined;
+        break;
+      case "contact ref":
+        current.contactRef = kv.value || undefined;
+        break;
+      case "captured":
+      case "captured at":
+        current.capturedAt = kv.value || current.capturedAt;
+        break;
+      case "suggested angles":
+        current.suggestedAngles = splitList(kv.value);
+        break;
+      case "promoted to":
+        current.promotedToId = kv.value || undefined;
+        if (current.promotedToId) current.promoted = true;
+        break;
+      default:
+        break;
+    }
+  }
+
+  flush();
+  return seeds;
+}
+
+export function serializeContentSeeds(seeds: readonly ContentSeed[]): string {
+  const unprocessed = seeds.filter((seed) => !seed.promoted);
+  const promoted = seeds.filter((seed) => seed.promoted);
+
+  const renderSeed = (seed: ContentSeed): string[] => {
+    const lines: string[] = [];
+    const checked = seed.promoted ? "x" : " ";
+    lines.push(`- [${checked}] **${seed.id}**: ${seed.insight}`);
+    lines.push(`  - Source: ${seed.source}`);
+    lines.push(`  - Captured: ${seed.capturedAt}`);
+    if (seed.sourceRef) lines.push(`  - Source Ref: ${seed.sourceRef}`);
+    if (seed.contactRef) lines.push(`  - Contact Ref: ${seed.contactRef}`);
+    if (seed.suggestedAngles && seed.suggestedAngles.length > 0) {
+      lines.push(`  - Suggested Angles: ${seed.suggestedAngles.join("; ")}`);
+    }
+    if (seed.promotedToId) lines.push(`  - Promoted To: ${seed.promotedToId}`);
+    return lines;
+  };
+
+  const lines: string[] = [];
+  lines.push("# Content Seeds");
+  lines.push("");
+  lines.push("Extracted insights and observations that could become content. Seeds are promoted to content ideas when ready.");
+  lines.push("");
+  lines.push("## Unprocessed");
+  lines.push("");
+  if (unprocessed.length === 0) {
+    lines.push("_No seeds yet. Use `content extract <file-or-url>` to extract seeds from meeting notes, Granola transcripts, or articles._");
+  } else {
+    for (const seed of unprocessed) {
+      lines.push(...renderSeed(seed));
+      lines.push("");
+    }
+  }
+  lines.push("");
+  lines.push("## Promoted");
+  lines.push("");
+  if (promoted.length === 0) {
+    lines.push("_Seeds that have been converted to content ideas appear here with their linked idea ID._");
+  } else {
+    for (const seed of promoted) {
+      lines.push(...renderSeed(seed));
+      lines.push("");
+    }
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+// ---------------------------------------------------------------------
+// Content Chains — parsing/serialization
+// ---------------------------------------------------------------------
+
+/**
+ * Parse content chains from markdown.
+ * Each chain is a ### block with key-value metadata and derivative list items.
+ */
+export function parseContentChains(content: string): ContentChain[] {
+  const lines = content.split(/\r?\n/);
+  const chains: ContentChain[] = [];
+  let currentChain: { chainId: string; root: ContentChainNode | null; derivatives: ContentChainNode[]; createdAt: string } | null = null;
+  let inDerivatives = false;
+
+  const flush = () => {
+    if (currentChain && currentChain.root) {
+      chains.push({
+        chainId: currentChain.chainId,
+        root: currentChain.root,
+        derivatives: currentChain.derivatives,
+        createdAt: currentChain.createdAt,
+      });
+      currentChain = null;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+
+    if (trimmed.startsWith("### ") && !trimmed.toLowerCase().includes("derivatives")) {
+      flush();
+      const chainId = trimmed.replace(/^###\s+/, "").trim();
+      currentChain = { chainId, root: null, derivatives: [], createdAt: nowIso() };
+      inDerivatives = false;
+      continue;
+    }
+
+    if (!currentChain) continue;
+
+    if (trimmed.toLowerCase().includes("derivatives")) {
+      inDerivatives = true;
+      continue;
+    }
+
+    const kvMatch = trimmed.match(/^-\s+\*\*(.+?)\*\*:\s*(.*)$/);
+    if (kvMatch) {
+      const key = kvMatch[1].trim().toLowerCase();
+      const value = kvMatch[2].trim();
+      if (key === "created") currentChain.createdAt = value;
+      if (key === "root") {
+        const parts = value.split("|").map((p) => p.trim());
+        if (parts[0]) {
+          currentChain.root = {
+            ideaId: parts[0],
+            platform: parseContentPlatform(parts[1]),
+            format: parseContentFormat(parts[2]),
+            publishedAt: parts[3] || undefined,
+            url: parts[4] || undefined,
+          };
+        }
+      }
+      continue;
+    }
+
+    if (inDerivatives && trimmed.startsWith("-")) {
+      const nodeText = trimmed.replace(/^-\s+/, "");
+      const parts = nodeText.split("|").map((p) => p.trim());
+      if (parts[0]) {
+        currentChain.derivatives.push({
+          ideaId: parts[0],
+          platform: parseContentPlatform(parts[1]),
+          format: parseContentFormat(parts[2]),
+          publishedAt: parts[3] || undefined,
+          url: parts[4] || undefined,
+        });
+      }
+    }
+  }
+
+  flush();
+  return chains;
+}
+
+/**
+ * Serialize content chains to markdown.
+ */
+export function serializeContentChains(chains: readonly ContentChain[]): string {
+  const lines: string[] = [];
+  lines.push("# Content Chains");
+  lines.push("");
+  lines.push("Track cross-platform content recycling. A chain links original content to its derivatives.");
+  lines.push("");
+
+  if (chains.length === 0) {
+    lines.push("_No chains yet. Chains are created when content is derived from existing content (e.g., podcast distribution packs)._");
+  } else {
+    for (const chain of chains) {
+      lines.push(`### ${chain.chainId}`);
+      lines.push(`- **Created**: ${chain.createdAt}`);
+      const r = chain.root;
+      lines.push(`- **Root**: ${r.ideaId} | ${r.platform} | ${r.format} | ${r.publishedAt ?? ""} | ${r.url ?? ""}`);
+      if (chain.derivatives.length > 0) {
+        lines.push("- **Derivatives**:");
+        for (const d of chain.derivatives) {
+          lines.push(`  - ${d.ideaId} | ${d.platform} | ${d.format} | ${d.publishedAt ?? ""} | ${d.url ?? ""}`);
+        }
+      }
+      lines.push("");
+    }
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+// ---------------------------------------------------------------------
+// ID generators
+// ---------------------------------------------------------------------
+
+/**
+ * Generate the next content idea ID based on existing ideas.
+ * Format: content-NNN (zero-padded to 3 digits).
+ */
+export function nextContentIdeaId(ideas: readonly ContentIdea[]): string {
+  let max = 0;
+  for (const idea of ideas) {
+    const match = idea.id.match(/^content-(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > max) max = num;
+    }
+  }
+  return `content-${String(max + 1).padStart(3, "0")}`;
+}
+
+/**
+ * Generate the next seed ID for a given date.
+ * Format: seed-YYYY-MM-DD-NNN.
+ */
+export function nextSeedId(seeds: readonly ContentSeed[], date: string): string {
+  const prefix = `seed-${date}-`;
+  let max = 0;
+  for (const seed of seeds) {
+    if (seed.id.startsWith(prefix)) {
+      const match = seed.id.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > max) max = num;
+      }
+    }
+  }
+  return `${prefix}${String(max + 1).padStart(3, "0")}`;
 }

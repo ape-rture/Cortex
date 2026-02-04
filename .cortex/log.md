@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-02-04 codex -- phase 3a content pipeline foundation
+
+- Added content markdown utilities in `src/utils/markdown.ts`:
+  - `parseContentIdeas` / `serializeContentIdeas`
+  - `parseContentDraft` / `serializeContentDraft`
+  - `parseContentSeeds` / `serializeContentSeeds`
+- Added `MarkdownContentStore` in `src/core/content-store.ts` implementing `ContentStore` for ideas, drafts, seeds, and chains
+- Added content CLI in `src/cli/content.ts` with `list`, `add`, `status`, and `pipeline` subcommands
+- Added npm script `"content": "node --import tsx src/cli/content.ts"` and CLI export in `src/cli/index.ts`
+- Added tests:
+  - `src/core/content-store.test.ts`
+  - extended `src/utils/markdown.test.ts` for content parsers/serializers
+- Validation:
+  - `npm run typecheck` (passed)
+  - `npm run test:unit` (26/26 passed)
+  - `npm run content list` (passed)
+  - `npm run content pipeline` (passed)
+
 ## 2026-02-04 claude -- Phase 3 content pipeline design + Takopi patterns
 
 ### Takopi Integration (completed earlier this session)

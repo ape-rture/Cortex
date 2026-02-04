@@ -10,12 +10,6 @@
 
 ### Phase 3a: Content Ideas
 
-- **Add content markdown utilities** -- Agent: codex -- `parseContentIdeas`, `serializeContentIdeas`, `parseContentDraft`, `serializeContentDraft`, `parseContentSeeds`, `serializeContentSeeds` in `src/utils/markdown.ts`. Follow `parseTaskQueue` pattern. Types: `src/core/types/content.ts`. Unit tests required.
-
-- **Implement MarkdownContentStore** -- Agent: codex -- `src/core/content-store.ts` implementing `ContentStore` interface. Files: `projects/content-ideas.md`, `projects/content-drafts/{id}.md`, `projects/content-seeds.md`. Follow `MarkdownContactStore` pattern. Unit tests required.
-
-- **Implement content CLI (list/add/status/pipeline)** -- Agent: codex -- `src/cli/content.ts` with subcommands: `list` (filter by status/platform), `add` (interactive idea capture), `status <id> <new-status>` (update lifecycle), `pipeline` (overview of ideas by status). Add `"content"` npm script in `package.json`. Follow `prep.ts` pattern.
-
 ### Phase 3b: Thread Builder + Podcast
 
 - **Implement LLMContentDraftGenerator** -- Agent: codex -- `src/core/content-draft-generator.ts` implementing `ContentDraftGenerator`. Use `content_drafting` task type for ConfigRouter. Load prompt from `src/agents/prompts/thread-builder.md`. Parse JSON response (`posts[]` for threads, `full_text` for singles). Unit tests required.
@@ -44,6 +38,9 @@
 
 ## Done
 
+- **Add content markdown utilities** -- Agent: codex -- Branch: `codex/phase3-content`. Added `parseContentIdeas`, `serializeContentIdeas`, `parseContentDraft`, `serializeContentDraft`, `parseContentSeeds`, and `serializeContentSeeds` in `src/utils/markdown.ts` with test coverage in `src/utils/markdown.test.ts`.
+- **Implement MarkdownContentStore** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/core/content-store.ts` implementing `ContentStore` interface for ideas/drafts/seeds/chains and tests in `src/core/content-store.test.ts`.
+- **Implement content CLI (list/add/status/pipeline)** -- Agent: codex -- Branch: `codex/phase3-content`. Added `src/cli/content.ts`, exported via `src/cli/index.ts`, and added `content` npm script in `package.json`.
 - **Add /digest command to web terminal** -- Agent: codex -- Branch: `main`. Added `/digest` command path in `src/ui/handlers/chat.ts` and wired `runDailyDigest()` response with `modelUsed: "local:digest"`.
 - **Hybrid mode for /gm command** -- Agent: codex -- Branch: `main`. Added `/gm <instruction>` hybrid flow in `src/ui/handlers/chat.ts`, routing briefing + user instruction through ConfigRouter and returning `modelUsed: "hybrid:gm+{model}"`.
 - **Phase 2c: Implement MeetingPrepGenerator** -- Agent: codex -- Branch: `main`. Added `LLMMeetingPrepGenerator` in `src/core/meeting-prep.ts` with contact lookup, recent interactions, queue action item matching, prompt loading, LLM JSON parsing, and fallback behavior. Added tests in `src/core/meeting-prep.test.ts`.
