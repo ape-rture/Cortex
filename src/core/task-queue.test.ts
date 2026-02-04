@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { MarkdownTaskQueue } from "./task-queue.ts";
+import { MarkdownTaskQueue } from "./task-queue.js";
 
 test("MarkdownTaskQueue add/list/update/next", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-queue-"));

@@ -11,6 +11,9 @@ import type {
 } from "../core/types/crm.js";
 
 const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "failed", "cancelled"] as const;
+type MutableTask = { -readonly [K in keyof Task]: Task[K] };
+type MutableContactInfo = { -readonly [K in keyof ContactInfo]: ContactInfo[K] };
+type MutableInteractionRecord = { -readonly [K in keyof InteractionRecord]: InteractionRecord[K] };
 
 function normalizeLine(line: string): string {
   return line.trim();
@@ -108,8 +111,8 @@ export async function appendToFile(filePath: string, content: string): Promise<v
 
 export function parseTaskQueue(content: string): Task[] {
   const lines = content.split(/\r?\n/);
-  const tasks: Task[] = [];
-  let current: Task | null = null;
+  const tasks: MutableTask[] = [];
+  let current: MutableTask | null = null;
   let currentIndex = 0;
 
   const flush = () => {
@@ -319,14 +322,14 @@ export function parseContactFile(content: string, filePath = ""): Contact {
   let attioId: string | undefined;
   let context: string | undefined;
   let notes: string | undefined;
-  let contactInfo: ContactInfo | undefined;
+  let contactInfo: MutableContactInfo | undefined;
   let relationshipStatus: RelationshipStatus = "active";
   let lastContact: string | undefined;
   let nextFollowUp: string | undefined;
-  const history: InteractionRecord[] = [];
+  const history: MutableInteractionRecord[] = [];
 
   let section: "contactInfo" | "context" | "relationship" | "history" | "notes" | undefined;
-  let currentInteraction: InteractionRecord | undefined;
+  let currentInteraction: MutableInteractionRecord | undefined;
 
   const flushInteraction = () => {
     if (currentInteraction) {

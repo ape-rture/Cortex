@@ -1,7 +1,11 @@
 import type { ChatMessage, ChatSession } from "./types.js";
 
-type StoredSession = Omit<ChatSession, "messages"> & {
+type StoredSession = {
+  id: ChatSession["id"];
+  name: ChatSession["name"];
+  created_at: ChatSession["created_at"];
   messages: ChatMessage[];
+  pending_response?: boolean;
   pending_prompt?: string;
   pending_message_id?: string;
 };
