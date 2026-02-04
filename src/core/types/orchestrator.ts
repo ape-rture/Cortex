@@ -14,8 +14,9 @@
  */
 
 import type { AgentOutput, ScoredFinding } from "./agent-output.js";
+import type { AgentEvent, AgentEventListener } from "./events.js";
 import type { PermissionEnvelope } from "./permission.js";
-import type { ModelRef } from "./routing.js";
+import type { AgentRouteConfig, ModelRef } from "./routing.js";
 
 // ---------------------------------------------------------------------
 // Trigger types — what causes agents to run
@@ -94,6 +95,13 @@ export interface OrchestratorCycle {
 
   /** Errors at the orchestrator level (not agent-level) */
   readonly errors: readonly string[];
+
+  /**
+   * All events emitted during this cycle, in chronological order.
+   * Includes StartedEvent, ActionEvent, and CompletedEvent for each agent.
+   * Added for real-time progress streaming (Takopi-inspired).
+   */
+  readonly events: readonly AgentEvent[];
 }
 
 // ---------------------------------------------------------------------
@@ -118,6 +126,13 @@ export interface OrchestratorConfig {
 
   /** Path to routing config (context/model-routing.json) */
   readonly routing_config_path: string;
+
+  /**
+   * Agent-level routing configuration (Takopi-inspired AutoRouter).
+   * Determines which agent handles an incoming task based on
+   * user directives, context, and task type affinities.
+   */
+  readonly agent_routing: AgentRouteConfig;
 }
 
 // ---------------------------------------------------------------------
@@ -136,4 +151,11 @@ export interface Orchestrator {
 
   /** Get status of the last N cycles */
   history(n: number): readonly OrchestratorCycle[];
+
+  /**
+   * Subscribe to real-time agent events during cycle execution.
+   * Transports (Slack, Telegram, Web UI) use this for progress streaming.
+   * Returns an unsubscribe function.
+   */
+  onEvent(listener: AgentEventListener): () => void;
 }

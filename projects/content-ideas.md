@@ -1,6 +1,6 @@
 # Content Ideas
 
-Track content ideas through the pipeline.
+Track content ideas through the pipeline: idea -> outline -> draft -> review -> approved -> published.
 
-| Date | Topic | Format | Platform | Status | Notes |
-|---|---|---|---|---|---|
+| ID | Date | Topic | Format | Platform | Status | Source | Notes |
+|---|---|---|---|---|---|---|---|

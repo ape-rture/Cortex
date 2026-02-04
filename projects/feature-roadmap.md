@@ -37,16 +37,19 @@
 
 ## Phase 3: Content Pipeline
 
-| Feature | Priority | Status | Notes |
-|---|---|---|---|
-| **Content ideas tracker** | P0 | Designed | `/projects/content-ideas.md`, idea -> outline -> draft -> review -> publish |
-| **Thread/post builder** | P1 | Confirmed | Give take -> draft thread -> iterate -> queue for posting |
-| **Content recycler** | P1 | Confirmed | Detect insights from Granola, Slack, conversations -> content seeds |
-| **Granola as content source** | P1 | Confirmed | Auto-extract publishable insights from meeting transcripts |
-| **Cross-platform recycling** | P2 | Confirmed | YouTube -> thread -> LinkedIn post -> newsletter. Track the chain |
-| **Marketing tool integration** | P2 | Confirmed | API connection to Indexing Co marketing tool, possibly shared RAG/content DB |
-| **Human in the loop** | P0 | Design principle | Draft -> approve -> publish. No auto-posting ever |
-| **Audience intelligence** (X analytics) | P3 | Later roadmap | Need to figure out Twitter analytics integration first |
+Sub-phases: 3a (ideas tracker + store), 3b (thread builder + podcast distribution), 3c (seed extractor + Granola), 3d (cross-platform recycling)
+
+| Feature | Sub-phase | Priority | Status | Notes |
+|---|---|---|---|---|
+| **Content ideas tracker + store** | 3a | P0 | Types done | `src/core/types/content.ts`. Table: `projects/content-ideas.md` |
+| **Thread/post builder** | 3b | P1 | Prompt done | `src/agents/prompts/thread-builder.md`. Dennis's voice, platform-specific rules |
+| **Podcast distribution (Block by Block)** | 3b | P1 | Prompt done | `src/agents/prompts/podcast-distribution.md`. 3 outputs per episode: YouTube desc + @indexingco tweet + @ape_rture post |
+| **Content seed extractor** | 3c | P1 | Prompt done | `src/agents/prompts/content-extractor.md`. Extract publishable takes from meetings/transcripts |
+| **Granola URL scraping** | 3c | P1 | Designed | Fetch Granola shareable link, extract transcript, feed to seed extractor |
+| **Cross-platform recycling** | 3d | P2 | Types done | `ContentChain`/`ContentChainNode` types. Track derivation chains |
+| **Marketing tool integration** | 3d | P2 | Deferred | API connection to Indexing Co marketing tool, possibly shared RAG/content DB |
+| **Human in the loop** | — | P0 | Design principle | Draft -> approve -> publish. No auto-posting ever |
+| **Audience intelligence** (X analytics) | — | P3 | Later roadmap | Need to figure out Twitter analytics integration first |
 
 ## Phase 4: Code Productivity
 
@@ -70,6 +73,10 @@
 | **Compound knowledge** (nightly) | P2 | Designed | Synthesize memory, merge notes, surface stale items, update contacts (Memory Synthesizer agent) |
 | **Model performance tracking** | P2 | Confirmed | Per-task metrics (latency, tokens, success rate, cost) -> tune routing |
 | **Routing optimization** | P2 | Confirmed | Suggest model switches based on accumulated performance data |
+| **Normalized event model** | P0 | Types done | `src/core/types/events.ts`. Streaming lifecycle events (Started/Action/Completed) wrapping AgentOutput. Takopi-inspired. See `research/12-takopi-telegram-bridge.md` |
+| **Agent AutoRouter** | P1 | Types done | Agent dispatching layer above model routing. Task → agent → model cascade. Extends `src/core/types/routing.ts`. Takopi-inspired |
+| **Resume tokens** | P1 | Types done | Lightweight cross-interface session continuity. Extends `src/core/types/session.ts`. Takopi-inspired |
+| **ThreadScheduler** | P1 | Types done | Per-context serialization, cross-context parallelism. Extends `src/core/types/task-queue.ts`. Takopi-inspired |
 
 ## Phase 5.5: Memory Flywheel
 
@@ -142,7 +149,10 @@ const commands: Record<string, CommandHandler> = {
 |---|---|---|---|
 | **Slack `#cortex` queue bot** | P1 | Designed | Slack bot appends commands/notes to queue file. Process at desk or in real-time |
 | **Slack bridge with LLM** | P2 | Designed | Upgrade bot to invoke Claude API, respond in thread |
-| **Telegram listener (read-only)** | P2 | Designed | Monitor sales chats, extract contact context. Never sends messages |
+| **Telegram bidirectional interface** | P1 | Designed | Upgrade from read-only → full command interface (like Slack). Takopi as reference implementation. See `research/12-takopi-telegram-bridge.md` |
+| **Telegram sales tracking** | P2 | Designed | Monitor sales chats, extract contact context (read-only layer on top of bidirectional interface) |
+| **Progress streaming** | P1 | Designed | Real-time agent event streaming to Slack/Telegram/Web UI. Depends on Phase 5 event model. Takopi-inspired |
+| **Cross-interface resume** | P1 | Designed | Continue conversations across CLI/Slack/Telegram/Web using resume tokens from Phase 5 |
 | **Full orchestrator** | P1 | Designed | Parallel agents, LLM-scored salience, webhook/Slack/cron triggers. Full Dennettian Multiple Drafts |
 | **Agent-to-agent triggers** | P2 | Idea | Agents can spawn other agents (e.g., Content Creator -> Thread Builder) |
 | **Custom web UI** | P3 | Idea | Full dashboard: queue, projects, content, relationships. Real product territory |
@@ -157,6 +167,7 @@ const commands: Record<string, CommandHandler> = {
 | **Shareable skills** | P2 | Idea | Claude Code skills that others can drop in |
 | **Agent templates** | P3 | Idea | Publishable agent configurations with docs |
 | **Swarm pattern template** | P3 | Idea | The orchestrator + agents pattern itself as a shareable open-source framework |
+| **Plugin architecture** | P2 | Idea | TypeScript plugin system for engines, transports, and commands. Inspired by Takopi's Python entrypoints model. See `research/12-takopi-telegram-bridge.md` |
 
 ## Phase 9: Intelligent Retrieval
 

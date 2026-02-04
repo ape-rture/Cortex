@@ -150,3 +150,103 @@ export interface Router {
   /** Reload routing config from disk (context/model-routing.json) */
   reloadConfig(): Promise<void>;
 }
+
+// ---------------------------------------------------------------------
+// Agent-level routing (Takopi-inspired AutoRouter)
+//
+// The model Router above selects which LLM handles a prompt.
+// The AgentRouter sits ABOVE that — it selects which agent handles
+// a task. The selected agent then uses the model Router internally.
+//
+// Cascade: user directive > context match > task type affinity > default
+//
+// Design source: research/12-takopi-telegram-bridge.md
+// Related: decisions/2026-02-04-takopi-patterns.md
+// ---------------------------------------------------------------------
+
+/**
+ * Maps an agent to the task types it handles, with a priority
+ * for breaking ties when multiple agents match.
+ */
+export interface AgentAffinity {
+  /** Agent identifier — matches AgentSpawnConfig.agent */
+  readonly agent: string;
+
+  /** Task types this agent is suited for */
+  readonly task_types: readonly TaskType[];
+
+  /** Higher priority wins when multiple agents match. Default: 0. */
+  readonly priority: number;
+
+  /**
+   * Optional glob pattern for context-based matching.
+   * If the task touches files matching this pattern, this agent is preferred.
+   * Example: "contacts/*" for the sales-watcher agent.
+   */
+  readonly context_match?: string;
+
+  /** Override the agent's default model for these task types */
+  readonly model_override?: ModelRef;
+}
+
+/**
+ * Configuration for agent-level routing.
+ * Stored alongside model routing in context/model-routing.json.
+ */
+export interface AgentRouteConfig {
+  /** Agent affinities — which agents handle which task types */
+  readonly affinities: readonly AgentAffinity[];
+
+  /** Fallback agent when no affinity matches */
+  readonly default_agent: string;
+
+  /**
+   * Map of user directive prefixes to agent IDs.
+   * Example: { "/sales": "sales-watcher", "/content": "content-creator" }
+   */
+  readonly user_directives?: Readonly<Record<string, string>>;
+}
+
+/**
+ * Request to the agent router. Extends RouteRequest with
+ * agent-selection fields.
+ */
+export interface AgentRouteRequest extends RouteRequest {
+  /** Explicit agent selection by user (e.g. "/sales check on ACME") */
+  readonly user_directive?: string;
+
+  /**
+   * Context key for default resolution.
+   * Format: "project:<name>" | "slack:<thread-id>" | "telegram:<chat-id>"
+   */
+  readonly context_key?: string;
+}
+
+/**
+ * Result of agent routing — which agent was selected and why.
+ */
+export interface AgentRouteResult {
+  /** The selected agent identifier */
+  readonly agent: string;
+
+  /** Why this agent was selected */
+  readonly reason: "user_directive" | "context_match" | "task_affinity" | "default";
+
+  /** The affinity rule that matched, if any */
+  readonly matched_affinity?: AgentAffinity;
+}
+
+/**
+ * Agent router interface. The orchestrator uses this to decide
+ * which agent handles an incoming task.
+ */
+export interface AgentRouter {
+  /**
+   * Select the best agent for a request.
+   * Cascade: user directive > context match > task type affinity > default.
+   */
+  resolve(request: AgentRouteRequest): Promise<AgentRouteResult>;
+
+  /** Reload agent routing config from disk */
+  reloadConfig(): Promise<void>;
+}
