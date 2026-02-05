@@ -435,3 +435,9 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Added tests for web scraper tiering, readability, link extraction, and crawl behaviors (browser escalation gated by TEST_BROWSER).
 - Files: src/integrations/web-scraper.ts, src/integrations/web-scraper.test.ts, src/integrations/index.ts, package.json, package-lock.json
 - Tests: npm run typecheck, npm run test:unit
+
+## 2026-02-05 codex -- web scraper housekeeping commit
+
+- Committed web scraper type exports, research notes, and collaboration playbook export assets.
+- Files: src/core/types/web-scraper.ts, src/core/types/index.ts, research/12-web-scraping-options.md, QUICKSTART.md, context/model-performance.md, .mcp.json, exports/llm-collab-playbook/*
+- Tests: not run (docs/config export only)
