@@ -514,3 +514,12 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Committed web scraper type exports, research notes, and collaboration playbook export assets.
 - Files: src/core/types/web-scraper.ts, src/core/types/index.ts, research/12-web-scraping-options.md, QUICKSTART.md, context/model-performance.md, .mcp.json, exports/llm-collab-playbook/*
 - Tests: not run (docs/config export only)
+
+## 2026-02-05 codex -- meeting prep scraping + scrape CLI
+
+- Meeting prep now pulls company news via injected web scraper, surfaces in CLI output and LLM prompt (untrusted).
+- Added `npm run scrape` CLI for one-off fetch or crawl runs.
+- Granola transcript fetch now uses the tiered web scraper with HTML fallback extraction.
+- Contact parser now supports `Website` in contact info.
+- Files: src/core/meeting-prep.ts, src/core/meeting-prep.test.ts, src/cli/prep.ts, src/cli/scrape.ts, src/cli/index.ts, src/integrations/granola.ts, src/integrations/granola.test.ts, src/utils/markdown.ts, package.json
+- Tests: node --import tsx --test src/core/meeting-prep.test.ts src/integrations/granola.test.ts src/utils/markdown.test.ts
