@@ -2,7 +2,23 @@
 
 ## Currently Active
 
-*No agent currently working.*
+Agent: codex
+Task: integrate web scraper into meeting prep + add scrape CLI + update Granola
+Branch: main (shared types/prompts), then codex/webscrape-prep
+Files:
+  - src/core/types/crm.ts
+  - src/core/types/index.ts
+  - src/agents/prompts/meeting-prep.md
+  - src/core/meeting-prep.ts
+  - src/core/meeting-prep.test.ts
+  - src/cli/prep.ts
+  - src/cli/scrape.ts
+  - src/cli/index.ts
+  - src/integrations/granola.ts
+  - src/integrations/granola.test.ts
+  - package.json
+  - QUICKSTART.md (maybe)
+Started: 2026-02-05T00:00Z
 
 <!-- When starting work, replace the line above with:
 
