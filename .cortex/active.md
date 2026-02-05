@@ -2,18 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: commit web scraper + housekeeping files
-Branch: main
-Files:
-  - QUICKSTART.md
-  - context/model-performance.md
-  - src/core/types/index.ts
-  - .mcp.json
-  - research/12-web-scraping-options.md
-  - src/core/types/web-scraper.ts
-  - exports/
-Started: 2026-02-05T00:00Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 
