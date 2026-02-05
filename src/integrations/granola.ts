@@ -5,6 +5,9 @@
  * Returns structured text suitable for the content seed extractor.
  */
 
+import type { WebScraper } from "../core/types/web-scraper.js";
+import { createWebScraper } from "./web-scraper.js";
+
 export interface GranolaTranscript {
   /** The extracted transcript text */
   readonly text: string;
@@ -27,37 +30,16 @@ export function isGranolaUrl(url: string): boolean {
 }
 
 /**
- * Fetch and extract transcript text from a Granola shareable URL.
- * Performs a simple HTML scrape — extracts text content from the page.
+ * HTML fallback extraction for Granola pages.
  */
-export async function fetchGranolaTranscript(url: string): Promise<GranolaTranscript> {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Cortex/0.1 (personal-assistant)",
-      "Accept": "text/html",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Granola URL: ${response.status} ${response.statusText}`);
-  }
-
-  const html = await response.text();
-
-  // Extract title from <title> tag
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const title = titleMatch?.[1]?.trim();
-
-  // Strip HTML tags and extract text content
-  // Focus on main content area if identifiable
+function extractTextFromHtml(html: string): string {
   const mainContentMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)
     ?? html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)
     ?? html.match(/<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
 
   const rawHtml = mainContentMatch?.[1] ?? html;
 
-  // Strip HTML tags
-  const text = rawHtml
+  return rawHtml
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<[^>]+>/g, "\n")
@@ -69,10 +51,33 @@ export async function fetchGranolaTranscript(url: string): Promise<GranolaTransc
     .replace(/&#39;/g, "'")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+/**
+ * Fetch and extract transcript text from a Granola shareable URL.
+ * Uses the web scraper for tiered fetch + readability, with HTML fallback.
+ */
+export async function fetchGranolaTranscript(
+  url: string,
+  scraper: WebScraper = createWebScraper(),
+): Promise<GranolaTranscript> {
+  let page;
+  try {
+    page = await scraper.fetchPage(url, { selector: "main", waitForSelector: "main", includeHtml: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to fetch Granola URL: ${message}`);
+  }
+
+  const title = page.title;
+  let text = page.text?.trim();
+  if (!text && page.html) {
+    text = extractTextFromHtml(page.html);
+  }
 
   if (!text) {
     throw new Error("No text content extracted from Granola URL");
   }
 
-  return { text, url, title };
+  return { text, url: page.url ?? url, title };
 }

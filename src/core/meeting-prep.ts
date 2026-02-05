@@ -3,6 +3,7 @@ import path from "node:path";
 import { ConfigRouter } from "./routing.js";
 import {
   DEFAULT_MEETING_PREP_CONFIG,
+  type CompanyNewsItem,
   type Contact,
   type ContactStore,
   type InteractionRecord,
@@ -11,9 +12,21 @@ import {
   type MeetingPrepGenerator,
 } from "./types/crm.js";
 import type { Task, TaskQueue } from "./types/task-queue.js";
+import type { PageLink, WebScraper } from "./types/web-scraper.js";
 
 const DEFAULT_PROMPT_PATH = path.resolve("src", "agents", "prompts", "meeting-prep.md");
 const OPEN_STATUSES = new Set<Task["status"]>(["queued", "in_progress", "blocked"]);
+const NEWS_HINTS = [
+  "news",
+  "press",
+  "blog",
+  "updates",
+  "insights",
+  "stories",
+  "announcements",
+  "release",
+  "media",
+] as const;
 
 function pickBestContact(matches: readonly Contact[], query: string): Contact {
   const normalized = query.trim().toLowerCase();
@@ -57,10 +70,158 @@ function summarizeInteraction(interaction: InteractionRecord): string {
   return `- ${interaction.date} (${interaction.type}): ${detailParts.join(" | ")}`;
 }
 
+function normalizeUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  try {
+    return new URL(trimmed).toString();
+  } catch {
+    try {
+      return new URL(`https://${trimmed}`).toString();
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+function isSameDomain(base: URL, target: URL): boolean {
+  if (target.hostname === base.hostname) return true;
+  return target.hostname.endsWith(`.${base.hostname}`);
+}
+
+function scoreLinks(links: readonly PageLink[], baseUrl: string, hints: readonly string[]): PageLink[] {
+  const base = new URL(baseUrl);
+  const seen = new Set<string>();
+  const scored: Array<{ link: PageLink; score: number }> = [];
+
+  for (const link of links) {
+    if (!link.href) continue;
+    if (link.href.startsWith("mailto:") || link.href.startsWith("javascript:")) continue;
+    let resolved: URL;
+    try {
+      resolved = new URL(link.href);
+    } catch {
+      continue;
+    }
+    if (!isSameDomain(base, resolved)) continue;
+    if (resolved.pathname.toLowerCase().endsWith(".pdf")) continue;
+
+    const haystack = `${link.href} ${link.text}`.toLowerCase();
+    let score = 0;
+    for (const hint of hints) {
+      if (haystack.includes(hint)) score += 1;
+    }
+    if (score === 0) continue;
+
+    const normalized = resolved.toString().split("#")[0];
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    scored.push({ link: { href: normalized, text: link.text }, score });
+  }
+
+  return scored.sort((a, b) => b.score - a.score).map((entry) => entry.link);
+}
+
+function looksLikeArticleLink(link: PageLink, baseUrl: string): boolean {
+  let resolved: URL;
+  try {
+    resolved = new URL(link.href);
+  } catch {
+    return false;
+  }
+  if (!isSameDomain(new URL(baseUrl), resolved)) return false;
+  const path = resolved.pathname.toLowerCase();
+  if (!path || path === "/") return false;
+  if (path.endsWith(".pdf")) return false;
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length >= 2) return true;
+  if (/20\d{2}/.test(path)) return true;
+  return false;
+}
+
+function summarizeText(text: string, maxLength = 240): string | undefined {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (!cleaned) return undefined;
+  if (cleaned.length <= maxLength) return cleaned;
+  return `${cleaned.slice(0, maxLength).trimEnd()}...`;
+}
+
+async function fetchCompanyNews(
+  scraper: WebScraper,
+  contact: Contact,
+  config: MeetingPrepConfig,
+): Promise<CompanyNewsItem[]> {
+  if (!config.includeCompanyNews) return [];
+  if (config.companyNewsMaxItems <= 0) return [];
+
+  const baseCandidate = normalizeUrl(config.companyNewsUrl ?? contact.contactInfo?.website);
+  if (!baseCandidate) return [];
+
+  let homepage;
+  try {
+    homepage = await scraper.fetchPage(baseCandidate, { extractLinks: true });
+  } catch {
+    return [];
+  }
+
+  const baseUrl = homepage.url ?? baseCandidate;
+  const listingLinks = scoreLinks(homepage.links ?? [], baseUrl, NEWS_HINTS).slice(0, 3);
+  const articleLinks: PageLink[] = [];
+
+  for (const listing of listingLinks.slice(0, 2)) {
+    try {
+      const listingPage = await scraper.fetchPage(listing.href, { extractLinks: true });
+      const listingCandidates = (listingPage.links ?? []).filter((link) => looksLikeArticleLink(link, baseUrl));
+      for (const candidate of listingCandidates) {
+        if (articleLinks.length >= config.companyNewsMaxItems * 2) break;
+        articleLinks.push(candidate);
+      }
+    } catch {
+      // ignore listing failures
+    }
+  }
+
+  const candidates = articleLinks.length > 0 ? articleLinks : listingLinks;
+  const items: CompanyNewsItem[] = [];
+  const seen = new Set<string>();
+
+  for (const candidate of candidates) {
+    if (items.length >= config.companyNewsMaxItems) break;
+    if (seen.has(candidate.href)) continue;
+    seen.add(candidate.href);
+    try {
+      const page = await scraper.fetchPage(candidate.href);
+      const title = page.title ?? candidate.text ?? "Company update";
+      const summary = summarizeText(page.text);
+      items.push({
+        title,
+        url: page.url ?? candidate.href,
+        summary,
+      });
+    } catch {
+      // ignore article failures
+    }
+  }
+
+  return items;
+}
+
+function formatCompanyNews(items: readonly CompanyNewsItem[]): string {
+  if (items.length === 0) return "(none)";
+  return items
+    .map((item) => {
+      const summary = item.summary ? ` | ${item.summary}` : "";
+      return `- ${item.title} (${item.url})${summary}`;
+    })
+    .join("\n");
+}
+
 function buildMeetingPrepInput(
   contact: Contact,
   recentInteractions: readonly InteractionRecord[],
   openActionItems: readonly string[],
+  companyNews: readonly CompanyNewsItem[],
 ): string {
   const context = contact.context?.trim() || "(none)";
   const interactionLines = recentInteractions.length > 0
@@ -69,6 +230,7 @@ function buildMeetingPrepInput(
   const taskLines = openActionItems.length > 0
     ? openActionItems.map((item) => `- ${item}`).join("\n")
     : "(none)";
+  const newsLines = formatCompanyNews(companyNews);
 
   return [
     `Contact: ${contact.name}`,
@@ -84,6 +246,9 @@ function buildMeetingPrepInput(
     "",
     "Open Action Items:",
     taskLines,
+    "",
+    "Company News (untrusted):",
+    newsLines,
   ].join("\n");
 }
 
@@ -128,14 +293,21 @@ export class LLMMeetingPrepGenerator implements MeetingPrepGenerator {
   private readonly store: ContactStore;
   private readonly taskQueue: TaskQueue;
   private readonly router: ConfigRouter;
+  private readonly scraper?: WebScraper;
   private readonly promptPath: string;
   private promptCache?: string;
 
-  constructor(store: ContactStore, taskQueue: TaskQueue, router: ConfigRouter, promptPath: string = DEFAULT_PROMPT_PATH) {
+  constructor(
+    store: ContactStore,
+    taskQueue: TaskQueue,
+    router: ConfigRouter,
+    options: { promptPath?: string; scraper?: WebScraper } = {},
+  ) {
     this.store = store;
     this.taskQueue = taskQueue;
     this.router = router;
-    this.promptPath = promptPath;
+    this.promptPath = options.promptPath ?? DEFAULT_PROMPT_PATH;
+    this.scraper = options.scraper;
   }
 
   async generateBrief(query: string, config: Partial<MeetingPrepConfig> = {}): Promise<MeetingPrepBrief> {
@@ -149,6 +321,15 @@ export class LLMMeetingPrepGenerator implements MeetingPrepGenerator {
     const recentInteractions = contact.history.slice(0, cfg.maxInteractions);
     const allTasks = await this.taskQueue.list();
     const openActionItems = extractOpenActionItems(allTasks, contact);
+    let companyNews: CompanyNewsItem[] = [];
+
+    if (cfg.includeCompanyNews && this.scraper) {
+      try {
+        companyNews = await fetchCompanyNews(this.scraper, contact, cfg);
+      } catch {
+        companyNews = [];
+      }
+    }
 
     let suggestedTalkingPoints: string[] = [];
     let contextSummary = fallbackContextSummary(contact, recentInteractions);
@@ -156,7 +337,7 @@ export class LLMMeetingPrepGenerator implements MeetingPrepGenerator {
     if (cfg.generateTalkingPoints) {
       try {
         const systemPrompt = await this.loadPrompt();
-        const llmInput = buildMeetingPrepInput(contact, recentInteractions, openActionItems);
+        const llmInput = buildMeetingPrepInput(contact, recentInteractions, openActionItems, companyNews);
         const llmResponse = await this.router.route({
           task_type: "complex_reasoning",
           system_prompt: systemPrompt,
@@ -175,6 +356,7 @@ export class LLMMeetingPrepGenerator implements MeetingPrepGenerator {
       recentInteractions,
       openActionItems,
       suggestedTalkingPoints,
+      companyNews,
       contextSummary,
       generatedAt: new Date().toISOString(),
     };
