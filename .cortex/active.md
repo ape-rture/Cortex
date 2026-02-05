@@ -11,6 +11,7 @@ Files:
   - src/agents/prompts/meeting-prep.md
   - src/core/meeting-prep.ts
   - src/core/meeting-prep.test.ts
+  - src/utils/markdown.ts
   - src/cli/prep.ts
   - src/cli/scrape.ts
   - src/cli/index.ts
