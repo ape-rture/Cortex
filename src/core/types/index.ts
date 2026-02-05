@@ -119,6 +119,8 @@ export type {
   Contact,
   DecayAlert,
   DecayConfig,
+  CompanyNewsItem,
+  MeetingPrepConfig,
   MeetingPrepBrief,
   ContactStore,
   DecayDetector,
@@ -164,3 +166,16 @@ export type {
   WebScraperConfig,
   WebScraper,
 } from "./web-scraper.js";
+
+export type {
+  ProjectStatus,
+  Project,
+  ProjectStore,
+  ProjectGitStatus,
+  ProjectGitResult,
+  ProjectPushOptions,
+  ProjectGitOperations,
+  ScaffoldConfig,
+  ScaffoldResult,
+  ProjectScaffolder,
+} from "./project.js";

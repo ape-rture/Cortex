@@ -26,6 +26,8 @@ export interface ContactInfo {
   readonly email?: string;
   readonly linkedin?: string;
   readonly phone?: string;
+  /** Website (personal or company). */
+  readonly website?: string;
 }
 
 /**
@@ -161,6 +163,9 @@ export interface MeetingPrepBrief {
   /** LLM-generated talking point suggestions */
   readonly suggestedTalkingPoints: readonly string[];
 
+  /** Company news items pulled from the web (if available). */
+  readonly companyNews: readonly CompanyNewsItem[];
+
   /** Summary of the relationship context */
   readonly contextSummary: string;
 
@@ -223,6 +228,15 @@ export interface MeetingPrepConfig {
 
   /** Whether to call LLM for talking points (default: true) */
   readonly generateTalkingPoints: boolean;
+
+  /** Whether to pull company news via the web scraper (default: true). */
+  readonly includeCompanyNews: boolean;
+
+  /** Override URL for company news lookup. */
+  readonly companyNewsUrl?: string;
+
+  /** Maximum number of news items to include (default: 3). */
+  readonly companyNewsMaxItems: number;
 }
 
 /**
@@ -231,7 +245,21 @@ export interface MeetingPrepConfig {
 export const DEFAULT_MEETING_PREP_CONFIG: MeetingPrepConfig = {
   maxInteractions: 5,
   generateTalkingPoints: true,
+  includeCompanyNews: true,
+  companyNewsMaxItems: 3,
 };
+
+/**
+ * A single company news item pulled from the web.
+ */
+export interface CompanyNewsItem {
+  /** Headline or title */
+  readonly title: string;
+  /** Source URL */
+  readonly url: string;
+  /** Short summary snippet */
+  readonly summary?: string;
+}
 
 /**
  * Interface for generating meeting prep briefs.
