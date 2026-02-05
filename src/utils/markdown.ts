@@ -407,6 +407,7 @@ export function parseContactFile(content: string, filePath = ""): Contact {
         if (infoKey === "email") contactInfo.email = infoValue || contactInfo.email;
         if (infoKey === "linkedin") contactInfo.linkedin = infoValue || contactInfo.linkedin;
         if (infoKey === "phone") contactInfo.phone = infoValue || contactInfo.phone;
+        if (infoKey === "website") contactInfo.website = infoValue || contactInfo.website;
       }
       continue;
     }
@@ -479,6 +480,7 @@ export function serializeContact(contact: Contact): string {
   lines.push(`- Email: ${contact.contactInfo?.email ?? ""}`);
   lines.push(`- LinkedIn: ${contact.contactInfo?.linkedin ?? ""}`);
   lines.push(`- Phone: ${contact.contactInfo?.phone ?? ""}`);
+  lines.push(`- Website: ${contact.contactInfo?.website ?? ""}`);
 
   lines.push("\n## Context");
   if (contact.context) {

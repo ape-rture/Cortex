@@ -9,6 +9,7 @@ import type {
 } from "./types/crm.js";
 import type { RouteRequest, RouteResponse } from "./types/routing.js";
 import type { Task, TaskQueue, TaskPriority, TaskStatus } from "./types/task-queue.js";
+import type { CrawlResult, PageResult, WebScraper } from "./types/web-scraper.js";
 
 class FakeContactStore implements ContactStore {
   constructor(private readonly contacts: Contact[]) {}
@@ -89,6 +90,26 @@ class FakeRouter {
   }
 }
 
+class FakeScraper implements WebScraper {
+  constructor(private readonly pages: Map<string, PageResult>) {}
+
+  async fetchPage(url: string): Promise<PageResult> {
+    const page = this.pages.get(url);
+    if (!page) {
+      throw new Error(`No mock page for ${url}`);
+    }
+    return page;
+  }
+
+  async crawl(): Promise<CrawlResult> {
+    return { pages: [], errors: [], durationMs: 0 };
+  }
+
+  async isCdpAvailable(): Promise<boolean> {
+    return false;
+  }
+}
+
 function makeInteraction(index: number): InteractionRecord {
   return {
     date: `2026-01-0${index}`,
@@ -104,6 +125,9 @@ function makeContact(): Contact {
     role: "CTO",
     type: "customer",
     relationshipStatus: "active",
+    contactInfo: {
+      website: "https://meshpay.com",
+    },
     history: [
       makeInteraction(6),
       makeInteraction(5),
@@ -136,6 +160,32 @@ test("LLMMeetingPrepGenerator builds meeting brief with LLM talking points", asy
     makeTask("3", "Follow up with MeshPay contract team", "in_progress"),
     makeTask("4", "Closed item for Arjun Mukherjee", "done"),
   ];
+  const pages = new Map<string, PageResult>([
+    ["https://meshpay.com/", {
+      url: "https://meshpay.com/",
+      title: "MeshPay",
+      text: "Welcome to MeshPay",
+      links: [{ href: "https://meshpay.com/news", text: "News" }],
+      tier: "simple",
+      durationMs: 5,
+    }],
+    ["https://meshpay.com/news", {
+      url: "https://meshpay.com/news",
+      title: "MeshPay News",
+      text: "Latest updates",
+      links: [{ href: "https://meshpay.com/news/2026-launch", text: "Launch 2026" }],
+      tier: "simple",
+      durationMs: 5,
+    }],
+    ["https://meshpay.com/news/2026-launch", {
+      url: "https://meshpay.com/news/2026-launch",
+      title: "MeshPay Launches 2026",
+      text: "MeshPay announced its 2026 launch schedule.",
+      links: [],
+      tier: "simple",
+      durationMs: 5,
+    }],
+  ]);
   const router = new FakeRouter(async () => ({
     model_used: "openai:codex",
     used_fallback: false,
@@ -153,6 +203,7 @@ test("LLMMeetingPrepGenerator builds meeting brief with LLM talking points", asy
     new FakeContactStore([contact]),
     new FakeTaskQueue(tasks),
     router as unknown as ConfigRouter,
+    { scraper: new FakeScraper(pages) },
   );
 
   const brief = await generator.generateBrief("Arjun");
@@ -163,6 +214,9 @@ test("LLMMeetingPrepGenerator builds meeting brief with LLM talking points", asy
     "Send SOC2 docs to Arjun Mukherjee",
     "Follow up with MeshPay contract team",
   ]);
+  assert.equal(brief.companyNews.length, 1);
+  assert.equal(brief.companyNews[0]?.title, "MeshPay Launches 2026");
+  assert.equal(brief.companyNews[0]?.url, "https://meshpay.com/news/2026-launch");
   assert.deepEqual(brief.suggestedTalkingPoints, [
     "Confirm SOC2 docs",
     "Validate launch timeline",
@@ -171,6 +225,7 @@ test("LLMMeetingPrepGenerator builds meeting brief with LLM talking points", asy
   assert.equal(router.calls.length, 1);
   assert.ok(router.calls[0].system_prompt?.includes("Meeting Prep Agent"));
   assert.ok(router.calls[0].prompt.includes("Arjun Mukherjee"));
+  assert.ok(router.calls[0].prompt.includes("MeshPay Launches 2026"));
 });
 
 test("LLMMeetingPrepGenerator falls back when LLM call fails", async () => {
@@ -182,10 +237,12 @@ test("LLMMeetingPrepGenerator falls back when LLM call fails", async () => {
     new FakeContactStore([contact]),
     new FakeTaskQueue([]),
     router as unknown as ConfigRouter,
+    { scraper: new FakeScraper(new Map()) },
   );
 
   const brief = await generator.generateBrief("Arjun");
   assert.equal(brief.suggestedTalkingPoints.length, 0);
+  assert.equal(brief.companyNews.length, 0);
   assert.ok(brief.contextSummary.includes("Arjun Mukherjee"));
 });
 
@@ -201,6 +258,7 @@ test("LLMMeetingPrepGenerator throws when contact is missing", async () => {
     new FakeContactStore([]),
     new FakeTaskQueue([]),
     router as unknown as ConfigRouter,
+    { scraper: new FakeScraper(new Map()) },
   );
 
   await assert.rejects(() => generator.generateBrief("missing"), /Contact not found/);

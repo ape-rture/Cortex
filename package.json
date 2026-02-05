@@ -15,6 +15,7 @@
     "digest": "node --import tsx src/cli/digest.ts",
     "prep": "node --import tsx src/cli/prep.ts",
     "content": "node --import tsx src/cli/content.ts",
+    "scrape": "node --import tsx src/cli/scrape.ts",
     "dev:ui": "node --import tsx src/ui/server.ts"
   },
   "dependencies": {

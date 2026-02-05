@@ -3,6 +3,8 @@ import { ConfigRouter } from "../core/routing.js";
 import { LLMMeetingPrepGenerator } from "../core/meeting-prep.js";
 import { MarkdownTaskQueue } from "../core/task-queue.js";
 import { MarkdownContactStore } from "../utils/contact-store.js";
+import { createWebScraper } from "../integrations/web-scraper.js";
+import type { CompanyNewsItem } from "../core/types/crm.js";
 
 function formatSection(title: string, body: string): string {
   return `## ${title}\n${body.trim()}\n`;
@@ -20,11 +22,20 @@ function formatList(items: readonly string[], empty = "(none)"): string {
   return items.map((item) => `- ${item}`).join("\n");
 }
 
+function formatCompanyNews(items: readonly CompanyNewsItem[]): string {
+  if (items.length === 0) return "(none)";
+  return items.map((item) => {
+    const summary = item.summary ? ` — ${item.summary}` : "";
+    return `- ${item.title}${summary} (${item.url})`;
+  }).join("\n");
+}
+
 export async function runMeetingPrep(query: string): Promise<string> {
   const generator = new LLMMeetingPrepGenerator(
     new MarkdownContactStore(),
     new MarkdownTaskQueue(),
     new ConfigRouter(),
+    { scraper: createWebScraper() },
   );
 
   const brief = await generator.generateBrief(query);
@@ -40,6 +51,7 @@ export async function runMeetingPrep(query: string): Promise<string> {
   output.push(formatSection("Context Summary", brief.contextSummary));
   output.push(formatSection("Recent Interactions", formatInteractions(brief.recentInteractions)));
   output.push(formatSection("Open Action Items", formatList(brief.openActionItems)));
+  output.push(formatSection("Company News", formatCompanyNews(brief.companyNews)));
   output.push(formatSection("Suggested Talking Points", formatList(brief.suggestedTalkingPoints, "(no LLM suggestions)")));
   output.push(`Generated: ${brief.generatedAt}`);
 
