@@ -36,6 +36,34 @@ Just paste the Granola link. I'll:
 - **Before 1:1s**: "Prep for 1:1 with [name]"
 - **Track everything**: Just mention things naturally, I'll capture them
 
+## Web Terminal
+
+Start the browser UI:
+
+```bash
+npm run dev:ui
+```
+
+Open [http://localhost:8787](http://localhost:8787). Available commands:
+
+| Command | What it does |
+|---------|--------------|
+| `/gm` | Morning briefing |
+| `/gm <question>` | Briefing + LLM follow-up (hybrid mode) |
+| `/digest` | End-of-day digest |
+| `/prep <name>` | Meeting prep brief |
+| `/content` | Content pipeline overview |
+| `/content list` | List all content ideas |
+| `/content draft <id>` | Generate a draft for an idea |
+| `/content seeds` | Show unprocessed content seeds |
+| `/tasks` | Show task queue |
+| `/contacts <query>` | Search contacts |
+| `/snapshot` | Last session snapshot |
+
+Anything not starting with `/` goes to the LLM via ConfigRouter.
+
+Set `UI_PORT` to change the port (default 8787).
+
 ## First Steps
 
 1. Fill in `context/company.md` with your company info

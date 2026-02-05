@@ -27,3 +27,5 @@ Track LLM performance by task type and provider.
 | 2026-02-03T22:09:09.541Z | content_drafting | anthropic | claude-sonnet-4-20250514 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
 | 2026-02-04T16:02:07.774Z | complex_reasoning | anthropic | claude-opus-4-1-20250805 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
 | 2026-02-04T16:02:12.379Z | complex_reasoning | openai | gpt-4o-2024-11-20 | 845 | 215 | 4570 | yes |  |  |
+| 2026-02-04T20:01:56.778Z | meeting_summary | anthropic | claude-sonnet-4-20250514 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
+| 2026-02-04T20:01:56.806Z | meeting_summary | anthropic | claude-opus-4-1-20250805 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |

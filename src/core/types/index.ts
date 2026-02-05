@@ -153,3 +153,14 @@ export {
   DEFAULT_DRAFT_CONFIG,
   DEFAULT_SEED_EXTRACTOR_CONFIG,
 } from "./content.js";
+
+export type {
+  PageResult,
+  PageLink,
+  FetchTier,
+  FetchPageOptions,
+  CrawlOptions,
+  CrawlResult,
+  WebScraperConfig,
+  WebScraper,
+} from "./web-scraper.js";
