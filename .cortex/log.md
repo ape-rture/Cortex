@@ -4,6 +4,79 @@
 
 ---
 
+## 2026-02-05 claude -- Content DB architecture research
+
+### Research: Local vs Cloud Memory
+
+Analyzed when local BM25/embeddings vs cloud DB+RAG makes sense:
+- **Local wins**: <100K docs, single user, offline, privacy-critical
+- **Cloud wins**: Multi-user, >100K docs, complex queries, real-time updates
+
+**Cortex position**: Local-first for personal context (correct), cloud for shared Indexing Co content.
+
+### Architecture Decision: Two-Domain Model
+
+1. **Cortex Personal** → Local markdown + git (unchanged)
+2. **Indexing Co Content** → Managed Postgres + pgvector (Supabase)
+
+Integration via MCP Server (`@indexingco/content-mcp`):
+- Cortex calls `content_search`, `content_upsert` as MCP tools
+- Same DB serves Marketing Tool via REST API
+- Ingestion pipelines (cron, webhooks) populate content
+
+### Documents Created
+
+- `research/13-content-db-architecture.md` — Full technical research
+- `decisions/2026-02-05-content-db-integration.md` — Architecture decision
+- `decisions/2026-02-05-content-db-implementation-plan.md` — Phased implementation plan
+
+### Key Decisions
+
+- **Service**: Supabase (native pgvector, auth, REST API, edge functions)
+- **Schema**: Single `content_items` table with vector embeddings
+- **Embedding**: text-embedding-3-small (OpenAI)
+- **Access**: MCP for Cortex, REST for Marketing Tool, Edge Functions for ingestion
+
+### Next Steps (Codex)
+
+Phase 2 of implementation plan: Build `@indexingco/content-mcp` server with:
+- content_search, content_get, content_upsert, content_list, content_similar tools
+- Supabase client + OpenAI embeddings integration
+
+---
+
+## 2026-02-05 claude -- Multi-project management design + template generalization
+
+### Phase 4: Project Management (design complete)
+
+**Types created:**
+- `src/core/types/project.ts` — Project, ProjectStore, ProjectGitStatus, ProjectGitOperations, ScaffoldConfig, ScaffoldResult, ProjectScaffolder interfaces
+- Added exports to `src/core/types/index.ts`
+
+**Template generalized:**
+- Renamed `.cortex/` → `.collab/` in all template files under `exports/llm-collab-playbook/template-root/`
+- Updated references in CONVENTIONS.md, CLAUDE.md, AGENTS.md to use `.collab/`
+- Updated README.md with scaffolding instructions
+
+**Registry created:**
+- `projects/project-registry.md` — initial registry with Cortex as first entry
+
+**Codex tasks added:**
+- parseProjects/serializeProjects utilities
+- MarkdownProjectStore implementation
+- SimpleProjectGit implementation (cross-folder git ops)
+- TemplateScaffolder implementation
+- project CLI with list/add/remove/status/push/pull/scaffold/update subcommands
+- Tests for store and git operations
+
+### Design decisions:
+- Registry format: markdown table (consistent with content-ideas)
+- Cross-folder git: use `cwd` option pattern from git-monitor.ts
+- Template folder: `.collab/` (generic) instead of `.cortex/` (Cortex-specific)
+- Safety: refuse push to main without explicit flag
+
+Plan at: `C:\Users\Dennis\.claude\plans\floofy-enchanting-tarjan.md`
+
 ## 2026-02-04 codex -- tests for content generators and granola integration
 
 - Added unit tests:

@@ -8,6 +8,17 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
+- **Set up remote git backup** -- Agent: dennis (then codex). Create private repo on GitHub/GitLab, add as remote origin, push all branches. Codex can wire up the remote and do initial push once Dennis creates the repo.
+
+### Multi-Project Management (Phase 4)
+
+- **Add parseProjects/serializeProjects utilities** -- Agent: codex -- Branch: `codex/project-mgmt`. Add to `src/utils/markdown.ts`. Parse markdown table format (ID, Name, Path, Remote, Status, TechStack, LastActivity, Notes). Follow content-ideas pattern.
+- **Implement MarkdownProjectStore** -- Agent: codex -- Branch: `codex/project-mgmt`. Create `src/core/project-store.ts` implementing `ProjectStore` interface from `src/core/types/project.ts`. Follow MarkdownContentStore pattern. Registry file at `projects/project-registry.md`.
+- **Implement SimpleProjectGit** -- Agent: codex -- Branch: `codex/project-mgmt`. Create `src/core/project-git.ts` implementing `ProjectGitOperations`. Use `cwd` option pattern from git-monitor.ts. Safety: refuse push to main without --force-main flag.
+- **Implement TemplateScaffolder** -- Agent: codex -- Branch: `codex/project-mgmt`. Create `src/core/project-scaffolder.ts` implementing `ProjectScaffolder`. Copy from `exports/llm-collab-playbook/template-root/`. Replace [PROJECT_NAME], [OWNER_NAME], [DATE] placeholders. Uses `.collab/` folder (not `.cortex/`).
+- **Implement project CLI** -- Agent: codex -- Branch: `codex/project-mgmt`. Create `src/cli/project.ts` with subcommands: list, add, remove, status, push, pull, scaffold, update. Add `"project"` script to package.json. Export from `src/cli/index.ts`.
+- **Add project store and git tests** -- Agent: codex -- Branch: `codex/project-mgmt`. Add `src/core/project-store.test.ts` and `src/core/project-git.test.ts`. Use temp directory fixtures.
+
 
 ## In Progress
 

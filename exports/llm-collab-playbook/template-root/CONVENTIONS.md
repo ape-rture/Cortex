@@ -13,7 +13,7 @@
 
 ### Track 1 (shared coordination/docs): commit to `main`
 
-- `.cortex/*`
+- `.collab/*`
 - `CONVENTIONS.md`, `SYSTEM.md`, agent instruction files
 - Shared architecture docs
 
@@ -31,10 +31,10 @@
 
 ## Coordination Protocol
 
-1. Check `.cortex/active.md` before starting
-2. Pick up assigned work from `.cortex/tasks.md`
-3. Reserve files in `.cortex/active.md`
-4. On completion: update `.cortex/log.md`, clear active entry, update task status
+1. Check `.collab/active.md` before starting
+2. Pick up assigned work from `.collab/tasks.md`
+3. Reserve files in `.collab/active.md`
+4. On completion: update `.collab/log.md`, clear active entry, update task status
 
 ## Safety Rules
 
@@ -47,4 +47,4 @@
 
 - Add tests for non-trivial features
 - Run tests before merge
-- If tests cannot run, document it in `.cortex/log.md`
+- If tests cannot run, document it in `.collab/log.md`

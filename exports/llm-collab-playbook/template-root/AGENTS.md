@@ -7,7 +7,7 @@
 You are the backend and data specialist.
 
 - Build data models, API logic, integrations, and tests
-- Implement tasks dispatched from `.cortex/tasks.md`
+- Implement tasks dispatched from `.collab/tasks.md`
 - Defer architecture docs and high-level planning to Claude Code
 
 ## Session Workflow
@@ -16,16 +16,16 @@ You are the backend and data specialist.
 
 1. Read `CONVENTIONS.md`
 2. Read `SYSTEM.md`
-3. Read `.cortex/active.md`
-4. Read `.cortex/tasks.md`
-5. Read recent `.cortex/log.md`
+3. Read `.collab/active.md`
+4. Read `.collab/tasks.md`
+5. Read recent `.collab/log.md`
 
 ### End
 
 1. Commit completed work
-2. Log outcomes in `.cortex/log.md` (files changed + tests)
-3. Clear `.cortex/active.md` entry
-4. Update `.cortex/tasks.md`
+2. Log outcomes in `.collab/log.md` (files changed + tests)
+3. Clear `.collab/active.md` entry
+4. Update `.collab/tasks.md`
 
 ## Git
 

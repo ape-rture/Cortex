@@ -55,6 +55,10 @@ Sub-phases: 3a (ideas tracker + store), 3b (thread builder + podcast distributio
 
 | Feature | Priority | Status | Notes |
 |---|---|---|---|
+| **Project registry** | P0 | Types done | Track external projects in `projects/project-registry.md`. Types at `src/core/types/project.ts` |
+| **Cross-folder git ops** | P0 | Designed | Push/pull/status for projects in other directories. Safety guardrails for main branch |
+| **Collaboration template scaffold** | P1 | Template ready | `npm run project scaffold "Name" /path`. Copies `.collab/` + instruction files |
+| **Project CLI** | P1 | Queued | `npm run project list/add/status/push/pull/scaffold`. Codex tasks added |
 | **Project heartbeat** | P1 | Confirmed | Track: last commit age, blockers, stale branches, failing tests. Weekly health view |
 | **Dependency & security watch** | P2 | Confirmed | Monitor vulns, breaking changes, deprecations in active projects |
 | **Pen testing support** | P3 | Confirmed | Help run and interpret security audits when needed |

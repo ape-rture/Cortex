@@ -18,8 +18,17 @@ If you want your exact current setup, copy from `exports/llm-collab-playbook/raw
 
 ## Minimal setup checklist
 
-- Add `.cortex/active.md`, `.cortex/tasks.md`, `.cortex/log.md`
+- Add `.collab/active.md`, `.collab/tasks.md`, `.collab/log.md`
 - Add `CONVENTIONS.md`
 - Add one instruction file per agent (`CLAUDE.md`, `AGENTS.md`, etc.)
 - Define branch naming + commit message format
 - Define file reservation and handoff protocol
+
+## Automated scaffolding (from Cortex)
+
+If you have Cortex set up, you can scaffold a new project with:
+```bash
+npm run project scaffold "Project Name" /path/to/target --init-git
+```
+
+This copies the template, replaces placeholders, and optionally registers the project.
