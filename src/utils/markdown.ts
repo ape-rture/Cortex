@@ -21,6 +21,7 @@ import type {
   DraftRevision,
   SeedSource,
 } from "../core/types/content.js";
+import type { Project, ProjectStatus } from "../core/types/project.js";
 
 const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "failed", "cancelled"] as const;
 type MutableTask = { -readonly [K in keyof Task]: Task[K] };
@@ -30,6 +31,7 @@ type MutableContentIdea = { -readonly [K in keyof ContentIdea]: ContentIdea[K] }
 type MutableContentSeed = { -readonly [K in keyof ContentSeed]: ContentSeed[K] };
 type MutableContentDraft = { -readonly [K in keyof ContentDraft]: ContentDraft[K] };
 type MutableDraftRevision = { -readonly [K in keyof DraftRevision]: DraftRevision[K] };
+type MutableProject = { -readonly [K in keyof Project]: Project[K] };
 
 function normalizeLine(line: string): string {
   return line.trim();
@@ -604,6 +606,92 @@ function isSeparatorRow(cells: readonly string[]): boolean {
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function parseProjectStatus(value: string | undefined): ProjectStatus {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "active":
+    case "paused":
+    case "archived":
+      return normalized;
+    default:
+      return "active";
+  }
+}
+
+function parseTechStack(value: string | undefined): string[] {
+  if (!value) return [];
+  const normalized = value.trim();
+  if (!normalized || normalized === "-" || normalized === "—" || normalized === "â€”") return [];
+  return normalized
+    .split(/[;,]/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function parseOptionalCell(value: string | undefined): string | undefined {
+  const normalized = value?.trim();
+  if (!normalized || normalized === "-" || normalized === "—" || normalized === "â€”") return undefined;
+  return normalized;
+}
+
+function normalizeAddedAt(lastActivity: string | undefined): string {
+  if (!lastActivity) return nowIso();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(lastActivity)) {
+    return `${lastActivity}T00:00:00.000Z`;
+  }
+  return lastActivity;
+}
+
+export function parseProjects(content: string): Project[] {
+  const projects: MutableProject[] = [];
+  const lines = content.split(/\r?\n/);
+
+  for (const rawLine of lines) {
+    const cells = parseTableCells(rawLine);
+    if (cells.length < 8) continue;
+    if (cells[0].toLowerCase() === "id") continue;
+    if (isSeparatorRow(cells)) continue;
+
+    const id = cells[0];
+    const name = cells[1];
+    const projectPath = cells[2];
+    if (!id || !name || !projectPath) continue;
+
+    const lastActivity = parseOptionalCell(cells[6]);
+    projects.push({
+      id,
+      name,
+      path: projectPath,
+      gitRemote: parseOptionalCell(cells[3]),
+      status: parseProjectStatus(cells[4]),
+      techStack: parseTechStack(cells[5]),
+      lastActivity,
+      notes: parseOptionalCell(cells[7]),
+      addedAt: normalizeAddedAt(lastActivity),
+    });
+  }
+
+  return projects;
+}
+
+export function serializeProjects(projects: readonly Project[]): string {
+  const lines: string[] = [];
+  lines.push("# Project Registry");
+  lines.push("");
+  lines.push("External projects tracked by Cortex for cross-folder git monitoring and management.");
+  lines.push("");
+  lines.push("| ID | Name | Path | Remote | Status | Tech Stack | Last Activity | Notes |");
+  lines.push("|---|---|---|---|---|---|---|---|");
+
+  for (const project of projects) {
+    lines.push(
+      `| ${escapeTableCell(project.id)} | ${escapeTableCell(project.name)} | ${escapeTableCell(project.path)} | ${escapeTableCell(project.gitRemote ?? "-")} | ${project.status} | ${escapeTableCell(project.techStack.join(","))} | ${escapeTableCell(project.lastActivity ?? "")} | ${escapeTableCell(project.notes ?? "")} |`,
+    );
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
 }
 
 export function parseContentIdeas(content: string): ContentIdea[] {
