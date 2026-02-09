@@ -22,6 +22,7 @@ import { codeWatcherAgent } from "../agents/code-watcher.js";
 import type { Trigger, TriggerType } from "../core/types/orchestrator.js";
 import type { ScoredFinding } from "../core/types/agent-output.js";
 import type { OrchestratorConfig, OrchestratorCycle } from "../core/types/orchestrator.js";
+import type { AgentEvent } from "../core/types/events.js";
 
 const DEFAULT_CONFIG_PATH = "context/orchestrator.json";
 const FALLBACK_AGENTS = ["sales-watcher", "content-scanner", "code-watcher"];
@@ -224,6 +225,7 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
 
 interface RunOrchestrateOptions {
   configPath?: string;
+  onEvent?: (event: AgentEvent) => void;
 }
 
 export async function runOrchestrate(
@@ -240,49 +242,54 @@ export async function runOrchestrate(
 
   const orchestrator = new CortexOrchestrator(configPath);
   registerDefaultAgents(orchestrator);
+  const unsubscribe = options.onEvent ? orchestrator.onEvent(options.onEvent) : undefined;
 
-  if (args.showHistory) {
-    const cycles = orchestrator.history(5);
-    if (cycles.length === 0) {
-      return "No cycle history available (history is in-memory only).";
+  try {
+    if (args.showHistory) {
+      const cycles = orchestrator.history(5);
+      if (cycles.length === 0) {
+        return "No cycle history available (history is in-memory only).";
+      }
+      const lines = ["# Orchestrator History", ""];
+      for (const cycle of cycles) {
+        lines.push(`- **${cycle.cycle_id}** (${cycle.started_at}): ${cycle.agents_spawned.length} agents, ${cycle.surfaced.length} surfaced findings`);
+      }
+      return lines.join("\n");
     }
-    const lines = ["# Orchestrator History", ""];
-    for (const cycle of cycles) {
-      lines.push(`- **${cycle.cycle_id}** (${cycle.started_at}): ${cycle.agents_spawned.length} agents, ${cycle.surfaced.length} surfaced findings`);
+
+    const config = await loadConfig(configPath);
+
+    if (args.runCronTriggers) {
+      const cronTriggers = (config?.triggers ?? []).filter((trigger) => trigger.type === "cron");
+      if (cronTriggers.length === 0) {
+        return "No cron triggers configured.";
+      }
+
+      const cycles: OrchestratorCycle[] = [];
+      for (const configured of cronTriggers) {
+        const trigger: Trigger = {
+          ...configured,
+          agents: args.agents ?? [...configured.agents],
+        };
+        cycles.push(await orchestrator.runCycle(trigger));
+      }
+
+      return formatCronCycles(cycles);
     }
-    return lines.join("\n");
+
+    const triggerType = args.triggerType ?? "cli";
+    const triggerAgents = args.agents ?? pickAgents(config, triggerType, args.schedule);
+    const trigger: Trigger = {
+      type: triggerType,
+      agents: triggerAgents,
+      ...(args.schedule ? { schedule: args.schedule } : {}),
+    };
+
+    const cycle = await orchestrator.runCycle(trigger);
+    return formatCycle(cycle, args.verbose);
+  } finally {
+    unsubscribe?.();
   }
-
-  const config = await loadConfig(configPath);
-
-  if (args.runCronTriggers) {
-    const cronTriggers = (config?.triggers ?? []).filter((trigger) => trigger.type === "cron");
-    if (cronTriggers.length === 0) {
-      return "No cron triggers configured.";
-    }
-
-    const cycles: OrchestratorCycle[] = [];
-    for (const configured of cronTriggers) {
-      const trigger: Trigger = {
-        ...configured,
-        agents: args.agents ?? [...configured.agents],
-      };
-      cycles.push(await orchestrator.runCycle(trigger));
-    }
-
-    return formatCronCycles(cycles);
-  }
-
-  const triggerType = args.triggerType ?? "cli";
-  const triggerAgents = args.agents ?? pickAgents(config, triggerType, args.schedule);
-  const trigger: Trigger = {
-    type: triggerType,
-    agents: triggerAgents,
-    ...(args.schedule ? { schedule: args.schedule } : {}),
-  };
-
-  const cycle = await orchestrator.runCycle(trigger);
-  return formatCycle(cycle, args.verbose);
 }
 
 // ---------------------------------------------------------------------

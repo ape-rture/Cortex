@@ -636,3 +636,15 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Contact parser now supports `Website` in contact info.
 - Files: src/core/meeting-prep.ts, src/core/meeting-prep.test.ts, src/cli/prep.ts, src/cli/scrape.ts, src/cli/index.ts, src/integrations/granola.ts, src/integrations/granola.test.ts, src/utils/markdown.ts, package.json
 - Tests: node --import tsx --test src/core/meeting-prep.test.ts src/integrations/granola.test.ts src/utils/markdown.test.ts
+
+## 2026-02-09 codex -- orchestrator test pass + cron daemon support
+
+- Added missing orchestrator-related unit coverage for memory update application in `src/core/memory-writer.test.ts` and validated existing `salience`, `permission-validator`, `agent-runner`, and `orchestrator` suites.
+- Added `src/core/claude-code-process.test.ts` covering `extractJsonFromText`, `normalizeFinding`, `parseAgentResult`, and result subtype handling (`success`, non-success error subtype, `error_max_turns` salvage/escalation) using mocked SDK query streams.
+- Added dependency-injectable hooks in `src/core/claude-code-process.ts` to make SDK query and prompt loading testable without network/process calls.
+- Implemented cron runtime support with `node-cron`: `src/core/cron-scheduler.ts`, tests in `src/core/cron-scheduler.test.ts`, and daemon entrypoint `src/cli/daemon.ts`.
+- Wired daemon execution: added `npm run daemon` script and exported daemon CLI in `src/cli/index.ts`.
+- Added `/orchestrate` SSE event streaming in web terminal: `runOrchestrate()` now accepts `onEvent` callback (`src/cli/orchestrate.ts`) and `src/ui/handlers/chat.ts` streams live orchestrator agent events before final summary output.
+- Fixed `MemoryWriter` flag path resolution to honor configured base path (`src/core/memory-writer.ts`), preventing temp-dir tests from writing to repo root.
+- Files changed: `package.json`, `package-lock.json`, `src/core/claude-code-process.ts`, `src/core/memory-writer.ts`, `src/core/memory-writer.test.ts`, `src/core/claude-code-process.test.ts`, `src/core/cron-scheduler.ts`, `src/core/cron-scheduler.test.ts`, `src/cli/daemon.ts`, `src/cli/index.ts`, `src/cli/orchestrate.ts`, `src/ui/handlers/chat.ts`.
+- Tests: `npm run typecheck`, `npm run test:unit`, `npm test` (all passing).

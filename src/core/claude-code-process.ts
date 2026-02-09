@@ -15,6 +15,16 @@ import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
 import type { AgentOutput, Finding, MemoryUpdate } from "./types/agent-output.js";
 import type { AgentSpawnConfig, Trigger } from "./types/orchestrator.js";
 
+type QueryParams = Parameters<typeof query>[0];
+type QueryStream = AsyncIterable<Record<string, unknown>>;
+type QueryFunction = (params: QueryParams) => QueryStream;
+type ReadFileFunction = (filePath: string, encoding: BufferEncoding) => Promise<string>;
+
+export interface ClaudeCodeProcessDeps {
+  readonly queryImpl?: QueryFunction;
+  readonly readFileImpl?: ReadFileFunction;
+}
+
 // ---------------------------------------------------------------------
 // JSON Schema for structured agent output
 // ---------------------------------------------------------------------
@@ -92,7 +102,7 @@ function resolveModel(modelRef: string): string | undefined {
 // Output normalization
 // ---------------------------------------------------------------------
 
-function normalizeFinding(raw: Record<string, unknown>): Finding {
+export function normalizeFinding(raw: Record<string, unknown>): Finding {
   return {
     type: (raw.type as Finding["type"]) ?? "insight",
     summary: String(raw.summary ?? ""),
@@ -119,7 +129,7 @@ function normalizeMemoryUpdate(raw: Record<string, unknown>): MemoryUpdate | nul
 /**
  * Extract JSON from text that may contain markdown code fences.
  */
-function extractJsonFromText(text: string): string {
+export function extractJsonFromText(text: string): string {
   const trimmed = text.trim();
 
   if (trimmed.startsWith("{")) {
@@ -142,7 +152,7 @@ function extractJsonFromText(text: string): string {
 /**
  * Parse structured output or text into AgentOutput.
  */
-function parseAgentResult(
+export function parseAgentResult(
   agent: string,
   structuredOutput: unknown,
   resultText: string,
@@ -217,11 +227,16 @@ function tryParseJson(text: string): unknown {
 export async function executeClaudeCodeAgent(
   config: AgentSpawnConfig,
   context: { cycle_id: string; trigger: Trigger; basePath: string },
+  deps: ClaudeCodeProcessDeps = {},
 ): Promise<AgentOutput> {
+  const readFileImpl: ReadFileFunction =
+    deps.readFileImpl ?? ((filePath, encoding) => fs.readFile(filePath, encoding));
+  const queryImpl: QueryFunction = deps.queryImpl ?? ((params) => query(params));
+
   // Load agent system prompt
   let agentPrompt: string;
   try {
-    agentPrompt = await fs.readFile(
+    agentPrompt = await readFileImpl(
       path.resolve(context.basePath, config.prompt_path),
       "utf8",
     );
@@ -254,7 +269,7 @@ export async function executeClaudeCodeAgent(
   const timer = setTimeout(() => abortController.abort(), timeoutMs);
 
   try {
-    const q = query({
+    const q = queryImpl({
       prompt: taskPrompt,
       options: {
         systemPrompt: agentPrompt,

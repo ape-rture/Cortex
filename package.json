@@ -18,6 +18,7 @@
     "project": "node --import tsx src/cli/project.ts",
     "scrape": "node --import tsx src/cli/scrape.ts",
     "orchestrate": "node --import tsx src/cli/orchestrate.ts",
+    "daemon": "node --import tsx src/cli/daemon.ts",
     "dev:ui": "node --import tsx src/ui/server.ts"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "googleapis": "^171.1.0",
     "hono": "^4.6.12",
     "linkedom": "^0.18.12",
+    "node-cron": "^4.2.1",
     "openai": "^6.17.0",
     "playwright-core": "^1.58.1",
     "robots-parser": "^3.0.1"

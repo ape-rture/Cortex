@@ -8,16 +8,14 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-- **Set up remote git backup** -- Agent: dennis (then codex). Create private repo on GitHub/GitLab, add as remote origin, push all branches. Codex can wire up the remote and do initial push once Dennis creates the repo.
 
 ### Orchestrator MVP Follow-up (Phase 5)
 
-- **Write unit tests for orchestrator components** -- Agent: codex. Add `src/core/salience.test.ts`, `src/core/permission-validator.test.ts`, `src/core/memory-writer.test.ts`, `src/core/agent-runner.test.ts`, `src/core/orchestrator.test.ts`. Follow existing test patterns (node:test, temp directories for file ops).
-- **Add cron trigger support** -- Agent: codex. Add `node-cron` dependency. Create `src/core/cron-scheduler.ts` that reads trigger configs with `type: "cron"` and schedules `runCycle` calls. Wire into `npm run daemon` script. (CLI flags already added in orchestrate.ts)
-
 ### Claude Code Agents (Phase 5.5)
 
-- **Add unit tests for claude-code-process.ts** -- Agent: codex. Test `parseAgentResult`, `extractJsonFromText`, `normalizeFinding`, and the output handling for success/error/max_turns result subtypes. Mock the SDK query function.
+### Web Terminal (Phase 1.5)
+
+- **Wire /project into web terminal** -- Agent: codex. Add `/project` command to `src/ui/handlers/chat.ts` command registry. Support `/project status` (all projects), `/project list`, and `/project status <id>` (single project). Import and call `runProject` from `src/cli/project.ts`. Follow `/orchestrate` pattern.
 
 ## In Progress
 
@@ -27,6 +25,11 @@
 
 ## Done
 
+- **Set up remote git backup** -- Agent: dennis + claude. Created private repo at `https://github.com/ape-rture/Cortex.git`, added as origin, pushed main.
+- **Stream /orchestrate progress in web terminal SSE** -- Agent: codex -- Branch: `main`. Extended `runOrchestrate()` with `onEvent` subscription and updated `src/ui/handlers/chat.ts` to stream per-agent started/completed events during `/orchestrate`.
+- **Write unit tests for orchestrator components** -- Agent: codex -- Branch: `main`. Added/validated `src/core/salience.test.ts`, `src/core/permission-validator.test.ts`, `src/core/agent-runner.test.ts`, `src/core/orchestrator.test.ts`, and added `src/core/memory-writer.test.ts` with temp-directory file operation coverage.
+- **Add cron trigger support** -- Agent: codex -- Branch: `main`. Added `node-cron` dependency, created `src/core/cron-scheduler.ts` + `src/core/cron-scheduler.test.ts`, added daemon runner in `src/cli/daemon.ts`, and wired `npm run daemon`.
+- **Add unit tests for claude-code-process.ts** -- Agent: codex -- Branch: `main`. Added `src/core/claude-code-process.test.ts` for `extractJsonFromText`, `normalizeFinding`, `parseAgentResult`, and success/error/max_turns output handling using a mocked SDK query stream.
 - **Create more claude_code agents** -- Agent: claude -- Branch: `claude/more-agents` (merged to `main`). Designed prompts for smart-sales-watcher and triage agent, added configs to orchestrator.json, added escalation loop and cycle timeout to orchestrator.
 - **Wire /orchestrate into web terminal** -- Agent: claude -- Branch: `claude/more-agents` (merged to `main`). Added `/orchestrate` command to `src/ui/handlers/chat.ts` with flag parsing. Also added cron/trigger CLI flags to orchestrate.ts.
 - **Add parseProjects/serializeProjects utilities** -- Agent: codex -- Branch: `codex/project-mgmt` (merged to `main`). Added to `src/utils/markdown.ts` with project table parsing/serialization and test coverage in `src/utils/markdown.test.ts`.

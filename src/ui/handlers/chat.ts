@@ -11,12 +11,26 @@ import { runOrchestrate } from "../../cli/orchestrate.js";
 import { MarkdownTaskQueue } from "../../core/task-queue.js";
 import { MarkdownContactStore } from "../../utils/contact-store.js";
 import { MarkdownSessionSnapshotStore } from "../../core/session-snapshot.js";
+import type { AgentEvent } from "../../core/types/events.js";
 
 type SSEEvent = "message_start" | "delta" | "message_end" | "error";
 
 function encodeEvent(event: SSEEvent, data: unknown): Uint8Array {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   return new TextEncoder().encode(payload);
+}
+
+function formatOrchestratorEvent(event: AgentEvent): string {
+  if (event.type === "started") {
+    return `- ${event.agent}: started`;
+  }
+  if (event.type === "action") {
+    return `- ${event.agent}: ${event.action.kind} ${event.action.label} (${event.phase})`;
+  }
+  if (event.ok) {
+    return `- ${event.agent}: completed`;
+  }
+  return `- ${event.agent}: failed (${event.error ?? "unknown error"})`;
 }
 
 // ---------------------------------------------------------------------------
@@ -189,6 +203,46 @@ export function registerChatHandlers(
       async start(controller) {
         try {
           const start = Date.now();
+          const orchestrateMatch = pendingPrompt.trim().match(/^\/orchestrate(?:\s+(.*))?$/i);
+
+          if (orchestrateMatch) {
+            const chunks: string[] = [];
+            const appendChunk = (content: string): void => {
+              chunks.push(content);
+              controller.enqueue(encodeEvent("delta", { content }));
+            };
+
+            controller.enqueue(
+              encodeEvent("message_start", {
+                message_id: assistantMessage.id,
+                model: "local:orchestrate",
+              }),
+            );
+
+            const args = (orchestrateMatch[1] ?? "").trim().split(/\s+/).filter(Boolean);
+            const summary = await runOrchestrate(args, {
+              onEvent: (event) => {
+                appendChunk(`${formatOrchestratorEvent(event)}\n`);
+              },
+            });
+
+            if (summary.trim()) {
+              const prefix = chunks.length > 0 ? "\n" : "";
+              appendChunk(`${prefix}${summary}`);
+            }
+
+            const latencyMs = Date.now() - start;
+            controller.enqueue(encodeEvent("message_end", { message_id: assistantMessage.id, latency_ms: latencyMs }));
+            store.finishAssistantMessage(
+              sessionId,
+              assistantMessage.id,
+              chunks.join(""),
+              "local:orchestrate",
+              latencyMs,
+            );
+            return;
+          }
+
           const commandResult = await resolveCommand(pendingPrompt, router);
           const response = commandResult
             ? {

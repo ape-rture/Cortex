@@ -26,8 +26,6 @@ export interface ApplyResult {
 // Implementation
 // ---------------------------------------------------------------------
 
-const REVIEW_QUEUE_PATH = path.resolve("actions", "review-queue.md");
-
 export class MemoryWriter {
   private readonly basePath: string;
 
@@ -124,9 +122,10 @@ export class MemoryWriter {
   }
 
   private async applyFlag(update: MemoryUpdate): Promise<void> {
+    const reviewQueuePath = this.resolvePath(path.join("actions", "review-queue.md"));
     const snippet = update.content.slice(0, 100).replace(/\n/g, " ");
     const entry = `- [ ] **Flagged**: ${snippet} (file: ${update.file})\n`;
-    await fs.mkdir(path.dirname(REVIEW_QUEUE_PATH), { recursive: true });
-    await appendToFile(REVIEW_QUEUE_PATH, entry);
+    await fs.mkdir(path.dirname(reviewQueuePath), { recursive: true });
+    await appendToFile(reviewQueuePath, entry);
   }
 }
