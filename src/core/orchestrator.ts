@@ -89,6 +89,11 @@ export class CortexOrchestrator implements Orchestrator {
     const started_at = nowIso();
     const events: AgentEvent[] = [];
 
+    // Cycle-level timeout — hard cap on the entire cycle including retries
+    const cycleTimeoutMs = this.config.max_cycle_timeout_ms ?? 600_000; // 10 min default
+    const cycleStart = Date.now();
+    const isCycleExpired = () => Date.now() - cycleStart >= cycleTimeoutMs;
+
     // Capture events for this cycle
     const captureEvent = (event: AgentEvent) => {
       events.push(event);
@@ -127,6 +132,64 @@ export class CortexOrchestrator implements Orchestrator {
           errors: [result.reason instanceof Error ? result.reason.message : String(result.reason)],
         };
       });
+
+      // Escalation loop: evaluate salvaged results and decide whether to retry.
+      //
+      // Decision logic (no reasoning — just scoring):
+      // 1. Score the salvaged findings through the salience scorer
+      // 2. If any finding passes the fame threshold → results are good enough, skip retry
+      // 3. If nothing surfaces → retry with doubled turns
+      //
+      // This keeps the orchestrator mechanistic per Dennett principles.
+      const maxRetries = this.config!.max_escalations_per_agent ?? 0;
+      if (maxRetries > 0 && !isCycleExpired()) {
+        for (let i = 0; i < agent_outputs.length; i++) {
+          if (isCycleExpired()) break;
+
+          const output = agent_outputs[i];
+          if (!output.escalation_needed) continue;
+
+          const agentName = agentNames[i];
+          const agentConfig = this.agents.get(agentName);
+          if (!agentConfig || agentConfig.execution_type !== "claude_code") continue;
+
+          // Score salvaged findings — are they good enough?
+          if (output.findings.length > 0) {
+            const salvageFindings: FindingWithAgent[] = output.findings.map(
+              (finding) => ({ finding, agent: agentName }),
+            );
+            const salvageScored = this.scorer.score(salvageFindings);
+            const salvageSurfaced = salvageScored.filter(
+              (sf) => sf.salience >= this.config!.fame_threshold,
+            );
+
+            if (salvageSurfaced.length > 0) {
+              // Partial results pass the fame threshold — good enough, skip retry
+              continue;
+            }
+          }
+
+          // Not good enough — retry with adjusted parameters
+          const remainingMs = cycleTimeoutMs - (Date.now() - cycleStart);
+          const retryConfig: AgentSpawnConfig = {
+            ...agentConfig,
+            max_turns: (agentConfig.max_turns ?? 10) * 2,
+            permissions: {
+              ...agentConfig.permissions,
+              timeout_ms: Math.min(agentConfig.permissions.timeout_ms || 300_000, remainingMs),
+            },
+          };
+
+          try {
+            const retryOutput = await this.runner.run(retryConfig, { ...context, agent: agentName });
+            if (retryOutput.findings.length > 0 || !retryOutput.escalation_needed) {
+              agent_outputs[i] = retryOutput;
+            }
+          } catch {
+            // Keep original salvaged output on retry failure
+          }
+        }
+      }
 
       // Validate and apply memory updates
       const allApproved: AgentOutput["memory_updates"][number][] = [];
