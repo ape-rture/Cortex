@@ -17,6 +17,7 @@
     "content": "node --import tsx src/cli/content.ts",
     "project": "node --import tsx src/cli/project.ts",
     "scrape": "node --import tsx src/cli/scrape.ts",
+    "orchestrate": "node --import tsx src/cli/orchestrate.ts",
     "dev:ui": "node --import tsx src/ui/server.ts"
   },
   "dependencies": {
