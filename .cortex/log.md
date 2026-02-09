@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-02-09 codex -- phase 4 multi-project management
+
+- Implemented project registry markdown utilities: `parseProjects` / `serializeProjects` in `src/utils/markdown.ts` with new tests in `src/utils/markdown.test.ts`.
+- Added `MarkdownProjectStore` in `src/core/project-store.ts` with CRUD/find/filter operations for `projects/project-registry.md`.
+- Added `SimpleProjectGit` in `src/core/project-git.ts` implementing status/fetch/pull/push across external repo paths, with main/master push safety guard requiring `--force-main`.
+- Added `TemplateScaffolder` in `src/core/project-scaffolder.ts` to scaffold from `exports/llm-collab-playbook/template-root/`, replace `[PROJECT_NAME]`, `[OWNER_NAME]`, `[DATE]`, support optional git init, and optional registry add.
+- Added new project CLI in `src/cli/project.ts` with subcommands: `list`, `add`, `remove`, `status`, `push`, `pull`, `scaffold`, `update`.
+- Wired CLI exports/scripts in `src/cli/index.ts` and `package.json` (`npm run project`).
+- Added tests: `src/core/project-store.test.ts`, `src/core/project-git.test.ts`.
+- Tests run:
+  - `npm run typecheck`
+  - `node --import tsx --test src/utils/markdown.test.ts src/core/project-store.test.ts src/core/project-git.test.ts`
+  - `npm run test:unit`
+- Branch flow: implemented on `codex/project-mgmt`, merged to `main`, branch deleted.
+
 ## 2026-02-05 claude -- Content DB architecture research
 
 ### Research: Local vs Cloud Memory
