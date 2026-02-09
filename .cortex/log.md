@@ -671,3 +671,23 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `node --import tsx --test src/ui/cycle-store.test.ts src/ui/review-store.test.ts src/ui/handlers/phase2-api.test.ts`
   - `npm run test:unit`
   - `npm test`
+
+## 2026-02-09 codex -- phase 3 dashboard frontend wiring
+
+- Wired dashboard view to live API data in `src/ui/dashboard/src/views/dashboard.tsx`:
+  - Pulls `/api/dashboard` and `/api/dashboard/cycles`
+  - Auto-refreshes
+  - Shows cycle summary, review count, task summary, agent health, recent cycles
+- Wired monitor view in `src/ui/dashboard/src/views/monitor.tsx`:
+  - Connects to `/api/monitor/stream` SSE
+  - Tracks `agent_started`, `agent_action`, `agent_completed`, and `cycle_complete` events
+  - Supports cycle triggering via `/api/orchestrate/trigger`
+  - Shows live agent cards and cycle history
+- Wired review queue view in `src/ui/dashboard/src/views/review.tsx`:
+  - Loads `/api/review`
+  - Actions wired to `/api/review/:id/approve`, `/dismiss`, `/snooze`
+  - Auto-refreshes and handles per-item pending state
+- Validation run:
+  - `npm run build:dashboard`
+  - `npm run typecheck`
+  - `npm run test:unit`

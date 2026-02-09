@@ -25,6 +25,7 @@
 
 ## Done
 
+- **Phase 3: Wire dashboard/monitor/review views to Phase 2 APIs** -- Agent: codex -- Branch: `main`. Implemented live data wiring in `src/ui/dashboard/src/views/dashboard.tsx`, `src/ui/dashboard/src/views/monitor.tsx`, and `src/ui/dashboard/src/views/review.tsx` using `/api/dashboard`, `/api/dashboard/cycles`, `/api/review/*`, `/api/tasks`, `/api/monitor/stream`, and `/api/orchestrate/trigger`.
 - **Phase 2 dashboard backend** -- Agent: codex -- Branch: `main`. Added `src/ui/cycle-store.ts` and `src/ui/review-store.ts`; implemented `/api/dashboard`, `/api/dashboard/cycles`, `/api/review/*`, `/api/tasks`, `/api/monitor/stream`, and `/api/orchestrate/trigger`; wired a live `CortexOrchestrator` into `src/ui/server.ts`; added tests in `src/ui/cycle-store.test.ts`, `src/ui/review-store.test.ts`, and `src/ui/handlers/phase2-api.test.ts`.
 - **Set up remote git backup** -- Agent: dennis + claude. Created private repo at `https://github.com/ape-rture/Cortex.git`, added as origin, pushed main.
 - **Stream /orchestrate progress in web terminal SSE** -- Agent: codex -- Branch: `main`. Extended `runOrchestrate()` with `onEvent` subscription and updated `src/ui/handlers/chat.ts` to stream per-agent started/completed events during `/orchestrate`.
