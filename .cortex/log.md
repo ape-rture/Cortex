@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-02-09 claude -- Merge claude/more-agents branch
+
+### Finalized and merged orchestrator enhancements
+
+- Enhanced `src/cli/orchestrate.ts` with `--trigger`, `--cron`, `--schedule` flags and config-driven agent picking
+- Wired `/orchestrate` into web terminal (`src/ui/handlers/chat.ts`)
+- Updated QUICKSTART docs, project registry (added Marketing Tool), task board
+- Typecheck clean, 59/59 tests pass
+- Branch: `claude/more-agents`, merged to `main`
+
+---
+
 ## 2026-02-09 claude -- Claude Code Agent Execution (Phase 5.5)
 
 ### Added `claude_code` execution type to orchestrator

@@ -13,13 +13,11 @@
 ### Orchestrator MVP Follow-up (Phase 5)
 
 - **Write unit tests for orchestrator components** -- Agent: codex. Add `src/core/salience.test.ts`, `src/core/permission-validator.test.ts`, `src/core/memory-writer.test.ts`, `src/core/agent-runner.test.ts`, `src/core/orchestrator.test.ts`. Follow existing test patterns (node:test, temp directories for file ops).
-- **Wire /orchestrate into web terminal** -- Agent: codex. Add `/orchestrate` command to `src/ui/handlers/chat.ts` command registry. Stream events via SSE using `onEvent` listener. Follow `/gm` pattern.
-- **Add cron trigger support** -- Agent: codex. Add `node-cron` dependency. Create `src/core/cron-scheduler.ts` that reads trigger configs with `type: "cron"` and schedules `runCycle` calls. Wire into `npm run daemon` script.
+- **Add cron trigger support** -- Agent: codex. Add `node-cron` dependency. Create `src/core/cron-scheduler.ts` that reads trigger configs with `type: "cron"` and schedules `runCycle` calls. Wire into `npm run daemon` script. (CLI flags already added in orchestrate.ts)
 
 ### Claude Code Agents (Phase 5.5)
 
 - **Add unit tests for claude-code-process.ts** -- Agent: codex. Test `parseAgentResult`, `extractJsonFromText`, `normalizeFinding`, and the output handling for success/error/max_turns result subtypes. Mock the SDK query function.
-- **Create more claude_code agents** -- Agent: claude. Design prompts for smart sales-watcher (reads contacts, reasons about relationships) and triage agent (routes incoming tasks). Add configs to orchestrator.json.
 
 ## In Progress
 
@@ -29,6 +27,8 @@
 
 ## Done
 
+- **Create more claude_code agents** -- Agent: claude -- Branch: `claude/more-agents` (merged to `main`). Designed prompts for smart-sales-watcher and triage agent, added configs to orchestrator.json, added escalation loop and cycle timeout to orchestrator.
+- **Wire /orchestrate into web terminal** -- Agent: claude -- Branch: `claude/more-agents` (merged to `main`). Added `/orchestrate` command to `src/ui/handlers/chat.ts` with flag parsing. Also added cron/trigger CLI flags to orchestrate.ts.
 - **Add parseProjects/serializeProjects utilities** -- Agent: codex -- Branch: `codex/project-mgmt` (merged to `main`). Added to `src/utils/markdown.ts` with project table parsing/serialization and test coverage in `src/utils/markdown.test.ts`.
 - **Implement MarkdownProjectStore** -- Agent: codex -- Branch: `codex/project-mgmt` (merged to `main`). Added `src/core/project-store.ts` for registry CRUD/filter/find operations on `projects/project-registry.md`.
 - **Implement SimpleProjectGit** -- Agent: codex -- Branch: `codex/project-mgmt` (merged to `main`). Added `src/core/project-git.ts` with status/fetch/pull/push and protected main/master push guard.
