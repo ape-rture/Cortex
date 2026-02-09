@@ -10,6 +10,8 @@ import {
   serializeContentDraft,
   parseContentSeeds,
   serializeContentSeeds,
+  parseProjects,
+  serializeProjects,
 } from "./markdown.js";
 
 test("parseTaskQueue extracts tasks and metadata", () => {
@@ -180,4 +182,41 @@ test("serializeContentSeeds renders both sections", () => {
   assert.ok(markdown.includes("## Unprocessed"));
   assert.ok(markdown.includes("## Promoted"));
   assert.ok(markdown.includes("seed-2"));
+});
+
+test("parseProjects extracts rows from project registry table", () => {
+  const content = `# Project Registry
+
+| ID | Name | Path | Remote | Status | Tech Stack | Last Activity | Notes |
+|---|---|---|---|---|---|---|---|
+| cortex | Cortex | D:\\Documenten\\Programmeren\\Personal Assistant | - | active | typescript,node | 2026-02-05 | Main assistant system |
+| sidecar | Sidecar API | C:\\Repos\\sidecar | git@github.com:org/sidecar.git | paused | go,postgres | 2026-02-04 | waiting on infra |
+`;
+
+  const projects = parseProjects(content);
+  assert.equal(projects.length, 2);
+  assert.equal(projects[0].id, "cortex");
+  assert.equal(projects[0].status, "active");
+  assert.deepEqual(projects[0].techStack, ["typescript", "node"]);
+  assert.equal(projects[1].gitRemote, "git@github.com:org/sidecar.git");
+  assert.equal(projects[1].status, "paused");
+});
+
+test("serializeProjects renders project registry table", () => {
+  const output = serializeProjects([
+    {
+      id: "proj-1",
+      name: "Project One",
+      path: "C:\\Repos\\project-one",
+      gitRemote: "https://example.com/project-one.git",
+      status: "active",
+      techStack: ["typescript", "node"],
+      lastActivity: "2026-02-09",
+      notes: "Primary workspace",
+      addedAt: "2026-02-09T10:00:00Z",
+    },
+  ]);
+
+  assert.ok(output.includes("| ID | Name | Path | Remote | Status | Tech Stack | Last Activity | Notes |"));
+  assert.ok(output.includes("| proj-1 | Project One | C:\\Repos\\project-one | https://example.com/project-one.git | active | typescript,node | 2026-02-09 | Primary workspace |"));
 });
