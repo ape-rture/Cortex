@@ -66,6 +66,10 @@ export interface AgentSpawnConfig {
   /** Allowed tools for claude_code execution (e.g. ["Read", "Glob", "Grep", "Bash"]) */
   readonly allowed_tools?: readonly string[];
 
+  /** Budget cap per agent run in USD. For external APIs (claude_api, openai_api) this is a hard
+   *  cost limit. For claude_code (subscription-based), it's a loose safety net. */
+  readonly max_budget_usd?: number;
+
   /** Model to use (from permission envelope, can be overridden) */
   readonly model: ModelRef;
 }
@@ -129,6 +133,9 @@ export interface OrchestratorConfig {
 
   /** Max escalations per agent per cycle */
   readonly max_escalations_per_agent: number;
+
+  /** Max total time for an entire cycle in ms (including retries). Default: 600000 (10 min) */
+  readonly max_cycle_timeout_ms?: number;
 
   /** Path to routing config (context/model-routing.json) */
   readonly routing_config_path: string;

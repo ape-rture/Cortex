@@ -262,7 +262,7 @@ export async function executeClaudeCodeAgent(
         tools,
         allowedTools: tools,
         maxTurns: config.max_turns ?? 6,
-        maxBudgetUsd: 0.50,
+        maxBudgetUsd: config.max_budget_usd ?? 5.00,
         cwd: context.basePath,
         persistSession: false,
         permissionMode: "bypassPermissions",
@@ -275,13 +275,26 @@ export async function executeClaudeCodeAgent(
       },
     });
 
-    // Consume the async generator to get the final result
+    // Consume the async generator, capturing assistant text along the way.
+    // If the agent hits max_turns before producing structured output, we
+    // salvage observations from these intermediate messages.
     let resultMessage: SDKResultMessage | undefined;
+    const assistantChunks: string[] = [];
 
     for await (const message of q) {
       if (message.type === "result") {
         resultMessage = message as SDKResultMessage;
         break;
+      }
+
+      // Capture assistant text blocks for potential salvage
+      const msgAny = message as Record<string, unknown>;
+      if (msgAny.type === "assistant" && Array.isArray(msgAny.content)) {
+        for (const block of msgAny.content as Array<Record<string, unknown>>) {
+          if (block.type === "text" && typeof block.text === "string") {
+            assistantChunks.push(block.text);
+          }
+        }
       }
     }
 
@@ -306,13 +319,52 @@ export async function executeClaudeCodeAgent(
       num_turns?: number;
     };
 
-    const output = parseAgentResult(
+    let output = parseAgentResult(
       config.agent,
       resultAny.structured_output,
       resultAny.result ?? "",
     );
 
-    // Append SDK-level errors for non-success subtypes
+    // Handle max_turns: salvage partial results from intermediate text
+    if (resultAny.subtype === "error_max_turns" && output.findings.length === 0) {
+      const accumulatedText = assistantChunks.join("\n").trim();
+
+      if (accumulatedText) {
+        // Try to parse JSON from accumulated assistant text
+        const salvaged = parseAgentResult(config.agent, null, accumulatedText);
+
+        if (salvaged.findings.length > 0) {
+          output = salvaged;
+        } else {
+          // Wrap raw observations as a single insight
+          output = {
+            ...output,
+            findings: [{
+              type: "insight" as const,
+              summary: `Partial analysis (hit turn limit): ${accumulatedText.split("\n")[0].slice(0, 150)}`,
+              detail: accumulatedText.slice(0, 3000),
+              urgency: "low" as const,
+              confidence: 0.3,
+              context_refs: [],
+              requires_human: false,
+            }],
+          };
+        }
+      }
+
+      return {
+        ...output,
+        escalation_needed: true,
+        escalation_reason: `Agent used all ${resultAny.num_turns ?? config.max_turns} turns without producing structured output. Consider increasing max_turns.`,
+        errors: [
+          ...output.errors,
+          `Agent ended with: ${resultAny.subtype}`,
+          ...(resultAny.errors ?? []),
+        ],
+      };
+    }
+
+    // Append SDK-level errors for other non-success subtypes
     if (resultAny.subtype !== "success") {
       return {
         ...output,

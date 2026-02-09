@@ -7,6 +7,7 @@ import { runMorningBriefing } from "../../cli/gm.js";
 import { runDailyDigest } from "../../cli/digest.js";
 import { runMeetingPrep } from "../../cli/prep.js";
 import { runContent } from "../../cli/content.js";
+import { runOrchestrate } from "../../cli/orchestrate.js";
 import { MarkdownTaskQueue } from "../../core/task-queue.js";
 import { MarkdownContactStore } from "../../utils/contact-store.js";
 import { MarkdownSessionSnapshotStore } from "../../core/session-snapshot.js";
@@ -34,6 +35,10 @@ const commands: Record<string, (args: string) => Promise<string>> = {
   "/content": (args) => {
     const parts = args.trim().split(/\s+/);
     return runContent(parts.filter(Boolean));
+  },
+  "/orchestrate": (args) => {
+    const parts = args.trim().split(/\s+/).filter(Boolean);
+    return runOrchestrate(parts);
   },
   "/tasks": async () => {
     const queue = new MarkdownTaskQueue();

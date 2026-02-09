@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-02-09 claude -- Claude Code Agent Execution (Phase 5.5)
+
+### Added `claude_code` execution type to orchestrator
+
+Agents can now run as full Claude Code sessions with autonomous reasoning capabilities. Each agent spawns an isolated SDK session via `@anthropic-ai/claude-agent-sdk` with scoped tools, structured JSON output (enforced via json_schema), and budget caps.
+
+### Key decisions:
+- **SDK over subprocess**: Started with CLI subprocess spawning, hit Windows arg escaping issues. Discovered `@anthropic-ai/claude-agent-sdk` package — programmatic API is much cleaner.
+- **Structured output**: JSON schema enforcement via `outputFormat` ensures agents always return valid `{ findings, memory_updates, errors }`.
+- **Budget caps**: Each agent limited to $0.50 per run via `maxBudgetUsd`.
+- **Haiku for agents**: Sonnet was too slow for background agents. Haiku with 15 turns completes in ~3.5 min.
+- **maxTurns matters**: With 5 turns, agents ran out of turns reading files and never produced output. 15 turns is the sweet spot.
+
+### Files:
+- `src/core/claude-code-process.ts` — SDK-based executor (query, parse, normalize)
+- `src/agents/prompts/project-analyst.md` — first Claude Code agent
+- Modified `src/core/agent-runner.ts` — claude_code routing, timeout handling
+- Modified `src/core/types/orchestrator.ts` — new execution type, max_turns, allowed_tools
+
+### Branch: `claude/claude-code-agents`
+
+### Proof of concept:
+`npm run orchestrate -- --agents=project-analyst --verbose` produces 9 structured findings analyzing the entire codebase. Cost: ~$0.14 per run.
+
+### Unfinished:
+- Need to merge branch to main
+- Could add more claude_code agents (smart sales-watcher, triage agent)
+- Could add parallel execution of local + claude_code agents (already works via Promise.allSettled)
+
+---
+
 ## 2026-02-09 claude -- Orchestrator MVP (Phase 5)
 
 ### Implemented the Dennett-inspired orchestrator

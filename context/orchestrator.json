@@ -68,6 +68,47 @@
       "execution_type": "claude_code",
       "model": "anthropic:haiku",
       "max_turns": 15,
+      "max_budget_usd": 5.00,
+      "allowed_tools": ["Read", "Glob", "Grep"]
+    },
+    "smart-sales-watcher": {
+      "agent": "smart-sales-watcher",
+      "prompt_path": "src/agents/prompts/smart-sales-watcher.md",
+      "permissions": {
+        "agent": "smart-sales-watcher",
+        "can_read": ["contacts/**", "meetings/**", "context/company.md", "context/weekly-focus.md"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 4096,
+        "model": "anthropic:haiku",
+        "timeout_ms": 300000
+      },
+      "execution_type": "claude_code",
+      "model": "anthropic:haiku",
+      "max_turns": 15,
+      "max_budget_usd": 5.00,
+      "allowed_tools": ["Read", "Glob", "Grep"]
+    },
+    "triage-agent": {
+      "agent": "triage-agent",
+      "prompt_path": "src/agents/prompts/triage-agent.md",
+      "permissions": {
+        "agent": "triage-agent",
+        "can_read": ["actions/**", ".cortex/**", "context/weekly-focus.md"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 4096,
+        "model": "anthropic:haiku",
+        "timeout_ms": 300000
+      },
+      "execution_type": "claude_code",
+      "model": "anthropic:haiku",
+      "max_turns": 15,
+      "max_budget_usd": 5.00,
       "allowed_tools": ["Read", "Glob", "Grep"]
     }
   },
@@ -78,13 +119,19 @@
     },
     {
       "type": "cli",
+      "schedule": "smart",
+      "agents": ["smart-sales-watcher", "triage-agent"]
+    },
+    {
+      "type": "cli",
       "schedule": "deep",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-analyst"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-analyst", "smart-sales-watcher", "triage-agent"]
     }
   ],
+  "max_cycle_timeout_ms": 600000,
   "fame_threshold": 0.3,
-  "max_parallel_agents": 3,
-  "max_escalations_per_agent": 0,
+  "max_parallel_agents": 6,
+  "max_escalations_per_agent": 1,
   "routing_config_path": "context/model-routing.json",
   "agent_routing": {
     "affinities": [

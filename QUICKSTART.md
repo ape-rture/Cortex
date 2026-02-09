@@ -56,6 +56,7 @@ Open [http://localhost:8787](http://localhost:8787). Available commands:
 | `/content list` | List all content ideas |
 | `/content draft <id>` | Generate a draft for an idea |
 | `/content seeds` | Show unprocessed content seeds |
+| `/orchestrate [flags]` | Run orchestrator cycle (`--history`, `--verbose`, `--cron`) |
 | `/tasks` | Show task queue |
 | `/contacts <query>` | Search contacts |
 | `/snapshot` | Last session snapshot |

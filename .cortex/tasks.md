@@ -16,6 +16,11 @@
 - **Wire /orchestrate into web terminal** -- Agent: codex. Add `/orchestrate` command to `src/ui/handlers/chat.ts` command registry. Stream events via SSE using `onEvent` listener. Follow `/gm` pattern.
 - **Add cron trigger support** -- Agent: codex. Add `node-cron` dependency. Create `src/core/cron-scheduler.ts` that reads trigger configs with `type: "cron"` and schedules `runCycle` calls. Wire into `npm run daemon` script.
 
+### Claude Code Agents (Phase 5.5)
+
+- **Add unit tests for claude-code-process.ts** -- Agent: codex. Test `parseAgentResult`, `extractJsonFromText`, `normalizeFinding`, and the output handling for success/error/max_turns result subtypes. Mock the SDK query function.
+- **Create more claude_code agents** -- Agent: claude. Design prompts for smart sales-watcher (reads contacts, reasons about relationships) and triage agent (routes incoming tasks). Add configs to orchestrator.json.
+
 ## In Progress
 
 *Agent moves task here when starting.*
