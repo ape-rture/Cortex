@@ -120,3 +120,58 @@ export interface SSEError {
 export interface ListSessionsResponse {
   readonly sessions: readonly Pick<ChatSession, "id" | "name" | "created_at">[];
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2 dashboard API types
+// ---------------------------------------------------------------------------
+
+export interface CycleSummary {
+  readonly cycle_id: string;
+  readonly started_at: string;
+  readonly completed_at?: string;
+  readonly trigger_type: string;
+  readonly agents_spawned: readonly string[];
+  readonly finding_count: number;
+  readonly surfaced_count: number;
+  readonly error_count: number;
+}
+
+export interface AgentHealth {
+  readonly agent: string;
+  readonly last_run?: string;
+  readonly last_ok: boolean;
+  readonly total_runs: number;
+  readonly total_errors: number;
+  readonly avg_latency_ms: number;
+}
+
+export interface TaskItem {
+  readonly title: string;
+  readonly status: "queued" | "in_progress" | "done";
+  readonly agent?: string;
+}
+
+export interface TaskSummary {
+  readonly queued: number;
+  readonly in_progress: number;
+  readonly done: number;
+  readonly items: readonly TaskItem[];
+}
+
+export interface DashboardData {
+  readonly last_cycle: CycleSummary | null;
+  readonly agent_health: Record<string, AgentHealth>;
+  readonly review_pending: number;
+  readonly task_summary: TaskSummary;
+}
+
+export interface ReviewItem {
+  readonly id: string;
+  readonly summary: string;
+  readonly detail?: string;
+  readonly urgency: string;
+  readonly agent: string;
+  readonly salience: number;
+  readonly status: "pending" | "approved" | "dismissed" | "snoozed";
+  readonly created_at: string;
+}

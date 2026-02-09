@@ -19,13 +19,16 @@
     "scrape": "node --import tsx src/cli/scrape.ts",
     "orchestrate": "node --import tsx src/cli/orchestrate.ts",
     "daemon": "node --import tsx src/cli/daemon.ts",
-    "dev:ui": "node --import tsx src/ui/server.ts"
+    "dev:ui": "node --import tsx src/ui/server.ts",
+    "dev:dashboard": "vite --config src/ui/dashboard/vite.config.ts",
+    "build:dashboard": "vite build --config src/ui/dashboard/vite.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.37",
     "@anthropic-ai/sdk": "^0.72.1",
     "@hono/node-server": "^1.14.0",
     "@mozilla/readability": "^0.6.0",
+    "@preact/signals": "^2.7.1",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.3",
     "googleapis": "^171.1.0",
@@ -34,11 +37,14 @@
     "node-cron": "^4.2.1",
     "openai": "^6.17.0",
     "playwright-core": "^1.58.1",
+    "preact": "^10.28.3",
     "robots-parser": "^3.0.1"
   },
   "devDependencies": {
+    "@preact/preset-vite": "^2.10.3",
     "@types/node": "^25.2.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   }
 }

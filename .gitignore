@@ -12,6 +12,12 @@ dist/
 build/
 *.tsbuildinfo
 
+# Dashboard build output
+src/ui/dist/
+
+# Runtime data
+data/
+
 # Claude Code
 .claude/
 

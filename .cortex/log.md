@@ -648,3 +648,26 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Fixed `MemoryWriter` flag path resolution to honor configured base path (`src/core/memory-writer.ts`), preventing temp-dir tests from writing to repo root.
 - Files changed: `package.json`, `package-lock.json`, `src/core/claude-code-process.ts`, `src/core/memory-writer.ts`, `src/core/memory-writer.test.ts`, `src/core/claude-code-process.test.ts`, `src/core/cron-scheduler.ts`, `src/core/cron-scheduler.test.ts`, `src/cli/daemon.ts`, `src/cli/index.ts`, `src/cli/orchestrate.ts`, `src/ui/handlers/chat.ts`.
 - Tests: `npm run typecheck`, `npm run test:unit`, `npm test` (all passing).
+
+## 2026-02-09 codex -- phase 2 dashboard backend stores + APIs
+
+- Implemented `src/ui/cycle-store.ts` for in-memory cycle summaries and per-agent health metrics (`last_ok`, run/error counts, average latency).
+- Implemented `src/ui/review-store.ts` parsing `actions/review-queue.md` with durable status transitions (`approve`, `dismiss`, `snooze`) stored in `actions/review-state.json`.
+- Added `src/ui/monitor-broker.ts` and new API handlers:
+  - `src/ui/handlers/dashboard.ts` (`/api/dashboard`, `/api/dashboard/cycles`)
+  - `src/ui/handlers/review.ts` (`/api/review`, `/api/review/:id/approve`, `/api/review/:id/dismiss`, `/api/review/:id/snooze`)
+  - `src/ui/handlers/tasks.ts` (`/api/tasks` with `.cortex/tasks.md` parser)
+  - `src/ui/handlers/monitor.ts` (`/api/monitor/stream` SSE + heartbeat)
+  - `src/ui/handlers/orchestrator.ts` (`/api/orchestrate/trigger`, event fanout + cycle_complete publish)
+- Updated handler wiring in `src/ui/handlers/index.ts`.
+- Wired live orchestrator runtime into UI server in `src/ui/server.ts` (registering local watcher agents) and updated `src/ui/index.ts` app composition for runtime services + dashboard build/static fallback.
+- Updated backend web types in `src/ui/types.ts` to include dashboard/review/task payload contracts.
+- Tests added:
+  - `src/ui/cycle-store.test.ts`
+  - `src/ui/review-store.test.ts`
+  - `src/ui/handlers/phase2-api.test.ts`
+- Validation run:
+  - `npm run typecheck`
+  - `node --import tsx --test src/ui/cycle-store.test.ts src/ui/review-store.test.ts src/ui/handlers/phase2-api.test.ts`
+  - `npm run test:unit`
+  - `npm test`

@@ -3,15 +3,32 @@ import { serve } from "@hono/node-server";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createApp } from "./index.js";
+import { CortexOrchestrator } from "../core/orchestrator.js";
+import { salesWatcherAgent } from "../agents/sales-watcher.js";
+import { contentScannerAgent } from "../agents/content-scanner.js";
+import { codeWatcherAgent } from "../agents/code-watcher.js";
 
 async function loadSystemPrompt(): Promise<string> {
   const filePath = path.resolve("SYSTEM.md");
   return await fs.readFile(filePath, "utf8");
 }
 
+function createUiOrchestrator(configPath: string): CortexOrchestrator {
+  const orchestrator = new CortexOrchestrator(configPath);
+  orchestrator.runner.registerLocal("sales-watcher", salesWatcherAgent);
+  orchestrator.runner.registerLocal("content-scanner", contentScannerAgent);
+  orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
+  return orchestrator;
+}
+
 async function start(): Promise<void> {
   const systemPrompt = await loadSystemPrompt();
-  const app = createApp({ systemPrompt });
+  const orchestratorConfigPath =
+    process.env.ORCHESTRATOR_CONFIG_PATH ?? path.resolve("context", "orchestrator.json");
+  const app = createApp({
+    systemPrompt,
+    orchestrator: createUiOrchestrator(orchestratorConfigPath),
+  });
   const port = Number.parseInt(process.env.UI_PORT ?? "8787", 10);
 
   serve({ fetch: app.fetch, port });
