@@ -58,7 +58,13 @@ export interface AgentSpawnConfig {
   readonly permissions: PermissionEnvelope;
 
   /** How this agent executes */
-  readonly execution_type: "claude_api" | "openai_api" | "local_script" | "mcp_tool";
+  readonly execution_type: "claude_api" | "openai_api" | "local_script" | "mcp_tool" | "claude_code";
+
+  /** Max agentic turns for claude_code execution (default: 10) */
+  readonly max_turns?: number;
+
+  /** Allowed tools for claude_code execution (e.g. ["Read", "Glob", "Grep", "Bash"]) */
+  readonly allowed_tools?: readonly string[];
 
   /** Model to use (from permission envelope, can be overridden) */
   readonly model: ModelRef;

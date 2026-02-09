@@ -16,6 +16,7 @@ import type {
   StartedEvent,
 } from "./types/events.js";
 import type { AgentSpawnConfig, Trigger } from "./types/orchestrator.js";
+import { executeClaudeCodeAgent } from "./claude-code-process.js";
 
 // ---------------------------------------------------------------------
 // Public types
@@ -74,11 +75,13 @@ export class AgentRunner {
     let output: AgentOutput;
 
     try {
-      const timeoutMs = config.permissions.timeout_ms || 30000;
-      output = await withTimeout(
-        this.execute(config, context),
-        timeoutMs,
-      );
+      // claude_code agents manage their own timeout via AbortController
+      if (config.execution_type === "claude_code") {
+        output = await this.execute(config, context);
+      } else {
+        const timeoutMs = config.permissions.timeout_ms || 30_000;
+        output = await withTimeout(this.execute(config, context), timeoutMs);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       output = makeErrorOutput(config.agent, message);
@@ -120,17 +123,20 @@ export class AgentRunner {
         return await fn(context);
       }
 
+      case "claude_code":
+        return await executeClaudeCodeAgent(config, context);
+
       case "claude_api":
       case "openai_api":
         throw new Error(
           `${config.execution_type} execution not yet implemented. ` +
-          `Only local_script agents are supported in the MVP.`,
+          `Use "claude_code" for LLM-powered agents or "local_script" for fast local agents.`,
         );
 
       case "mcp_tool":
         throw new Error(
           "mcp_tool execution not yet implemented. " +
-          "Only local_script agents are supported in the MVP.",
+          `Use "claude_code" for LLM-powered agents or "local_script" for fast local agents.`,
         );
 
       default:

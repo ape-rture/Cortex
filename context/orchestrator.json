@@ -50,12 +50,36 @@
       },
       "execution_type": "local_script",
       "model": "local:script"
+    },
+    "project-analyst": {
+      "agent": "project-analyst",
+      "prompt_path": "src/agents/prompts/project-analyst.md",
+      "permissions": {
+        "agent": "project-analyst",
+        "can_read": ["**/*"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 4096,
+        "model": "anthropic:sonnet",
+        "timeout_ms": 300000
+      },
+      "execution_type": "claude_code",
+      "model": "anthropic:haiku",
+      "max_turns": 15,
+      "allowed_tools": ["Read", "Glob", "Grep"]
     }
   },
   "triggers": [
     {
       "type": "cli",
       "agents": ["sales-watcher", "content-scanner", "code-watcher"]
+    },
+    {
+      "type": "cli",
+      "schedule": "deep",
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-analyst"]
     }
   ],
   "fame_threshold": 0.3,
