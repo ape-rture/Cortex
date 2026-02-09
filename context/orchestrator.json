@@ -1,0 +1,81 @@
+{
+  "agents": {
+    "sales-watcher": {
+      "agent": "sales-watcher",
+      "prompt_path": "src/agents/prompts/sales-watcher.md",
+      "permissions": {
+        "agent": "sales-watcher",
+        "can_read": ["contacts/**", "meetings/**", "context/company.md"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 0,
+        "model": "local:script",
+        "timeout_ms": 10000
+      },
+      "execution_type": "local_script",
+      "model": "local:script"
+    },
+    "content-scanner": {
+      "agent": "content-scanner",
+      "prompt_path": "src/agents/prompts/content-scanner.md",
+      "permissions": {
+        "agent": "content-scanner",
+        "can_read": ["projects/content-ideas.md", "projects/content-seeds.md", "projects/content-drafts/**"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 0,
+        "model": "local:script",
+        "timeout_ms": 10000
+      },
+      "execution_type": "local_script",
+      "model": "local:script"
+    },
+    "code-watcher": {
+      "agent": "code-watcher",
+      "prompt_path": "src/agents/prompts/code-watcher.md",
+      "permissions": {
+        "agent": "code-watcher",
+        "can_read": ["projects/project-registry.md"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 0,
+        "model": "local:script",
+        "timeout_ms": 15000
+      },
+      "execution_type": "local_script",
+      "model": "local:script"
+    }
+  },
+  "triggers": [
+    {
+      "type": "cli",
+      "agents": ["sales-watcher", "content-scanner", "code-watcher"]
+    }
+  ],
+  "fame_threshold": 0.3,
+  "max_parallel_agents": 3,
+  "max_escalations_per_agent": 0,
+  "routing_config_path": "context/model-routing.json",
+  "agent_routing": {
+    "affinities": [
+      {
+        "agent": "sales-watcher",
+        "task_types": ["research_analysis"],
+        "priority": 5,
+        "context_match": "contacts/*"
+      },
+      {
+        "agent": "content-scanner",
+        "task_types": ["content_drafting"],
+        "priority": 5
+      }
+    ],
+    "default_agent": "sales-watcher"
+  }
+}
