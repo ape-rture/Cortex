@@ -71,13 +71,13 @@ Sub-phases: 3a (ideas tracker + store), 3b (thread builder + podcast distributio
 | **Self-improvement on command** | P1 | Designed | "Fix this", "optimize that" -> read own code -> propose fix -> apply after approval |
 | **Proactive feature suggestions** | P1 | Designed | Detect repeated patterns -> propose automation. Surface in `/projects/feature-proposals.md` |
 | **Bug detection & self-repair** | P1 | Designed | Log failures -> diagnose -> self-patch on command -> track regressions |
-| **Orchestrator MVP** | P0 | Designed | Node.js scheduler. Spawns 2-3 agents on cron. Hybrid rules + small model salience. See `decisions/2026-02-02-dennett-architecture.md` |
-| **First runtime agents** | P1 | Designed | Sales Watcher + Content Creator as first autonomous agents |
-| **Agent permission envelopes** | P1 | Designed | Scoped read/write/API access per agent. Security separation enforced |
+| **Orchestrator MVP** | P0 | Done | `CortexOrchestrator` in `src/core/orchestrator.ts`. `npm run orchestrate`. 3 local agents, rule-based salience, fame threshold filtering |
+| **First runtime agents** | P1 | Done | Sales Watcher + Content Scanner + Code Watcher in `src/agents/`. All `local_script`, zero LLM cost |
+| **Agent permission envelopes** | P1 | Done | `PermissionValidator` in `src/core/permission-validator.ts`. Glob-match validation. Config in `context/orchestrator.json` |
 | **Compound knowledge** (nightly) | P2 | Designed | Synthesize memory, merge notes, surface stale items, update contacts (Memory Synthesizer agent) |
 | **Model performance tracking** | P2 | Confirmed | Per-task metrics (latency, tokens, success rate, cost) -> tune routing |
 | **Routing optimization** | P2 | Confirmed | Suggest model switches based on accumulated performance data |
-| **Normalized event model** | P0 | Types done | `src/core/types/events.ts`. Streaming lifecycle events (Started/Action/Completed) wrapping AgentOutput. Takopi-inspired. See `research/12-takopi-telegram-bridge.md` |
+| **Normalized event model** | P0 | Done | `src/core/types/events.ts` + emitted by `AgentRunner`. StartedEvent/CompletedEvent emitted per agent per cycle. Takopi-inspired |
 | **Agent AutoRouter** | P1 | Types done | Agent dispatching layer above model routing. Task → agent → model cascade. Extends `src/core/types/routing.ts`. Takopi-inspired |
 | **Resume tokens** | P1 | Types done | Lightweight cross-interface session continuity. Extends `src/core/types/session.ts`. Takopi-inspired |
 | **ThreadScheduler** | P1 | Types done | Per-context serialization, cross-context parallelism. Extends `src/core/types/task-queue.ts`. Takopi-inspired |

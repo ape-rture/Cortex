@@ -10,7 +10,11 @@
 
 - **Set up remote git backup** -- Agent: dennis (then codex). Create private repo on GitHub/GitLab, add as remote origin, push all branches. Codex can wire up the remote and do initial push once Dennis creates the repo.
 
-### Multi-Project Management (Phase 4)
+### Orchestrator MVP Follow-up (Phase 5)
+
+- **Write unit tests for orchestrator components** -- Agent: codex. Add `src/core/salience.test.ts`, `src/core/permission-validator.test.ts`, `src/core/memory-writer.test.ts`, `src/core/agent-runner.test.ts`, `src/core/orchestrator.test.ts`. Follow existing test patterns (node:test, temp directories for file ops).
+- **Wire /orchestrate into web terminal** -- Agent: codex. Add `/orchestrate` command to `src/ui/handlers/chat.ts` command registry. Stream events via SSE using `onEvent` listener. Follow `/gm` pattern.
+- **Add cron trigger support** -- Agent: codex. Add `node-cron` dependency. Create `src/core/cron-scheduler.ts` that reads trigger configs with `type: "cron"` and schedules `runCycle` calls. Wire into `npm run daemon` script.
 
 ## In Progress
 

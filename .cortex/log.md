@@ -4,6 +4,61 @@
 
 ---
 
+## 2026-02-09 claude -- Orchestrator MVP (Phase 5)
+
+### Implemented the Dennett-inspired orchestrator
+
+Thin, non-intelligent scheduler that spawns agents in parallel, scores findings by salience, and surfaces only what passes the fame threshold. Zero LLM cost — all 3 agents are local TypeScript functions.
+
+### Files created:
+- `src/core/salience.ts` — `RuleBasedSalienceScorer` (weighted avg: urgency/relevance/novelty/actionability, hash-based novelty dedup)
+- `src/core/permission-validator.ts` — `PermissionValidator` (glob-match memory updates against permission envelopes)
+- `src/core/memory-writer.ts` — `MemoryWriter` (append/update/flag operations on markdown files)
+- `src/core/agent-runner.ts` — `AgentRunner` (local_script execution, event emission, timeout enforcement)
+- `src/core/orchestrator.ts` — `CortexOrchestrator` implementing `Orchestrator` interface (parallel execution, scoring, fame threshold filtering)
+- `src/agents/sales-watcher.ts` — relationship decay via `SimpleDecayDetector`
+- `src/agents/content-scanner.ts` — content pipeline health via `MarkdownContentStore`
+- `src/agents/code-watcher.ts` — unpushed commits via `SimpleGitMonitor`
+- `context/orchestrator.json` — agent definitions, permission envelopes, fame threshold config
+- `src/cli/orchestrate.ts` — CLI entrypoint with `--agents`, `--verbose`, `--history` flags
+
+### Files modified:
+- `src/cli/index.ts` — added orchestrate export
+- `package.json` — added `orchestrate` npm script
+
+### Validation:
+- `npm run typecheck` — clean
+- `npm run test:unit` — 50/51 passed (1 skipped, 0 regressions)
+- `npm run orchestrate` — runs 3 agents, surfaces 2 findings (decay alert + empty pipeline)
+- Branch: `claude/orchestrator-mvp`, merged to `main`
+
+### Key design decisions:
+- **Local agents first** — zero LLM cost, fast, testable. LLM agents in next iteration
+- **Weighted average** for salience (not product — product collapses too aggressively)
+- **In-memory** cycle history (no file persistence for MVP)
+- **Permission validation** before any memory writes
+
+### For Codex:
+1. Write unit tests for: salience, permission-validator, memory-writer, agent-runner, orchestrator
+2. Wire `/orchestrate` command into web terminal (`src/ui/handlers/chat.ts`)
+3. Add cron trigger support (`node-cron`, `src/core/cron-scheduler.ts`, `npm run daemon`)
+
+---
+
+## 2026-02-09 claude -- scaffold Marketing Tool project
+
+- Scaffolded new project at `D:\Documenten\Programmeren\Marketing Tool` using `TemplateScaffolder`
+- Created `.collab/` coordination files, `CONVENTIONS.md`, `CLAUDE.md`, `AGENTS.md`, `COMMANDS.md`
+- Added `SYSTEM.md` with architecture overview, shared Supabase backend diagram, tech stack, and feature outline
+- Added project-specific folders: `research/`, `decisions/`, `context/`
+- Added `.gitignore` for Next.js/Node.js project
+- Registered in project registry as `indexing-co-marketing-tool` (nextjs, typescript, supabase, tailwind)
+- Created Cortex tracking file at `projects/marketing-tool.md`
+- Git initialized with initial commit
+- **Next**: Planning and research phase -- competitive analysis, MVP scope, UI wireframes, Next.js project setup
+
+---
+
 ## 2026-02-09 codex -- phase 4 multi-project management
 
 - Implemented project registry markdown utilities: `parseProjects` / `serializeProjects` in `src/utils/markdown.ts` with new tests in `src/utils/markdown.test.ts`.
