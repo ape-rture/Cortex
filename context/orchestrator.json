@@ -127,6 +127,40 @@
       "max_turns": 15,
       "max_budget_usd": 5.00,
       "allowed_tools": ["Read", "Glob", "Grep"]
+    },
+    "fact-extractor": {
+      "agent": "fact-extractor",
+      "prompt_path": "src/agents/prompts/fact-extractor.md",
+      "permissions": {
+        "agent": "fact-extractor",
+        "can_read": ["meetings/**", "daily/**", "context/**", "entities/**"],
+        "can_write": ["entities/**/facts.json"],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 4096,
+        "model": "anthropic:haiku",
+        "timeout_ms": 120000
+      },
+      "execution_type": "local_script",
+      "model": "anthropic:haiku"
+    },
+    "memory-synthesizer": {
+      "agent": "memory-synthesizer",
+      "prompt_path": "src/agents/prompts/memory-synthesizer.md",
+      "permissions": {
+        "agent": "memory-synthesizer",
+        "can_read": ["entities/**", "context/**"],
+        "can_write": ["entities/**/summary.md"],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 8192,
+        "model": "anthropic:haiku",
+        "timeout_ms": 300000
+      },
+      "execution_type": "local_script",
+      "model": "anthropic:haiku"
     }
   },
   "triggers": [
@@ -147,7 +181,17 @@
     {
       "type": "cli",
       "schedule": "deep",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "project-analyst", "smart-sales-watcher", "triage-agent"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "project-analyst", "smart-sales-watcher", "triage-agent", "fact-extractor", "memory-synthesizer"]
+    },
+    {
+      "type": "cron",
+      "schedule": "*/30 * * * *",
+      "agents": ["fact-extractor"]
+    },
+    {
+      "type": "cron",
+      "schedule": "0 10 * * 0",
+      "agents": ["memory-synthesizer"]
     }
   ],
   "max_cycle_timeout_ms": 600000,

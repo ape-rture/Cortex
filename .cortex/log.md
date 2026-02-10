@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-02-10 claude -- Memory Flywheel types, prompts, and scaffolding (Phase 5.5)
+
+### Designed knowledge graph layer for the Memory Flywheel
+
+Created the foundational types, agent prompts, and directory structure for entity-based memory:
+
+- **Types**: `src/core/types/entity.ts` (AtomicFact, EntitySummary, EntityStore, EntityKind, FactSupersession) + `src/core/types/decay.ts` (EntityDecayConfig, EntityDecayAlert, EntityDecayDetector)
+- **Agent prompts**: `src/agents/prompts/fact-extractor.md` (real-time Haiku extraction, ~30min intervals) + `src/agents/prompts/memory-synthesizer.md` (weekly synthesis, summary rewriting, fact supersession)
+- **Directory structure**: `entities/{people,companies,topics}/` with `_template-summary.md` and `_template-facts.json`
+- **Orchestrator config**: Registered both agents in `context/orchestrator.json` with cron triggers (fact-extractor: */30min, synthesizer: Sundays 10am) and added to deep schedule
+- **Types barrel**: Exported all new types from `src/core/types/index.ts`
+- Typecheck clean, 76/76 tests pass
+- Branch: `claude/memory-flywheel`
+- Codex tasks written for: MarkdownEntityStore, fact-extractor agent, memory-synthesizer agent, tests
+
+### Also in this session (prior to context compaction)
+
+- **Slack bot (Phase 7)**: Built and committed on `claude/slack-bot`, merged to main
+- **Codex tasks**: Wrote Phase 5 tasks (AutoRouter, ThreadScheduler, ResumeTokenStore)
+
+---
+
 ## 2026-02-09 claude -- Merge claude/more-agents branch
 
 ### Finalized and merged orchestrator enhancements
