@@ -8,7 +8,76 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-### Slack Bot (Phase 7) -- design tasks for Claude
+### AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)
+
+- **Implement AgentRouter** -- Agent: codex -- Branch: `codex/auto-router`
+  - New file: `src/core/agent-router.ts`
+  - Implement `AgentRouter` interface from `src/core/types/routing.ts`
+  - Cascade: user directive prefix > context glob match > task type affinity > default agent
+  - Load config from `context/orchestrator.json` `agent_routing` section (already has affinities)
+  - Write tests in `src/core/agent-router.test.ts`
+
+- **Implement ThreadScheduler** -- Agent: codex -- Branch: `codex/auto-router`
+  - New file: `src/core/thread-scheduler.ts`
+  - Implement `ThreadScheduler` interface from `src/core/types/task-queue.ts`
+  - Wraps `MarkdownTaskQueue` — adds thread isolation on top
+  - In-memory thread tracking (Map<ThreadKey, Task[]>)
+  - Same-thread tasks serial, cross-thread parallel
+  - Write tests in `src/core/thread-scheduler.test.ts`
+
+- **Implement ResumeTokenStore** -- Agent: codex -- Branch: `codex/auto-router`
+  - New file: `src/core/resume-token-store.ts`
+  - Implement `ResumeTokenStore` interface from `src/core/types/session.ts`
+  - File-backed: store tokens in `context/resume-tokens.json`
+  - Token generation: use nanoid or crypto.randomUUID
+  - Prune tokens older than 7 days by default
+  - Write tests in `src/core/resume-token-store.test.ts`
+
+- **Wire AgentRouter into orchestrator** -- Agent: codex -- Branch: `codex/auto-router`
+  - Update `src/core/orchestrator.ts` to optionally use AgentRouter for agent selection
+  - When a trigger has no explicit `agents` list, fall back to AgentRouter.resolve()
+  - Keep backward compatible — existing explicit agent lists still work
+
+### Memory Flywheel (Phase 5.5)
+
+- **Implement MarkdownEntityStore** -- Agent: codex -- Branch: `codex/memory-flywheel`
+  - New file: `src/core/entity-store.ts`
+  - Implement `EntityStore` interface from `src/core/types/entity.ts`
+  - Storage pattern: `entities/{kind}/{id}/summary.md` + `entities/{kind}/{id}/facts.json`
+  - `listEntities()`: scan subdirectories of `entities/{kind}/`
+  - `loadSummary()`: parse YAML-like front matter from `summary.md` + body as narrative
+  - `loadFacts()` / `loadActiveFacts()`: read `facts.json`, optionally filter by `status: "active"`
+  - `appendFacts()`: read existing `facts.json`, concat new facts, write back (create entity dir if missing)
+  - `supersedeFacts()`: update `status` and `supersededBy` fields on matched fact IDs
+  - `writeSummary()`: serialize `EntitySummary` back to front matter + body markdown
+  - `createEntity()`: scaffold from `entities/_template-summary.md` and `entities/_template-facts.json`
+  - Write tests in `src/core/entity-store.test.ts` using temp directories
+
+- **Implement fact-extractor local agent** -- Agent: codex -- Branch: `codex/memory-flywheel`
+  - New file: `src/agents/fact-extractor.ts`
+  - `local_script` agent that:
+    1. Scans `meetings/` and `daily/` for recent files (last 24h by mtime)
+    2. Reads file contents, builds extraction input
+    3. Calls `ConfigRouter.route()` with `fact_extraction` task type and the fact-extractor prompt
+    4. Parses JSON response into `AtomicFact[]` grouped by entity
+    5. Calls `EntityStore.appendFacts()` for each entity (creates new entities as needed)
+  - Returns `AgentOutput` with findings summarizing what was extracted
+  - Register in `src/agents/index.ts` (or wherever local agents are registered)
+
+- **Implement memory-synthesizer local agent** -- Agent: codex -- Branch: `codex/memory-flywheel`
+  - New file: `src/agents/memory-synthesizer.ts`
+  - `local_script` agent that:
+    1. Lists all entities across all kinds via `EntityStore.listEntities()`
+    2. For each entity, checks if new facts exist since `summary.lastUpdated`
+    3. For entities needing update: loads all active facts, builds synthesis prompt
+    4. Calls `ConfigRouter.route()` with synthesis prompt
+    5. Parses response: applies supersessions via `EntityStore.supersedeFacts()`, writes new summary via `EntityStore.writeSummary()`
+  - Returns `AgentOutput` with findings for stale entities and update counts
+
+- **Write entity store and agent tests** -- Agent: codex -- Branch: `codex/memory-flywheel`
+  - `src/core/entity-store.test.ts`: CRUD operations, append/supersede facts, summary read/write, entity creation
+  - `src/agents/fact-extractor.test.ts`: mock ConfigRouter, verify extraction parsing + entity creation
+  - `src/agents/memory-synthesizer.test.ts`: mock EntityStore + ConfigRouter, verify supersession logic
 
 ### Orchestrator MVP Follow-up (Phase 5)
 

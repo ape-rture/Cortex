@@ -180,3 +180,22 @@ export type {
   ScaffoldResult,
   ProjectScaffolder,
 } from "./project.js";
+
+export type {
+  EntityKind,
+  FactCategory,
+  FactSource,
+  FactStatus,
+  AtomicFact,
+  EntitySummary,
+  FactSupersession,
+  EntityStore,
+} from "./entity.js";
+
+export type {
+  EntityDecayConfig,
+  EntityDecayAlert,
+  EntityDecayDetector,
+} from "./decay.js";
+
+export { DEFAULT_ENTITY_DECAY_CONFIG } from "./decay.js";
