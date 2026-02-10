@@ -4,6 +4,51 @@
 
 ---
 
+## 2026-02-10 codex -- implement memory flywheel runtime agents (Phase 5.5)
+
+### Built fact extraction and weekly synthesis agents
+
+- Added `src/agents/fact-extractor.ts`:
+  - Scans `meetings/` and `daily/` for files modified in the last 24h
+  - Loads `src/agents/prompts/fact-extractor.md` and routes extraction requests through `ConfigRouter`
+  - Attempts `task_type: "fact_extraction"` first, then falls back to `classification` if route is missing
+  - Parses JSON entity/fact output, creates entities, and appends `AtomicFact[]` via `MarkdownEntityStore`
+  - Returns summarized `AgentOutput` findings with extraction counts
+- Added `src/agents/memory-synthesizer.ts`:
+  - Enumerates entities across all kinds via `EntityStore.listEntities()`
+  - Detects entities needing updates based on facts newer than `summary.lastUpdated` (plus template summary detection)
+  - Routes synthesis prompts via `ConfigRouter` (`research_analysis`)
+  - Applies supersessions and writes refreshed summaries
+  - Emits stale-entity findings and update-count findings
+- Wired local agent registration in runtime entrypoints:
+  - `src/cli/orchestrate.ts`
+  - `src/cli/daemon.ts`
+  - `src/cli/slack.ts`
+  - `src/ui/server.ts`
+
+### Tests
+
+- Added `src/agents/fact-extractor.test.ts`:
+  - Mocks router responses
+  - Verifies extraction parsing, entity creation, fact append behavior
+  - Verifies fallback path when `fact_extraction` route is unavailable
+- Added `src/agents/memory-synthesizer.test.ts`:
+  - Mocks `EntityStore` + router
+  - Verifies summary rewrite, supersession application, stale-entity reporting
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 102 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/memory-flywheel`
+- Merged to `main`
+- Branch deleted
+
+---
+
 ## 2026-02-10 codex -- implement MarkdownEntityStore (Phase 5.5)
 
 ### Implemented file-backed knowledge graph entity store

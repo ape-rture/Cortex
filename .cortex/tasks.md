@@ -10,32 +10,6 @@
 
 ### Memory Flywheel (Phase 5.5)
 
-- **Implement fact-extractor local agent** -- Agent: codex -- Branch: `codex/memory-flywheel`
-  - New file: `src/agents/fact-extractor.ts`
-  - `local_script` agent that:
-    1. Scans `meetings/` and `daily/` for recent files (last 24h by mtime)
-    2. Reads file contents, builds extraction input
-    3. Calls `ConfigRouter.route()` with `fact_extraction` task type and the fact-extractor prompt
-    4. Parses JSON response into `AtomicFact[]` grouped by entity
-    5. Calls `EntityStore.appendFacts()` for each entity (creates new entities as needed)
-  - Returns `AgentOutput` with findings summarizing what was extracted
-  - Register in `src/agents/index.ts` (or wherever local agents are registered)
-
-- **Implement memory-synthesizer local agent** -- Agent: codex -- Branch: `codex/memory-flywheel`
-  - New file: `src/agents/memory-synthesizer.ts`
-  - `local_script` agent that:
-    1. Lists all entities across all kinds via `EntityStore.listEntities()`
-    2. For each entity, checks if new facts exist since `summary.lastUpdated`
-    3. For entities needing update: loads all active facts, builds synthesis prompt
-    4. Calls `ConfigRouter.route()` with synthesis prompt
-    5. Parses response: applies supersessions via `EntityStore.supersedeFacts()`, writes new summary via `EntityStore.writeSummary()`
-  - Returns `AgentOutput` with findings for stale entities and update counts
-
-- **Write entity store and agent tests** -- Agent: codex -- Branch: `codex/memory-flywheel`
-  - `src/core/entity-store.test.ts`: CRUD operations, append/supersede facts, summary read/write, entity creation
-  - `src/agents/fact-extractor.test.ts`: mock ConfigRouter, verify extraction parsing + entity creation
-  - `src/agents/memory-synthesizer.test.ts`: mock EntityStore + ConfigRouter, verify supersession logic
-
 ### Orchestrator MVP Follow-up (Phase 5)
 
 ### Claude Code Agents (Phase 5.5)
@@ -51,6 +25,7 @@
 
 ## Done
 
+- **Implement fact-extractor + memory-synthesizer agents and tests (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `src/agents/fact-extractor.ts` (recent file scan in `meetings/` + `daily/`, LLM extraction via `ConfigRouter.route()`, entity creation/appends via `EntityStore`) and `src/agents/memory-synthesizer.ts` (entity scan, stale detection, synthesis routing, supersession + summary writes). Added tests in `src/agents/fact-extractor.test.ts` and `src/agents/memory-synthesizer.test.ts`. Wired local registration in `src/cli/orchestrate.ts`, `src/cli/daemon.ts`, `src/cli/slack.ts`, and `src/ui/server.ts`.
 - **Implement MarkdownEntityStore (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `MarkdownEntityStore` in `src/core/entity-store.ts` implementing full entity CRUD/scaffolding (`listEntities`, `loadSummary`, `loadFacts`, `loadActiveFacts`, `appendFacts`, `supersedeFacts`, `writeSummary`, `createEntity`) with template-based initialization from `entities/_template-summary.md` and `entities/_template-facts.json`. Added coverage in `src/core/entity-store.test.ts`.
 - **AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)** -- Agent: codex -- Branch: `codex/auto-router` (merged to `main`). Added `ConfigAgentRouter` (`src/core/agent-router.ts`) + tests, added `InMemoryThreadScheduler` (`src/core/thread-scheduler.ts`) + tests, added `FileResumeTokenStore` (`src/core/resume-token-store.ts`) + tests, and wired orchestrator fallback routing when triggers omit `agents` (`src/core/orchestrator.ts`, `src/core/orchestrator.test.ts`). Also updated trigger typing for optional `agents` in `src/core/types/orchestrator.ts` and adjusted impacted tests.
 - **Project Heartbeat (Phase 4)** -- Agent: codex -- Branch: `codex/project-heartbeat`. Implemented `ProjectHeartbeatMonitor` (`src/core/project-heartbeat.ts`) + tests (`src/core/project-heartbeat.test.ts`), wired Project Health into `/gm`, added local orchestrator agent (`src/agents/project-heartbeat.ts`) + quick trigger registration (`context/orchestrator.json`), added `/api/projects/health` handler + tests (`src/ui/handlers/projects.ts`, `src/ui/handlers/projects.test.ts`), and shipped dashboard Projects view (`src/ui/dashboard/src/views/projects.tsx`) with nav + API wiring.
