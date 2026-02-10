@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-02-10 codex -- implement MarkdownEntityStore (Phase 5.5)
+
+### Implemented file-backed knowledge graph entity store
+
+- Added `src/core/entity-store.ts` with `MarkdownEntityStore` implementing `EntityStore` from `src/core/types/entity.ts`
+- Implemented:
+  - `listEntities()` directory scan by kind
+  - `loadSummary()` front matter + markdown body parsing
+  - `loadFacts()` / `loadActiveFacts()` from `facts.json`
+  - `appendFacts()` with auto-create entity directory
+  - `supersedeFacts()` status + supersededBy updates
+  - `writeSummary()` summary front matter serialization
+  - `createEntity()` template-based scaffolding from `entities/_template-summary.md` and `entities/_template-facts.json`
+- Added tests in `src/core/entity-store.test.ts` covering create/load/list/append/active/supersede/write flows
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 98 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/memory-flywheel`
+- Merged to `main`
+- Branch deleted
+
+---
+
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces

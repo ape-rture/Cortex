@@ -10,19 +10,6 @@
 
 ### Memory Flywheel (Phase 5.5)
 
-- **Implement MarkdownEntityStore** -- Agent: codex -- Branch: `codex/memory-flywheel`
-  - New file: `src/core/entity-store.ts`
-  - Implement `EntityStore` interface from `src/core/types/entity.ts`
-  - Storage pattern: `entities/{kind}/{id}/summary.md` + `entities/{kind}/{id}/facts.json`
-  - `listEntities()`: scan subdirectories of `entities/{kind}/`
-  - `loadSummary()`: parse YAML-like front matter from `summary.md` + body as narrative
-  - `loadFacts()` / `loadActiveFacts()`: read `facts.json`, optionally filter by `status: "active"`
-  - `appendFacts()`: read existing `facts.json`, concat new facts, write back (create entity dir if missing)
-  - `supersedeFacts()`: update `status` and `supersededBy` fields on matched fact IDs
-  - `writeSummary()`: serialize `EntitySummary` back to front matter + body markdown
-  - `createEntity()`: scaffold from `entities/_template-summary.md` and `entities/_template-facts.json`
-  - Write tests in `src/core/entity-store.test.ts` using temp directories
-
 - **Implement fact-extractor local agent** -- Agent: codex -- Branch: `codex/memory-flywheel`
   - New file: `src/agents/fact-extractor.ts`
   - `local_script` agent that:
@@ -64,6 +51,7 @@
 
 ## Done
 
+- **Implement MarkdownEntityStore (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `MarkdownEntityStore` in `src/core/entity-store.ts` implementing full entity CRUD/scaffolding (`listEntities`, `loadSummary`, `loadFacts`, `loadActiveFacts`, `appendFacts`, `supersedeFacts`, `writeSummary`, `createEntity`) with template-based initialization from `entities/_template-summary.md` and `entities/_template-facts.json`. Added coverage in `src/core/entity-store.test.ts`.
 - **AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)** -- Agent: codex -- Branch: `codex/auto-router` (merged to `main`). Added `ConfigAgentRouter` (`src/core/agent-router.ts`) + tests, added `InMemoryThreadScheduler` (`src/core/thread-scheduler.ts`) + tests, added `FileResumeTokenStore` (`src/core/resume-token-store.ts`) + tests, and wired orchestrator fallback routing when triggers omit `agents` (`src/core/orchestrator.ts`, `src/core/orchestrator.test.ts`). Also updated trigger typing for optional `agents` in `src/core/types/orchestrator.ts` and adjusted impacted tests.
 - **Project Heartbeat (Phase 4)** -- Agent: codex -- Branch: `codex/project-heartbeat`. Implemented `ProjectHeartbeatMonitor` (`src/core/project-heartbeat.ts`) + tests (`src/core/project-heartbeat.test.ts`), wired Project Health into `/gm`, added local orchestrator agent (`src/agents/project-heartbeat.ts`) + quick trigger registration (`context/orchestrator.json`), added `/api/projects/health` handler + tests (`src/ui/handlers/projects.ts`, `src/ui/handlers/projects.test.ts`), and shipped dashboard Projects view (`src/ui/dashboard/src/views/projects.tsx`) with nav + API wiring.
 - **Wire /project into web terminal** -- Agent: codex -- Branch: `main`. Added `/project` command to `src/ui/handlers/chat.ts` command registry using `runProject` from `src/cli/project.ts`, with support for `/project status`, `/project list`, and `/project status <id>` (defaults empty `/project` to `status`).

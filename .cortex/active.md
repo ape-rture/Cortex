@@ -2,15 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: implement MarkdownEntityStore (Phase 5.5)
-Branch: codex/memory-flywheel
-Files:
-  - src/core/entity-store.ts
-  - src/core/entity-store.test.ts
-  - .cortex/tasks.md
-  - .cortex/log.md
-Started: 2026-02-10T20:35Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 
