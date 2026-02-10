@@ -23,6 +23,8 @@ import { runOrchestrate } from "./orchestrate.js";
 import { salesWatcherAgent } from "../agents/sales-watcher.js";
 import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
+import { factExtractorAgent } from "../agents/fact-extractor.js";
+import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
 import { createSlackApp, readSlackConfig } from "../integrations/slack/client.js";
 import { formatForSlack, formatProgressUpdate } from "../integrations/slack/formatter.js";
 
@@ -34,6 +36,8 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("sales-watcher", salesWatcherAgent);
   orchestrator.runner.registerLocal("content-scanner", contentScannerAgent);
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
+  orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
+  orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
 }
 
 // ---------------------------------------------------------------------------
