@@ -2,7 +2,21 @@
 
 ## Currently Active
 
-*No agent currently working.*
+Agent: codex
+Task: implement memory flywheel agents (fact-extractor + memory-synthesizer) and tests
+Branch: codex/memory-flywheel
+Files:
+  - src/agents/fact-extractor.ts
+  - src/agents/fact-extractor.test.ts
+  - src/agents/memory-synthesizer.ts
+  - src/agents/memory-synthesizer.test.ts
+  - src/cli/orchestrate.ts
+  - src/cli/daemon.ts
+  - src/cli/slack.ts
+  - src/ui/server.ts
+  - .cortex/tasks.md
+  - .cortex/log.md
+Started: 2026-02-10T21:05Z
 
 <!-- When starting work, replace the line above with:
 
