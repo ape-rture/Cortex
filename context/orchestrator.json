@@ -51,6 +51,23 @@
       "execution_type": "local_script",
       "model": "local:script"
     },
+    "project-heartbeat": {
+      "agent": "project-heartbeat",
+      "prompt_path": "src/agents/prompts/project-heartbeat.md",
+      "permissions": {
+        "agent": "project-heartbeat",
+        "can_read": ["projects/project-registry.md"],
+        "can_write": [],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 0,
+        "model": "local:script",
+        "timeout_ms": 20000
+      },
+      "execution_type": "local_script",
+      "model": "local:script"
+    },
     "project-analyst": {
       "agent": "project-analyst",
       "prompt_path": "src/agents/prompts/project-analyst.md",
@@ -115,7 +132,12 @@
   "triggers": [
     {
       "type": "cli",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"]
+    },
+    {
+      "type": "cli",
+      "schedule": "quick",
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"]
     },
     {
       "type": "cli",
@@ -125,12 +147,12 @@
     {
       "type": "cli",
       "schedule": "deep",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-analyst", "smart-sales-watcher", "triage-agent"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "project-analyst", "smart-sales-watcher", "triage-agent"]
     }
   ],
   "max_cycle_timeout_ms": 600000,
   "fame_threshold": 0.3,
-  "max_parallel_agents": 6,
+  "max_parallel_agents": 7,
   "max_escalations_per_agent": 1,
   "routing_config_path": "context/model-routing.json",
   "agent_routing": {

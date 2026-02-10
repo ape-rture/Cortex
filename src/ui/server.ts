@@ -7,6 +7,7 @@ import { CortexOrchestrator } from "../core/orchestrator.js";
 import { salesWatcherAgent } from "../agents/sales-watcher.js";
 import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
+import { projectHeartbeatAgent } from "../agents/project-heartbeat.js";
 
 async function loadSystemPrompt(): Promise<string> {
   const filePath = path.resolve("SYSTEM.md");
@@ -18,6 +19,7 @@ function createUiOrchestrator(configPath: string): CortexOrchestrator {
   orchestrator.runner.registerLocal("sales-watcher", salesWatcherAgent);
   orchestrator.runner.registerLocal("content-scanner", contentScannerAgent);
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
+  orchestrator.runner.registerLocal("project-heartbeat", projectHeartbeatAgent);
   return orchestrator;
 }
 

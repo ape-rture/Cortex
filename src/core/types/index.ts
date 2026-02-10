@@ -170,6 +170,7 @@ export type {
 export type {
   ProjectStatus,
   Project,
+  ProjectHealthReport,
   ProjectStore,
   ProjectGitStatus,
   ProjectGitResult,

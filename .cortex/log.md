@@ -691,3 +691,39 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run build:dashboard`
   - `npm run typecheck`
   - `npm run test:unit`
+
+## 2026-02-09 codex -- /project command wired into web terminal
+
+- Updated `src/ui/handlers/chat.ts` command registry:
+  - Imported `runProject` from `src/cli/project.ts`
+  - Added `/project` command passthrough to project CLI arguments
+  - Empty `/project` now defaults to `project status` (all projects)
+- Supported usage paths in web terminal:
+  - `/project status`
+  - `/project list`
+  - `/project status <id>`
+- Validation run:
+  - `npm run typecheck`
+  - `npm run test:unit`
+
+## 2026-02-10 codex -- project heartbeat phase 4
+
+- Implemented project heartbeat core monitor in `src/core/project-heartbeat.ts` with `ProjectHealthReport` type additions in `src/core/types/project.ts` and barrel export update in `src/core/types/index.ts`.
+- Added core coverage in `src/core/project-heartbeat.test.ts` (active-only project filtering, git metrics, error fallback).
+- Wired `/gm` with a new "Project Health" section in `src/cli/gm.ts` that only lists unhealthy projects.
+- Added local orchestrator agent `src/agents/project-heartbeat.ts` (+ prompt `src/agents/prompts/project-heartbeat.md`) and registered it in `context/orchestrator.json` (including a `quick` trigger).
+- Registered local runtime wiring for the new agent in `src/cli/orchestrate.ts`, `src/cli/daemon.ts`, `src/ui/server.ts`, and default UI trigger list in `src/ui/handlers/orchestrator.ts`.
+- Added backend endpoint `GET /api/projects/health` in `src/ui/handlers/projects.ts`, wired via `src/ui/handlers/index.ts` and `src/ui/index.ts`, with API test coverage in `src/ui/handlers/projects.test.ts`.
+- Added dashboard Projects view in `src/ui/dashboard/src/views/projects.tsx`, including API wiring/types/nav/app/css updates in:
+  - `src/ui/dashboard/src/api.ts`
+  - `src/ui/dashboard/src/types.ts`
+  - `src/ui/dashboard/src/app.tsx`
+  - `src/ui/dashboard/src/components/nav.tsx`
+  - `src/ui/dashboard/src/dashboard.css`
+- Added shared UI API type in `src/ui/types.ts`.
+- Validation run:
+  - `node --import tsx --test src/core/project-heartbeat.test.ts src/ui/handlers/projects.test.ts`
+  - `npm run test:unit`
+  - `npm run typecheck`
+  - `npm run build:dashboard`
+  - `npm test`

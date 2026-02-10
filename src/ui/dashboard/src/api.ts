@@ -3,6 +3,7 @@ import type {
   ChatSessionLite,
   CycleSummary,
   DashboardData,
+  ProjectHealthReport,
   ReviewItem,
   TaskSummary,
 } from "./types";
@@ -63,6 +64,9 @@ export const api = {
 
   // Tasks
   getTaskSummary: () => fetchJson<TaskSummary>("/api/tasks"),
+
+  // Projects
+  getProjectHealth: () => fetchJson<ProjectHealthReport[]>("/api/projects/health"),
 
   // Monitor
   connectMonitor: () => new EventSource("/api/monitor/stream"),

@@ -175,3 +175,15 @@ export interface ReviewItem {
   readonly status: "pending" | "approved" | "dismissed" | "snoozed";
   readonly created_at: string;
 }
+
+export interface ProjectHealthReport {
+  readonly projectId: string;
+  readonly projectName: string;
+  readonly projectPath: string;
+  readonly currentBranch: string;
+  readonly daysSinceLastCommit: number;
+  readonly unpushedCommitCount: number;
+  readonly staleBranchCount: number;
+  readonly lastCommitAt?: string;
+  readonly error?: string;
+}

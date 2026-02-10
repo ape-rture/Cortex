@@ -112,3 +112,15 @@ export interface MonitorEvent {
   data: unknown;
   timestamp: string;
 }
+
+export interface ProjectHealthReport {
+  projectId: string;
+  projectName: string;
+  projectPath: string;
+  currentBranch: string;
+  daysSinceLastCommit: number;
+  unpushedCommitCount: number;
+  staleBranchCount: number;
+  lastCommitAt?: string;
+  error?: string;
+}

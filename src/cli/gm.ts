@@ -3,6 +3,7 @@ import path from "node:path";
 import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
 import { SimpleGitMonitor } from "../core/git-monitor.js";
+import { ProjectHeartbeatMonitor } from "../core/project-heartbeat.js";
 import { MarkdownSessionSnapshotStore } from "../core/session-snapshot.js";
 import { MarkdownContactStore } from "../utils/contact-store.js";
 import { SimpleDecayDetector } from "../core/decay-detector.js";
@@ -31,6 +32,40 @@ function summarizeGit(reports: readonly { repo_name: string; branch: string; cou
   return reports
     .map((report) => `- ${report.repo_name} (${report.branch}): ${report.count} unpushed (oldest ${report.oldest_hours}h)`)
     .join("\n");
+}
+
+function summarizeProjectHealth(
+  reports: readonly {
+    projectName: string;
+    currentBranch: string;
+    daysSinceLastCommit: number;
+    unpushedCommitCount: number;
+    staleBranchCount: number;
+    error?: string;
+  }[],
+): string {
+  const flagged = reports.filter(
+    (report) =>
+      Boolean(report.error) ||
+      report.daysSinceLastCommit > 7 ||
+      report.unpushedCommitCount > 0 ||
+      report.staleBranchCount > 0,
+  );
+
+  if (flagged.length === 0) return "(all active projects healthy)";
+
+  return flagged.map((report) => {
+    if (report.error) {
+      return `- ${report.projectName}: ${report.error}`;
+    }
+
+    const parts: string[] = [];
+    if (report.daysSinceLastCommit > 7) parts.push(`${report.daysSinceLastCommit}d since commit`);
+    if (report.unpushedCommitCount > 0) parts.push(`${report.unpushedCommitCount} unpushed`);
+    if (report.staleBranchCount > 0) parts.push(`${report.staleBranchCount} stale branches`);
+    const summary = parts.length > 0 ? parts.join(", ") : "healthy";
+    return `- ${report.projectName} (${report.currentBranch}): ${summary}`;
+  }).join("\n");
 }
 
 function summarizeSnapshot(snapshot: { working_on: string; next_steps: readonly string[] } | undefined): string {
@@ -81,12 +116,13 @@ export async function runMorningBriefing(): Promise<string> {
 
   const contentStore = new MarkdownContentStore();
 
-  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
+  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, projectHealth, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
     fetchTodayEvents(),
     new SimpleGitMonitor().checkAll(),
+    new ProjectHeartbeatMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
     new SimpleDecayDetector(new MarkdownContactStore()).detectDecay().catch(() => []),
     contentStore.loadIdeas().catch(() => [] as const),
@@ -108,6 +144,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
   output.push(formatSection("Git", summarizeGit(gitReports)));
+  output.push(formatSection("Project Health", summarizeProjectHealth(projectHealth)));
   output.push(formatSection("Relationship Alerts", summarizeDecay(decayAlerts)));
   const unprocessedSeeds = contentSeeds.filter((s) => !s.promoted).length;
   const promotedSeeds = contentSeeds.length - unprocessedSeeds;
