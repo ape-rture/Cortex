@@ -3,6 +3,7 @@ import { route } from "./router";
 import { ChatView } from "./views/chat";
 import { DashboardView } from "./views/dashboard";
 import { MonitorView } from "./views/monitor";
+import { ProjectsView } from "./views/projects";
 import { ReviewView } from "./views/review";
 
 function CurrentView() {
@@ -13,6 +14,8 @@ function CurrentView() {
       return <MonitorView />;
     case "/review":
       return <ReviewView />;
+    case "/projects":
+      return <ProjectsView />;
     case "/chat":
     default:
       return <ChatView />;

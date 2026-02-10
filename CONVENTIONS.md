@@ -106,6 +106,26 @@ dennis: update SYSTEM.md with new requirements
 - After merging: delete the branch, update `.cortex/log.md`
 - If there are merge conflicts, resolve them if straightforward. Surface to Dennis only if the conflict involves a design decision
 
+### Workspace Isolation
+
+**Branch discipline:**
+- Each agent works on their own branch only (`claude/`, `codex/`, etc.)
+- Never edit files on another agent's branch
+- Never switch branches with uncommitted changes in the working tree
+
+**Concurrent work — use separate worktrees:**
+- If two agents need to work simultaneously in the same repo, use separate git worktrees rather than sharing one working tree:
+  ```
+  git worktree add ../project-claude claude/layout
+  git worktree add ../project-codex codex/db-schema
+  ```
+- Each agent operates exclusively in their own worktree directory
+- The agent that creates the worktree is responsible for cleaning it up when done: `git worktree remove <path>`
+
+**Shared files:**
+- `.cortex/` files are always safe for any agent to read and write — that's their purpose
+- `package.json`, lock files, and config files: one agent at a time — reserve via `.cortex/active.md` before editing
+
 ### What Dennis Never Needs To Do
 - Dennis does NOT merge branches -- agents handle this
 - Dennis does NOT resolve git conflicts -- agents handle this or escalate
@@ -151,7 +171,7 @@ If you see local changes in files you didn't modify:
 3. **If yes to either**: assume the other agent made the changes. Work around those files or wait.
 4. **If no reservation AND no recent log entry**: ask Dennis how to proceed.
 
-This allows parallel work while still catching genuinely unexpected changes (e.g., external edits, corruption).
+**Proceed-if-unrelated rule:** If dirty files exist but are clearly unrelated to your task and outside your ownership area (see File Ownership Rules), proceed without stopping. Do not stash, reset, or modify files owned by another agent. Example: if Claude is working on UI layout and Codex sees dirty `src/ui/` files, Codex ignores them and continues with its backend task.
 
 ### While Working
 

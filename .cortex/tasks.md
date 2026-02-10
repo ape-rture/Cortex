@@ -8,6 +8,7 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
+### Slack Bot (Phase 7) -- design tasks for Claude
 
 ### Orchestrator MVP Follow-up (Phase 5)
 
@@ -15,7 +16,6 @@
 
 ### Web Terminal (Phase 1.5)
 
-- **Wire /project into web terminal** -- Agent: codex. Add `/project` command to `src/ui/handlers/chat.ts` command registry. Support `/project status` (all projects), `/project list`, and `/project status <id>` (single project). Import and call `runProject` from `src/cli/project.ts`. Follow `/orchestrate` pattern.
 
 ## In Progress
 
@@ -25,6 +25,8 @@
 
 ## Done
 
+- **Project Heartbeat (Phase 4)** -- Agent: codex -- Branch: `codex/project-heartbeat`. Implemented `ProjectHeartbeatMonitor` (`src/core/project-heartbeat.ts`) + tests (`src/core/project-heartbeat.test.ts`), wired Project Health into `/gm`, added local orchestrator agent (`src/agents/project-heartbeat.ts`) + quick trigger registration (`context/orchestrator.json`), added `/api/projects/health` handler + tests (`src/ui/handlers/projects.ts`, `src/ui/handlers/projects.test.ts`), and shipped dashboard Projects view (`src/ui/dashboard/src/views/projects.tsx`) with nav + API wiring.
+- **Wire /project into web terminal** -- Agent: codex -- Branch: `main`. Added `/project` command to `src/ui/handlers/chat.ts` command registry using `runProject` from `src/cli/project.ts`, with support for `/project status`, `/project list`, and `/project status <id>` (defaults empty `/project` to `status`).
 - **Phase 3: Wire dashboard/monitor/review views to Phase 2 APIs** -- Agent: codex -- Branch: `main`. Implemented live data wiring in `src/ui/dashboard/src/views/dashboard.tsx`, `src/ui/dashboard/src/views/monitor.tsx`, and `src/ui/dashboard/src/views/review.tsx` using `/api/dashboard`, `/api/dashboard/cycles`, `/api/review/*`, `/api/tasks`, `/api/monitor/stream`, and `/api/orchestrate/trigger`.
 - **Phase 2 dashboard backend** -- Agent: codex -- Branch: `main`. Added `src/ui/cycle-store.ts` and `src/ui/review-store.ts`; implemented `/api/dashboard`, `/api/dashboard/cycles`, `/api/review/*`, `/api/tasks`, `/api/monitor/stream`, and `/api/orchestrate/trigger`; wired a live `CortexOrchestrator` into `src/ui/server.ts`; added tests in `src/ui/cycle-store.test.ts`, `src/ui/review-store.test.ts`, and `src/ui/handlers/phase2-api.test.ts`.
 - **Set up remote git backup** -- Agent: dennis + claude. Created private repo at `https://github.com/ape-rture/Cortex.git`, added as origin, pushed main.

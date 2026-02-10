@@ -34,7 +34,7 @@ export function registerOrchestratorHandlers(
       type: "cli",
       agents: agents.length > 0
         ? agents
-        : ["sales-watcher", "content-scanner", "code-watcher"],
+        : ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"],
     };
 
     try {

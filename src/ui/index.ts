@@ -27,6 +27,7 @@ type AppConfig = {
   taskBoardPath?: string;
   reviewQueuePath?: string;
   reviewStatePath?: string;
+  projectRegistryPath?: string;
 };
 
 export function createApp(config: AppConfig): Hono {
@@ -40,6 +41,7 @@ export function createApp(config: AppConfig): Hono {
   );
   const monitorBroker = new MonitorBroker();
   const taskBoardPath = config.taskBoardPath ?? path.resolve(".cortex", "tasks.md");
+  const projectRegistryPath = config.projectRegistryPath ?? path.resolve("projects", "project-registry.md");
 
   app.get("/healthz", (c) => c.json({ ok: true }));
 
@@ -50,6 +52,7 @@ export function createApp(config: AppConfig): Hono {
     reviewStore,
     monitorBroker,
     taskBoardPath,
+    projectRegistryPath,
   });
 
   // Serve Vite dashboard build if available, otherwise fall back to legacy static

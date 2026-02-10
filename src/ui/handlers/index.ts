@@ -12,6 +12,7 @@ import { registerReviewHandlers } from "./review.js";
 import { registerTaskHandlers } from "./tasks.js";
 import { registerMonitorHandlers } from "./monitor.js";
 import { registerOrchestratorHandlers } from "./orchestrator.js";
+import { registerProjectHandlers } from "./projects.js";
 
 export interface ApiRuntimeServices {
   readonly orchestrator: Orchestrator;
@@ -19,6 +20,7 @@ export interface ApiRuntimeServices {
   readonly reviewStore: ReviewStore;
   readonly monitorBroker: MonitorBroker;
   readonly taskBoardPath: string;
+  readonly projectRegistryPath: string;
 }
 
 export function registerHandlers(
@@ -33,6 +35,7 @@ export function registerHandlers(
   registerDashboardHandlers(app, services.cycleStore, services.reviewStore, services.taskBoardPath);
   registerReviewHandlers(app, services.reviewStore);
   registerTaskHandlers(app, services.taskBoardPath);
+  registerProjectHandlers(app, services.projectRegistryPath);
   registerMonitorHandlers(app, services.monitorBroker);
   registerOrchestratorHandlers(
     app,

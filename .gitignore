@@ -21,6 +21,9 @@ data/
 # Claude Code
 .claude/
 
+# Playwright MCP artifacts
+.playwright-mcp/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -61,6 +61,30 @@ export interface ProjectStore {
   filterByStatus(status: ProjectStatus): Promise<readonly Project[]>;
 }
 
+/**
+ * Health summary for an active project repository.
+ */
+export interface ProjectHealthReport {
+  /** Project ID from registry. */
+  readonly projectId: string;
+  /** Human-readable project name. */
+  readonly projectName: string;
+  /** Absolute path to project root. */
+  readonly projectPath: string;
+  /** Current git branch name. */
+  readonly currentBranch: string;
+  /** Days since latest commit on current branch. */
+  readonly daysSinceLastCommit: number;
+  /** Number of local commits not pushed to remote. */
+  readonly unpushedCommitCount: number;
+  /** Number of local branches considered stale. */
+  readonly staleBranchCount: number;
+  /** ISO timestamp for latest commit on current branch. */
+  readonly lastCommitAt?: string;
+  /** Error text when repository inspection fails. */
+  readonly error?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Git Operations
 // ---------------------------------------------------------------------------

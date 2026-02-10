@@ -19,13 +19,14 @@ import { CortexOrchestrator } from "../core/orchestrator.js";
 import { salesWatcherAgent } from "../agents/sales-watcher.js";
 import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
+import { projectHeartbeatAgent } from "../agents/project-heartbeat.js";
 import type { Trigger, TriggerType } from "../core/types/orchestrator.js";
 import type { ScoredFinding } from "../core/types/agent-output.js";
 import type { OrchestratorConfig, OrchestratorCycle } from "../core/types/orchestrator.js";
 import type { AgentEvent } from "../core/types/events.js";
 
 const DEFAULT_CONFIG_PATH = "context/orchestrator.json";
-const FALLBACK_AGENTS = ["sales-watcher", "content-scanner", "code-watcher"];
+const FALLBACK_AGENTS = ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"];
 
 // ---------------------------------------------------------------------
 // Flag parsing
@@ -217,6 +218,7 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("sales-watcher", salesWatcherAgent);
   orchestrator.runner.registerLocal("content-scanner", contentScannerAgent);
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
+  orchestrator.runner.registerLocal("project-heartbeat", projectHeartbeatAgent);
 }
 
 // ---------------------------------------------------------------------
