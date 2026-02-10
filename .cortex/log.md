@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-02-10 claude -- Gmail integration Phase 1 foundation
+
+### Designed types, auth script, and Codex tasks for Gmail integration
+
+Two Gmail accounts: `dennis@indexing.co` and `dennisverstappen1@gmail.com`. Access level: read + modify + create drafts (no send).
+
+- **Types**: `src/core/types/gmail.ts` — GmailClient interface, GmailMessageHeader/GmailMessage, GmailSearchOptions, GmailFetchResult, GmailMailSummary, MailClassification (for Phase 3), GmailAction (for Phase 4)
+- **Auth script**: `scripts/gmail-auth.ts` — interactive OAuth2 flow to generate refresh tokens per account. Uses same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` as calendar. Scopes: `gmail.modify` + `gmail.compose`
+- **Types barrel**: Updated `src/core/types/index.ts` with all Gmail type exports
+- **Codex tasks**: 4 tasks written to `.cortex/tasks.md` under "Gmail Integration (Phase 6)":
+  1. Implement `GoogleGmailClient` in `src/integrations/gmail.ts`
+  2. Add Gmail integration tests
+  3. Create `/mail` CLI command
+  4. Add "Email" section to `/gm`
+
+### Validation
+
+- `npm run typecheck` — clean
+- Branch: `claude/gmail-integration`
+
+### For Dennis (before Codex can start)
+
+1. Enable Gmail API in Google Cloud Console (same project as Calendar)
+2. Run `npx tsx scripts/gmail-auth.ts` — authorize `dennis@indexing.co`, save token as `GMAIL_INDEXING_REFRESH_TOKEN`
+3. Run again — authorize `dennisverstappen1@gmail.com`, save token as `GMAIL_PERSONAL_REFRESH_TOKEN`
+4. Add both tokens to `.env`
+5. Merge `claude/gmail-integration` to `main`
+
+### For Codex
+
+Pick up the 4 tasks in `.cortex/tasks.md` under "Gmail Integration (Phase 6)" on branch `codex/gmail-integration` (after merge). Types are at `src/core/types/gmail.ts`. Follow the google-calendar.ts pattern.
+
+### Future phases (not yet tasked)
+
+- Phase 3: Mail intelligence agent (LLM classifier for newsletters, event invites, LinkedIn notifications)
+- Phase 4: Cleanup actions (bulk archive newsletters, event invite triage, FOCUS integration)
+- Plan at: `C:\Users\Dennis\.claude\plans\async-painting-ullman.md`
+
+---
+
 ## 2026-02-10 codex -- implement memory flywheel runtime agents (Phase 5.5)
 
 ### Built fact extraction and weekly synthesis agents
