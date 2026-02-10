@@ -131,3 +131,70 @@ test("CortexOrchestrator runs cycle, scores findings, and captures events", asyn
     await fs.rm(root, { recursive: true, force: true });
   }
 });
+
+test("CortexOrchestrator falls back to AgentRouter when trigger has no explicit agents", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-orch-router-"));
+  try {
+    const config: OrchestratorConfig = {
+      ...makeConfig(),
+      agent_routing: {
+        affinities: [
+          {
+            agent: "agent-two",
+            task_types: ["content_drafting"],
+            priority: 10,
+          },
+        ],
+        default_agent: "agent-one",
+        user_directives: {
+          "/content": "agent-two",
+        },
+      },
+    };
+
+    const configPath = path.join(root, "orchestrator.json");
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf8");
+
+    const orchestrator = new CortexOrchestrator(configPath);
+    orchestrator.runner.registerLocal("agent-one", async (context) => ({
+      ...basicOutput(context.agent),
+      findings: [
+        {
+          type: "insight",
+          summary: "Default agent finding",
+          urgency: "low",
+          confidence: 0.9,
+          context_refs: [],
+          requires_human: false,
+        },
+      ],
+    }));
+    orchestrator.runner.registerLocal("agent-two", async (context) => ({
+      ...basicOutput(context.agent),
+      findings: [
+        {
+          type: "insight",
+          summary: "Routed agent finding",
+          urgency: "high",
+          confidence: 0.9,
+          context_refs: [],
+          requires_human: false,
+        },
+      ],
+    }));
+
+    const cycle = await orchestrator.runCycle({
+      type: "agent_request",
+      payload: {
+        user_directive: "/content draft this",
+        prompt: "draft a post",
+      },
+    });
+
+    assert.deepEqual(cycle.agents_spawned, ["agent-two"]);
+    assert.equal(cycle.agent_outputs.length, 1);
+    assert.equal(cycle.agent_outputs[0]?.agent, "agent-two");
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});

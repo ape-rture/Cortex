@@ -58,7 +58,7 @@ class FakeOrchestrator implements Orchestrator {
       started_at: startedAt,
       completed_at: new Date().toISOString(),
       trigger,
-      agents_spawned: trigger.agents,
+      agents_spawned: trigger.agents ?? [],
       agent_outputs: [
         {
           agent: "sales-watcher",

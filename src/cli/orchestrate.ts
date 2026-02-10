@@ -271,7 +271,7 @@ export async function runOrchestrate(
       for (const configured of cronTriggers) {
         const trigger: Trigger = {
           ...configured,
-          agents: args.agents ?? [...configured.agents],
+          agents: args.agents ?? [...(configured.agents ?? [])],
         };
         cycles.push(await orchestrator.runCycle(trigger));
       }

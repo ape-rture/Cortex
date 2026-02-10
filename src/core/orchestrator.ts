@@ -31,6 +31,8 @@ import { RuleBasedSalienceScorer } from "./salience.js";
 import type { FindingWithAgent } from "./salience.js";
 import { PermissionValidator } from "./permission-validator.js";
 import { MemoryWriter } from "./memory-writer.js";
+import { ConfigAgentRouter, isTaskType } from "./agent-router.js";
+import type { AgentRouteRequest } from "./types/routing.js";
 
 // ---------------------------------------------------------------------
 // Constants
@@ -56,6 +58,7 @@ export class CortexOrchestrator implements Orchestrator {
   private readonly scorer: RuleBasedSalienceScorer;
   private readonly validator: PermissionValidator;
   private readonly writer: MemoryWriter;
+  private readonly agentRouter: ConfigAgentRouter;
   private readonly cycles: OrchestratorCycle[] = [];
   private readonly listeners = new Set<AgentEventListener>();
 
@@ -64,6 +67,7 @@ export class CortexOrchestrator implements Orchestrator {
     this.scorer = new RuleBasedSalienceScorer();
     this.validator = new PermissionValidator();
     this.writer = new MemoryWriter();
+    this.agentRouter = new ConfigAgentRouter(configPath);
 
     // Wire event broadcasting into the runner
     this.runner = new AgentRunner((event: AgentEvent) => {
@@ -102,9 +106,22 @@ export class CortexOrchestrator implements Orchestrator {
 
     try {
       // Determine which agents to run
-      const agentNames = trigger.agents.includes("*")
-        ? Array.from(this.agents.keys())
-        : trigger.agents.filter((name) => this.agents.has(name));
+      const explicitAgents = trigger.agents ?? [];
+      let agentNames: string[];
+      if (explicitAgents.length > 0) {
+        agentNames = explicitAgents.includes("*")
+          ? Array.from(this.agents.keys())
+          : explicitAgents.filter((name) => this.agents.has(name));
+      } else {
+        const routed = await this.agentRouter.resolve(this.toAgentRouteRequest(trigger));
+        agentNames = this.agents.has(routed.agent)
+          ? [routed.agent]
+          : [];
+      }
+
+      if (agentNames.length === 0) {
+        agentNames = Array.from(this.agents.keys());
+      }
 
       // Spawn agents in parallel
       const context: AgentRunContext = {
@@ -256,6 +273,7 @@ export class CortexOrchestrator implements Orchestrator {
   async reloadConfig(): Promise<void> {
     const raw = await fs.readFile(this.configPath, "utf8");
     this.config = JSON.parse(raw) as OrchestratorConfig;
+    await this.agentRouter.reloadConfig();
 
     // Register all agents from config
     for (const [name, agentConfig] of Object.entries(this.config.agents)) {
@@ -271,6 +289,24 @@ export class CortexOrchestrator implements Orchestrator {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
+    };
+  }
+
+  private toAgentRouteRequest(trigger: Trigger): AgentRouteRequest {
+    const payload = trigger.payload ?? {};
+    const rawTaskType = typeof payload.task_type === "string" ? payload.task_type : undefined;
+    const rawPrompt = typeof payload.prompt === "string" ? payload.prompt : "";
+
+    const touches_files = Array.isArray(payload.touches_files)
+      ? payload.touches_files.filter((item): item is string => typeof item === "string")
+      : undefined;
+
+    return {
+      prompt: rawPrompt,
+      task_type: rawTaskType && isTaskType(rawTaskType) ? rawTaskType : undefined,
+      user_directive: typeof payload.user_directive === "string" ? payload.user_directive : undefined,
+      context_key: typeof payload.context_key === "string" ? payload.context_key : undefined,
+      touches_files,
     };
   }
 }
