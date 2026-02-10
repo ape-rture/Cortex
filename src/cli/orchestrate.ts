@@ -20,6 +20,8 @@ import { salesWatcherAgent } from "../agents/sales-watcher.js";
 import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
 import { projectHeartbeatAgent } from "../agents/project-heartbeat.js";
+import { factExtractorAgent } from "../agents/fact-extractor.js";
+import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
 import type { Trigger, TriggerType } from "../core/types/orchestrator.js";
 import type { ScoredFinding } from "../core/types/agent-output.js";
 import type { OrchestratorConfig, OrchestratorCycle } from "../core/types/orchestrator.js";
@@ -219,6 +221,8 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("content-scanner", contentScannerAgent);
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
   orchestrator.runner.registerLocal("project-heartbeat", projectHeartbeatAgent);
+  orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
+  orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
 }
 
 // ---------------------------------------------------------------------
