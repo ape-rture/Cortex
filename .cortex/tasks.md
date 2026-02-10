@@ -16,6 +16,54 @@
 
 ### Web Terminal (Phase 1.5)
 
+### Gmail Integration (Phase 6)
+
+- [ ] **Implement GoogleGmailClient** -- Agent: codex -- Branch: `codex/gmail-integration`
+  - Create `src/integrations/gmail.ts` implementing `GmailClient` from `src/core/types/gmail.ts`
+  - Multi-account support: hardcoded `ACCOUNTS` array with `indexing` (dennis@indexing.co) + `personal` (dennisverstappen1@gmail.com)
+  - Auth via env vars: `GMAIL_INDEXING_REFRESH_TOKEN`, `GMAIL_PERSONAL_REFRESH_TOKEN` (same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` as calendar)
+  - Uses `googleapis` (`google.gmail({ version: "v1" })`)
+  - `listMessages()`: fetch headers only by default (message.get with format=metadata), parse From/To/Subject/Date from headers
+  - `getMessage()`: fetch full message (format=full), extract plain text body from parts
+  - `getUnreadCount()`: use `messages.list` with `q: "is:unread"` and return `resultSizeEstimate`
+  - `archiveMessages()`: batch `messages.modify` removing INBOX label
+  - `trashMessages()`: batch `messages.trash`
+  - `addLabel()`/`removeLabel()`: batch `messages.modify`
+  - `createDraft()`: `drafts.create` with RFC 2822 message (no send capability)
+  - `getLabels()`: `labels.list`
+  - `fetchMailSummary(topN=3)`: convenience for /gm — calls `getUnreadCount` + `listMessages` (top N unread) for all accounts
+  - Export from `src/integrations/index.ts`
+  - Follow pattern from `src/integrations/google-calendar.ts` (OAuth2 client creation, env var reading)
+  - Types are at `src/core/types/gmail.ts` (on branch `claude/gmail-integration`, merge first)
+
+- [ ] **Add Gmail integration tests** -- Agent: codex -- Branch: `codex/gmail-integration`
+  - Create `src/integrations/gmail.test.ts`
+  - Mock `googleapis` (follow pattern from `src/integrations/google-calendar.test.ts`)
+  - Test multi-account client creation, message listing, header parsing, body extraction
+  - Test archive/trash/label batch operations
+  - Test `fetchMailSummary()` aggregation
+  - Test graceful fallback when refresh token is missing
+
+- [ ] **Create /mail CLI command** -- Agent: codex -- Branch: `codex/gmail-integration`
+  - Create `src/cli/mail.ts` with subcommands:
+    - `/mail` or `/mail inbox` — unread summary across both accounts
+    - `/mail search <query>` — search using Gmail query syntax
+    - `/mail read <id>` — read specific message (full body)
+    - `/mail labels [account]` — list labels
+    - `/mail unread` — unread counts per account
+  - Export from `src/cli/index.ts`
+  - Register in `src/core/command-registry.ts`
+  - Add `mail` npm script to `package.json`
+  - Follow pattern from `src/cli/content.ts` (subcommand switching)
+
+- [ ] **Add Email section to /gm** -- Agent: codex -- Branch: `codex/gmail-integration`
+  - Modify `src/cli/gm.ts`:
+    - Import `GoogleGmailClient` from `src/integrations/gmail.ts`
+    - Add `fetchMailSummary()` call to the `Promise.all()` in `runMorningBriefing()`
+    - Add `summarizeMail(summary: GmailMailSummary)` function
+    - Add "Email" section showing: unread count per account + top 3 urgent subjects
+  - Graceful fallback if Gmail credentials missing (show warning, don't crash)
+
 
 ## In Progress
 

@@ -199,3 +199,20 @@ export type {
 } from "./decay.js";
 
 export { DEFAULT_ENTITY_DECAY_CONFIG } from "./decay.js";
+
+export type {
+  GmailAccountConfig,
+  GmailMessageHeader,
+  GmailMessage,
+  GmailSearchOptions,
+  GmailFetchResult,
+  GmailMailSummary,
+  GmailAccountSummary,
+  MailCategory,
+  MailSuggestedAction,
+  MailClassification,
+  GmailActionType,
+  GmailAction,
+  GmailLabel,
+  GmailClient,
+} from "./gmail.js";
