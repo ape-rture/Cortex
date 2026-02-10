@@ -36,8 +36,11 @@ export interface Trigger {
   /** Cron expression (for cron triggers) or event name */
   readonly schedule?: string;
 
-  /** Which agents this trigger activates */
-  readonly agents: readonly string[];
+  /**
+   * Which agents this trigger activates.
+   * If omitted, the orchestrator falls back to AgentRouter.resolve().
+   */
+  readonly agents?: readonly string[];
 
   /** Optional payload from the trigger source */
   readonly payload?: Record<string, unknown>;
