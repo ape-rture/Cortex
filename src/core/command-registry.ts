@@ -13,6 +13,7 @@ import { runMorningBriefing } from "../cli/gm.js";
 import { runDailyDigest } from "../cli/digest.js";
 import { runMeetingPrep } from "../cli/prep.js";
 import { runContent } from "../cli/content.js";
+import { runMail } from "../cli/mail.js";
 import { runProject } from "../cli/project.js";
 import { runOrchestrate } from "../cli/orchestrate.js";
 import { MarkdownTaskQueue } from "./task-queue.js";
@@ -47,6 +48,10 @@ export function getCommandRegistry(): Record<string, CommandHandler> {
     "/content": (args) => {
       const parts = args.trim().split(/\s+/);
       return runContent(parts.filter(Boolean));
+    },
+    "/mail": (args) => {
+      const parts = args.trim().split(/\s+/).filter(Boolean);
+      return runMail(parts);
     },
     "/project": (args) => {
       const parts = args.trim().split(/\s+/).filter(Boolean);

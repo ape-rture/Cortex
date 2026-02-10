@@ -15,6 +15,7 @@
     "digest": "node --import tsx src/cli/digest.ts",
     "prep": "node --import tsx src/cli/prep.ts",
     "content": "node --import tsx src/cli/content.ts",
+    "mail": "node --import tsx src/cli/mail.ts",
     "project": "node --import tsx src/cli/project.ts",
     "scrape": "node --import tsx src/cli/scrape.ts",
     "orchestrate": "node --import tsx src/cli/orchestrate.ts",
