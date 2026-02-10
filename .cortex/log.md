@@ -1055,3 +1055,15 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run build:dashboard`
   - `npm test`
 
+## 2026-02-10 codex -- gmail integration phase 6
+
+- Implemented Gmail integration client in `src/integrations/gmail.ts` (`GoogleGmailClient`) with multi-account auth (`indexing` + `personal`), list/get/unread/archive/trash/label/draft/labels APIs, and `/gm` summary helper `fetchMailSummary()`.
+- Added mocked unit coverage in `src/integrations/gmail.test.ts` for multi-account setup, header parsing, full-body extraction, batch archive/trash/label ops, draft encoding, summary aggregation, and missing-refresh-token fallback.
+- Added `/mail` CLI in `src/cli/mail.ts` with `inbox`, `search`, `read`, `labels`, and `unread` subcommands, exported in `src/cli/index.ts`, registered in `src/core/command-registry.ts`, and added `npm run mail` script in `package.json`.
+- Updated `/gm` mail briefing in `src/cli/gm.ts` to include an Email section with unread totals per account and top urgent subjects, with graceful fallback warnings when Gmail is unavailable.
+- Updated integration barrel export in `src/integrations/index.ts`.
+- Validation run:
+  - `node --import tsx --test src/integrations/gmail.test.ts`
+  - `npm run typecheck`
+  - `npm run test:unit`
+- Branch: `codex/gmail-integration` merged to `main` and deleted locally.

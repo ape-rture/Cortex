@@ -1,4 +1,4 @@
-# Task Board
+﻿# Task Board
 
 *Dennis assigns tasks here. Agents pick up their assigned work.*
 
@@ -18,52 +18,6 @@
 
 ### Gmail Integration (Phase 6)
 
-- [ ] **Implement GoogleGmailClient** -- Agent: codex -- Branch: `codex/gmail-integration`
-  - Create `src/integrations/gmail.ts` implementing `GmailClient` from `src/core/types/gmail.ts`
-  - Multi-account support: hardcoded `ACCOUNTS` array with `indexing` (dennis@indexing.co) + `personal` (dennisverstappen1@gmail.com)
-  - Auth via env vars: `GMAIL_INDEXING_REFRESH_TOKEN`, `GMAIL_PERSONAL_REFRESH_TOKEN` (same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` as calendar)
-  - Uses `googleapis` (`google.gmail({ version: "v1" })`)
-  - `listMessages()`: fetch headers only by default (message.get with format=metadata), parse From/To/Subject/Date from headers
-  - `getMessage()`: fetch full message (format=full), extract plain text body from parts
-  - `getUnreadCount()`: use `messages.list` with `q: "is:unread"` and return `resultSizeEstimate`
-  - `archiveMessages()`: batch `messages.modify` removing INBOX label
-  - `trashMessages()`: batch `messages.trash`
-  - `addLabel()`/`removeLabel()`: batch `messages.modify`
-  - `createDraft()`: `drafts.create` with RFC 2822 message (no send capability)
-  - `getLabels()`: `labels.list`
-  - `fetchMailSummary(topN=3)`: convenience for /gm — calls `getUnreadCount` + `listMessages` (top N unread) for all accounts
-  - Export from `src/integrations/index.ts`
-  - Follow pattern from `src/integrations/google-calendar.ts` (OAuth2 client creation, env var reading)
-  - Types are at `src/core/types/gmail.ts` (on branch `claude/gmail-integration`, merge first)
-
-- [ ] **Add Gmail integration tests** -- Agent: codex -- Branch: `codex/gmail-integration`
-  - Create `src/integrations/gmail.test.ts`
-  - Mock `googleapis` (follow pattern from `src/integrations/google-calendar.test.ts`)
-  - Test multi-account client creation, message listing, header parsing, body extraction
-  - Test archive/trash/label batch operations
-  - Test `fetchMailSummary()` aggregation
-  - Test graceful fallback when refresh token is missing
-
-- [ ] **Create /mail CLI command** -- Agent: codex -- Branch: `codex/gmail-integration`
-  - Create `src/cli/mail.ts` with subcommands:
-    - `/mail` or `/mail inbox` — unread summary across both accounts
-    - `/mail search <query>` — search using Gmail query syntax
-    - `/mail read <id>` — read specific message (full body)
-    - `/mail labels [account]` — list labels
-    - `/mail unread` — unread counts per account
-  - Export from `src/cli/index.ts`
-  - Register in `src/core/command-registry.ts`
-  - Add `mail` npm script to `package.json`
-  - Follow pattern from `src/cli/content.ts` (subcommand switching)
-
-- [ ] **Add Email section to /gm** -- Agent: codex -- Branch: `codex/gmail-integration`
-  - Modify `src/cli/gm.ts`:
-    - Import `GoogleGmailClient` from `src/integrations/gmail.ts`
-    - Add `fetchMailSummary()` call to the `Promise.all()` in `runMorningBriefing()`
-    - Add `summarizeMail(summary: GmailMailSummary)` function
-    - Add "Email" section showing: unread count per account + top 3 urgent subjects
-  - Graceful fallback if Gmail credentials missing (show warning, don't crash)
-
 
 ## In Progress
 
@@ -73,6 +27,7 @@
 
 ## Done
 
+- **Gmail Integration (Phase 6)** -- Agent: codex -- Branch: codex/gmail-integration (merged to main). Implemented GoogleGmailClient with multi-account Gmail support and full CRUD flows in src/integrations/gmail.ts, added mocked integration coverage in src/integrations/gmail.test.ts, shipped /mail CLI in src/cli/mail.ts (inbox/search/read/labels/unread), wired command + script exports (src/core/command-registry.ts, src/cli/index.ts, package.json), and added an Email section to /gm with per-account unread counts and top urgent subjects (src/cli/gm.ts, plus src/integrations/index.ts export).
 - **Implement fact-extractor + memory-synthesizer agents and tests (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `src/agents/fact-extractor.ts` (recent file scan in `meetings/` + `daily/`, LLM extraction via `ConfigRouter.route()`, entity creation/appends via `EntityStore`) and `src/agents/memory-synthesizer.ts` (entity scan, stale detection, synthesis routing, supersession + summary writes). Added tests in `src/agents/fact-extractor.test.ts` and `src/agents/memory-synthesizer.test.ts`. Wired local registration in `src/cli/orchestrate.ts`, `src/cli/daemon.ts`, `src/cli/slack.ts`, and `src/ui/server.ts`.
 - **Implement MarkdownEntityStore (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `MarkdownEntityStore` in `src/core/entity-store.ts` implementing full entity CRUD/scaffolding (`listEntities`, `loadSummary`, `loadFacts`, `loadActiveFacts`, `appendFacts`, `supersedeFacts`, `writeSummary`, `createEntity`) with template-based initialization from `entities/_template-summary.md` and `entities/_template-facts.json`. Added coverage in `src/core/entity-store.test.ts`.
 - **AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)** -- Agent: codex -- Branch: `codex/auto-router` (merged to `main`). Added `ConfigAgentRouter` (`src/core/agent-router.ts`) + tests, added `InMemoryThreadScheduler` (`src/core/thread-scheduler.ts`) + tests, added `FileResumeTokenStore` (`src/core/resume-token-store.ts`) + tests, and wired orchestrator fallback routing when triggers omit `agents` (`src/core/orchestrator.ts`, `src/core/orchestrator.test.ts`). Also updated trigger typing for optional `agents` in `src/core/types/orchestrator.ts` and adjusted impacted tests.
@@ -130,5 +85,6 @@
 - **Implement Granola URL scraper** -- Agent: claude -- `src/integrations/granola.ts`. Fetches Granola shareable link, extracts meeting transcript via HTML scraping.
 - **Add draft/revise/podcast/extract/seeds/promote CLI subcommands** -- Agent: claude -- Extended `src/cli/content.ts` with all Phase 3b+3c subcommands: draft, revise, podcast (interactive), extract (file/Granola URL), seeds, promote. Podcast creates 3-idea chain.
 - **Add content pipeline section to /gm** -- Agent: claude -- Added Content Pipeline section to `src/cli/gm.ts` showing idea counts by status and unprocessed seed count.
+
 
 

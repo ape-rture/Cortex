@@ -2,22 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: implement Gmail Phase 6 integration, tests, CLI, and /gm mail summary
-Branch: codex/gmail-integration
-Files:
-  - src/integrations/gmail.ts
-  - src/integrations/gmail.test.ts
-  - src/integrations/index.ts
-  - src/cli/mail.ts
-  - src/cli/index.ts
-  - src/cli/gm.ts
-  - src/core/command-registry.ts
-  - package.json
-  - .cortex/tasks.md
-  - .cortex/log.md
-  - .cortex/active.md
-Started: 2026-02-10T23:52Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 
