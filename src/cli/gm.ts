@@ -1,7 +1,9 @@
 import "dotenv/config";
 import path from "node:path";
 import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
+import type { GmailMailSummary, GmailMessageHeader } from "../core/types/gmail.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
+import { GMAIL_ACCOUNTS, GoogleGmailClient } from "../integrations/gmail.js";
 import { SimpleGitMonitor } from "../core/git-monitor.js";
 import { ProjectHeartbeatMonitor } from "../core/project-heartbeat.js";
 import { MarkdownSessionSnapshotStore } from "../core/session-snapshot.js";
@@ -25,6 +27,72 @@ function summarizeEvents(events: { summary: string; start: string; end: string }
   return events
     .map((event) => `- ${event.summary} (${event.start} -> ${event.end})`)
     .join("\n");
+}
+
+const URGENT_SUBJECT_PATTERN = /\b(urgent|asap|action required|deadline|due|eod|important|follow up|reply needed)\b/i;
+
+function scoreUrgency(message: GmailMessageHeader): number {
+  let score = 0;
+  if (URGENT_SUBJECT_PATTERN.test(message.subject)) score += 100;
+  if (message.labelIds.includes("IMPORTANT")) score += 40;
+  if (message.isUnread) score += 10;
+  if (message.hasAttachments) score += 5;
+  const parsedDate = Date.parse(message.date);
+  if (!Number.isNaN(parsedDate)) {
+    // Favor recency with a bounded contribution.
+    score += Math.max(0, 20 - Math.floor((Date.now() - parsedDate) / (1000 * 60 * 60 * 24)));
+  }
+  return score;
+}
+
+function summarizeMail(summary: GmailMailSummary): string {
+  if (summary.accounts.length === 0) return "(mail unavailable)";
+
+  const lines: string[] = [];
+  lines.push(`Total unread: ${summary.totalUnread}`);
+  for (const account of summary.accounts) {
+    lines.push(`- ${account.label} (${account.email}): ${account.unreadCount}`);
+    if (account.warning) {
+      lines.push(`  warning: ${account.warning}`);
+    }
+  }
+
+  const urgent = summary.accounts
+    .flatMap((account) => account.topUnread.map((message) => ({
+      accountLabel: account.label,
+      message,
+      score: scoreUrgency(message),
+    })))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+
+  if (urgent.length === 0) {
+    lines.push("");
+    lines.push("Top urgent subjects: (none)");
+    return lines.join("\n");
+  }
+
+  lines.push("");
+  lines.push("Top urgent subjects:");
+  for (const entry of urgent) {
+    lines.push(`- [${entry.accountLabel}] ${entry.message.subject} (${entry.message.from})`);
+  }
+  return lines.join("\n");
+}
+
+function buildMailFallback(error: unknown): GmailMailSummary {
+  const message = error instanceof Error ? error.message : "unknown error";
+  return {
+    totalUnread: 0,
+    accounts: GMAIL_ACCOUNTS.map((account) => ({
+      accountId: account.id,
+      label: account.label ?? account.id,
+      email: account.email,
+      unreadCount: 0,
+      topUnread: [],
+      warning: `Gmail unavailable: ${message}`,
+    })),
+  };
 }
 
 function summarizeGit(reports: readonly { repo_name: string; branch: string; count: number; oldest_hours: number }[]): string {
@@ -115,12 +183,14 @@ export async function runMorningBriefing(): Promise<string> {
   const queuePath = path.resolve("actions", "queue.md");
 
   const contentStore = new MarkdownContentStore();
+  const gmailClient = new GoogleGmailClient();
 
-  const [weeklyFocus, pendingActions, queueContent, calendar, gitReports, projectHealth, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
+  const [weeklyFocus, pendingActions, queueContent, calendar, mailSummary, gitReports, projectHealth, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
     fetchTodayEvents(),
+    gmailClient.fetchMailSummary(3).catch((error) => buildMailFallback(error)),
     new SimpleGitMonitor().checkAll(),
     new ProjectHeartbeatMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
@@ -143,6 +213,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Pending Actions", pendingActions));
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
+  output.push(formatSection("Email", summarizeMail(mailSummary)));
   output.push(formatSection("Git", summarizeGit(gitReports)));
   output.push(formatSection("Project Health", summarizeProjectHealth(projectHealth)));
   output.push(formatSection("Relationship Alerts", summarizeDecay(decayAlerts)));
