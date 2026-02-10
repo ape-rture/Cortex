@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
+## 2026-02-10 claude -- Merge claude/memory-flywheel to main
+
+- Merged `claude/memory-flywheel` branch into `main` (no-ff merge)
+- Typecheck clean, 80/80 tests pass (1 skipped)
+- Codex can now pick up Phase 5.5 implementation tasks (MarkdownEntityStore, fact-extractor, memory-synthesizer)
+
+---
+
 ## 2026-02-10 claude -- Memory Flywheel types, prompts, and scaffolding (Phase 5.5)
 
 ### Designed knowledge graph layer for the Memory Flywheel
@@ -26,6 +57,29 @@ Created the foundational types, agent prompts, and directory structure for entit
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-09 claude -- Merge claude/more-agents branch
 
 ### Finalized and merged orchestrator enhancements
@@ -38,6 +92,29 @@ Created the foundational types, agent prompts, and directory structure for entit
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-09 claude -- Claude Code Agent Execution (Phase 5.5)
 
 ### Added `claude_code` execution type to orchestrator
@@ -69,6 +146,29 @@ Agents can now run as full Claude Code sessions with autonomous reasoning capabi
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-09 claude -- Orchestrator MVP (Phase 5)
 
 ### Implemented the Dennett-inspired orchestrator
@@ -110,6 +210,29 @@ Thin, non-intelligent scheduler that spawns agents in parallel, scores findings 
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-09 claude -- scaffold Marketing Tool project
 
 - Scaffolded new project at `D:\Documenten\Programmeren\Marketing Tool` using `TemplateScaffolder`
@@ -124,6 +247,29 @@ Thin, non-intelligent scheduler that spawns agents in parallel, scores findings 
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-09 codex -- phase 4 multi-project management
 
 - Implemented project registry markdown utilities: `parseProjects` / `serializeProjects` in `src/utils/markdown.ts` with new tests in `src/utils/markdown.test.ts`.
@@ -180,6 +326,29 @@ Phase 2 of implementation plan: Build `@indexingco/content-mcp` server with:
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-05 claude -- Multi-project management design + template generalization
 
 ### Phase 4: Project Management (design complete)
@@ -534,6 +703,29 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 
 ---
 
+## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
+
+### Implemented remaining Phase 5 backend pieces
+
+- Added `ConfigAgentRouter` in `src/core/agent-router.ts` implementing cascade selection: user directive > context glob match > task affinity > default agent, with tests in `src/core/agent-router.test.ts`
+- Added `InMemoryThreadScheduler` in `src/core/thread-scheduler.ts` wrapping `TaskQueue` with per-thread serialization and cross-thread parallel limits, with tests in `src/core/thread-scheduler.test.ts`
+- Added `FileResumeTokenStore` in `src/core/resume-token-store.ts` with file-backed persistence (`context/resume-tokens.json`), token ID generation via `crypto.randomUUID`, and default 7-day pruning, with tests in `src/core/resume-token-store.test.ts`
+- Wired AutoRouter into orchestrator in `src/core/orchestrator.ts`: when trigger omits `agents`, orchestrator resolves one via AgentRouter while preserving explicit-agent behavior
+- Updated trigger typing to allow optional `agents` in `src/core/types/orchestrator.ts`
+- Updated impacted tests in `src/core/orchestrator.test.ts`, `src/cli/orchestrate.ts`, and `src/ui/handlers/phase2-api.test.ts`
+
+### Validation
+
+- `npm run typecheck` -- clean
+- `npm run test:unit` -- 93 passed, 1 skipped, 0 failed
+
+### Branch flow
+
+- Implemented on `codex/auto-router`
+- Merged to `main`
+- Branch deleted
+
+---
 ## 2026-02-02 codex -- task queue processor
 
 - Added src/core/task-queue.ts implementing MarkdownTaskQueue with add/update/list/next
@@ -749,3 +941,4 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run typecheck`
   - `npm run build:dashboard`
   - `npm test`
+

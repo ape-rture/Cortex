@@ -8,36 +8,6 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-### AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)
-
-- **Implement AgentRouter** -- Agent: codex -- Branch: `codex/auto-router`
-  - New file: `src/core/agent-router.ts`
-  - Implement `AgentRouter` interface from `src/core/types/routing.ts`
-  - Cascade: user directive prefix > context glob match > task type affinity > default agent
-  - Load config from `context/orchestrator.json` `agent_routing` section (already has affinities)
-  - Write tests in `src/core/agent-router.test.ts`
-
-- **Implement ThreadScheduler** -- Agent: codex -- Branch: `codex/auto-router`
-  - New file: `src/core/thread-scheduler.ts`
-  - Implement `ThreadScheduler` interface from `src/core/types/task-queue.ts`
-  - Wraps `MarkdownTaskQueue` — adds thread isolation on top
-  - In-memory thread tracking (Map<ThreadKey, Task[]>)
-  - Same-thread tasks serial, cross-thread parallel
-  - Write tests in `src/core/thread-scheduler.test.ts`
-
-- **Implement ResumeTokenStore** -- Agent: codex -- Branch: `codex/auto-router`
-  - New file: `src/core/resume-token-store.ts`
-  - Implement `ResumeTokenStore` interface from `src/core/types/session.ts`
-  - File-backed: store tokens in `context/resume-tokens.json`
-  - Token generation: use nanoid or crypto.randomUUID
-  - Prune tokens older than 7 days by default
-  - Write tests in `src/core/resume-token-store.test.ts`
-
-- **Wire AgentRouter into orchestrator** -- Agent: codex -- Branch: `codex/auto-router`
-  - Update `src/core/orchestrator.ts` to optionally use AgentRouter for agent selection
-  - When a trigger has no explicit `agents` list, fall back to AgentRouter.resolve()
-  - Keep backward compatible — existing explicit agent lists still work
-
 ### Memory Flywheel (Phase 5.5)
 
 - **Implement MarkdownEntityStore** -- Agent: codex -- Branch: `codex/memory-flywheel`
@@ -94,6 +64,7 @@
 
 ## Done
 
+- **AutoRouter + ThreadScheduler + Resume Tokens (Phase 5)** -- Agent: codex -- Branch: `codex/auto-router` (merged to `main`). Added `ConfigAgentRouter` (`src/core/agent-router.ts`) + tests, added `InMemoryThreadScheduler` (`src/core/thread-scheduler.ts`) + tests, added `FileResumeTokenStore` (`src/core/resume-token-store.ts`) + tests, and wired orchestrator fallback routing when triggers omit `agents` (`src/core/orchestrator.ts`, `src/core/orchestrator.test.ts`). Also updated trigger typing for optional `agents` in `src/core/types/orchestrator.ts` and adjusted impacted tests.
 - **Project Heartbeat (Phase 4)** -- Agent: codex -- Branch: `codex/project-heartbeat`. Implemented `ProjectHeartbeatMonitor` (`src/core/project-heartbeat.ts`) + tests (`src/core/project-heartbeat.test.ts`), wired Project Health into `/gm`, added local orchestrator agent (`src/agents/project-heartbeat.ts`) + quick trigger registration (`context/orchestrator.json`), added `/api/projects/health` handler + tests (`src/ui/handlers/projects.ts`, `src/ui/handlers/projects.test.ts`), and shipped dashboard Projects view (`src/ui/dashboard/src/views/projects.tsx`) with nav + API wiring.
 - **Wire /project into web terminal** -- Agent: codex -- Branch: `main`. Added `/project` command to `src/ui/handlers/chat.ts` command registry using `runProject` from `src/cli/project.ts`, with support for `/project status`, `/project list`, and `/project status <id>` (defaults empty `/project` to `status`).
 - **Phase 3: Wire dashboard/monitor/review views to Phase 2 APIs** -- Agent: codex -- Branch: `main`. Implemented live data wiring in `src/ui/dashboard/src/views/dashboard.tsx`, `src/ui/dashboard/src/views/monitor.tsx`, and `src/ui/dashboard/src/views/review.tsx` using `/api/dashboard`, `/api/dashboard/cycles`, `/api/review/*`, `/api/tasks`, `/api/monitor/stream`, and `/api/orchestrate/trigger`.
@@ -148,4 +119,5 @@
 - **Implement Granola URL scraper** -- Agent: claude -- `src/integrations/granola.ts`. Fetches Granola shareable link, extracts meeting transcript via HTML scraping.
 - **Add draft/revise/podcast/extract/seeds/promote CLI subcommands** -- Agent: claude -- Extended `src/cli/content.ts` with all Phase 3b+3c subcommands: draft, revise, podcast (interactive), extract (file/Granola URL), seeds, promote. Podcast creates 3-idea chain.
 - **Add content pipeline section to /gm** -- Agent: claude -- Added Content Pipeline section to `src/cli/gm.ts` showing idea counts by status and unprocessed seed count.
+
 
