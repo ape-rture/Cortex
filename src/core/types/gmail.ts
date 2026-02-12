@@ -128,6 +128,11 @@ export interface GmailAction {
 
 // ---------------------------------------------------------------------------
 // Client interface
+//
+// SECURITY POLICY: This client must NEVER support sending emails directly.
+// Only draft creation is allowed. Sending is too sensitive to prompt injection
+// attacks — an LLM agent processing untrusted email content could be tricked
+// into sending replies. Drafts require explicit human review before sending.
 // ---------------------------------------------------------------------------
 
 export interface GmailLabel {

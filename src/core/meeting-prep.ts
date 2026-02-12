@@ -13,6 +13,7 @@ import {
 } from "./types/crm.js";
 import type { Task, TaskQueue } from "./types/task-queue.js";
 import type { PageLink, WebScraper } from "./types/web-scraper.js";
+import { wrapUntrusted } from "./security/untrusted-content.js";
 
 const DEFAULT_PROMPT_PATH = path.resolve("src", "agents", "prompts", "meeting-prep.md");
 const OPEN_STATUSES = new Set<Task["status"]>(["queued", "in_progress", "blocked"]);
@@ -223,14 +224,21 @@ function buildMeetingPrepInput(
   openActionItems: readonly string[],
   companyNews: readonly CompanyNewsItem[],
 ): string {
-  const context = contact.context?.trim() || "(none)";
+  const context = contact.context?.trim()
+    ? wrapUntrusted(contact.context.trim(), "contact_context")
+    : "(none)";
   const interactionLines = recentInteractions.length > 0
-    ? recentInteractions.map((item) => summarizeInteraction(item)).join("\n")
+    ? wrapUntrusted(
+        recentInteractions.map((item) => summarizeInteraction(item)).join("\n"),
+        "interaction_history",
+      )
     : "(none)";
   const taskLines = openActionItems.length > 0
     ? openActionItems.map((item) => `- ${item}`).join("\n")
     : "(none)";
-  const newsLines = formatCompanyNews(companyNews);
+  const newsLines = companyNews.length > 0
+    ? wrapUntrusted(formatCompanyNews(companyNews), "web_scrape")
+    : "(none)";
 
   return [
     `Contact: ${contact.name}`,
@@ -247,7 +255,7 @@ function buildMeetingPrepInput(
     "Open Action Items:",
     taskLines,
     "",
-    "Company News (untrusted):",
+    "Company News:",
     newsLines,
   ].join("\n");
 }

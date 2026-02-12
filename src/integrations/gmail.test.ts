@@ -12,6 +12,7 @@ type AccountFixture = {
   readonly listByQuery: Readonly<Record<string, ListSeed>>;
   readonly messages: Readonly<Record<string, gmail_v1.Schema$Message>>;
   readonly labels?: readonly gmail_v1.Schema$Label[];
+  readonly inboxUnreadCount?: number;
 };
 
 type GoogleMockCalls = {
@@ -249,6 +250,9 @@ function createGoogleMock(input: {
             calls.labels.push({ accountId });
             return { data: { labels: fixture.labels ? [...fixture.labels] : [] } };
           },
+          get: async (_params: { id: string }) => {
+            return { data: { messagesUnread: fixture.inboxUnreadCount ?? 0 } };
+          },
         },
       },
     };
@@ -476,6 +480,7 @@ test("GoogleGmailClient fetchMailSummary aggregates unread counts and top unread
         }),
       },
       labels: [{ id: "INBOX", name: "INBOX" }],
+      inboxUnreadCount: 7,
     },
     personal: {
       listByQuery: {
@@ -492,6 +497,7 @@ test("GoogleGmailClient fetchMailSummary aggregates unread counts and top unread
         }),
       },
       labels: [{ id: "Label_1", name: "Travel" }],
+      inboxUnreadCount: 1,
     },
   };
 

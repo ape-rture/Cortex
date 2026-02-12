@@ -14,6 +14,7 @@ import type {
   FactSource,
 } from "../core/types/entity.js";
 import type { RouteRequest, RouteResponse, TaskType } from "../core/types/routing.js";
+import { wrapUntrusted } from "../core/security/untrusted-content.js";
 
 const DEFAULT_PROMPT_PATH = path.resolve("src", "agents", "prompts", "fact-extractor.md");
 const DEFAULT_RECENT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -264,13 +265,13 @@ export function createFactExtractorAgent(deps: FactExtractorDeps = {}): AgentFun
         try {
           const raw = await fs.readFile(file.absolutePath, "utf8");
           const content = raw.slice(0, maxCharsPerFile);
+          const source = sourceFromPath(file.relativePath);
           const request: Omit<RouteRequest, "task_type"> = {
             prompt: [
-              `source: ${sourceFromPath(file.relativePath)}`,
+              `source: ${source}`,
               `sourceRef: ${file.relativePath}`,
               "",
-              "text:",
-              content,
+              wrapUntrusted(content, source),
             ].join("\n"),
             system_prompt: systemPrompt,
             max_tokens: 4000,
@@ -284,6 +285,10 @@ export function createFactExtractorAgent(deps: FactExtractorDeps = {}): AgentFun
 
           for (const entity of entities) {
             await entityStore.createEntity(entity.entityKind, entity.entityId, entity.entityName);
+            // Facts extracted from external content are marked untrusted and
+            // capped at 0.7 confidence to prevent prompt-injected "facts" from
+            // appearing authoritative in the knowledge graph.
+            const MAX_UNTRUSTED_CONFIDENCE = 0.7;
             const mappedFacts: AtomicFact[] = entity.facts.map((fact) => ({
               id: randomUUID(),
               fact: fact.fact,
@@ -291,7 +296,8 @@ export function createFactExtractorAgent(deps: FactExtractorDeps = {}): AgentFun
               timestamp: nowIso(now),
               source: sourceFromPath(file.relativePath),
               sourceRef: file.relativePath,
-              confidence: Math.max(0, Math.min(1, fact.confidence)),
+              confidence: Math.max(0, Math.min(MAX_UNTRUSTED_CONFIDENCE, fact.confidence)),
+              sourceTrust: "untrusted" as const,
               status: "active",
             }));
             await entityStore.appendFacts(entity.entityKind, entity.entityId, mappedFacts);

@@ -256,12 +256,11 @@ export class GoogleGmailClient implements GmailClient {
   public async getUnreadCount(accountId: string): Promise<number> {
     const client = this.resolveAccountClient(accountId);
     if (!client.service) return 0;
-    const response = await client.service.users.messages.list({
+    const response = await client.service.users.labels.get({
       userId: "me",
-      q: "is:unread",
-      maxResults: 1,
+      id: "INBOX",
     });
-    return response.data.resultSizeEstimate ?? 0;
+    return response.data.messagesUnread ?? 0;
   }
 
   public async archiveMessages(
@@ -343,13 +342,16 @@ export class GoogleGmailClient implements GmailClient {
     threadId?: string,
   ): Promise<string> {
     const client = this.requireAccountClient(accountId);
+    // Sanitize body to prevent RFC 2822 header injection via bare \r\n
+    // sequences that could add hidden headers (e.g. BCC) to the message.
+    const safeBody = body.replace(/\r\n/g, "\n");
     const lines = [
       `To: ${sanitizeHeaderValue(to)}`,
       `Subject: ${sanitizeHeaderValue(subject)}`,
       "MIME-Version: 1.0",
       "Content-Type: text/plain; charset=UTF-8",
       "",
-      body,
+      safeBody,
     ];
     const raw = encodeBase64Url(lines.join("\r\n"));
     const response = await client.service.users.drafts.create({

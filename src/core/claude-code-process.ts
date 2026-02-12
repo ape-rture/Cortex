@@ -14,6 +14,7 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
 import type { AgentOutput, Finding, MemoryUpdate } from "./types/agent-output.js";
 import type { AgentSpawnConfig, Trigger } from "./types/orchestrator.js";
+import { checkFileAccess } from "./security/path-security.js";
 
 type QueryParams = Parameters<typeof query>[0];
 type QueryStream = AsyncIterable<Record<string, unknown>>;
@@ -286,6 +287,20 @@ export async function executeClaudeCodeAgent(
         outputFormat: {
           type: "json_schema",
           schema: AGENT_OUTPUT_SCHEMA,
+        },
+        canUseTool: async (toolName, input, options) => {
+          const filePath =
+            toolName === "Read" ? String(input.file_path ?? "") :
+            (toolName === "Grep" || toolName === "Glob") ? String(input.path ?? ".") :
+            null;
+
+          if (filePath !== null) {
+            const result = checkFileAccess(filePath, context.basePath, config.permissions.can_read);
+            if (result.blocked) {
+              return { behavior: "deny" as const, message: result.reason, toolUseID: options.toolUseID };
+            }
+          }
+          return { behavior: "allow" as const, toolUseID: options.toolUseID };
         },
       },
     });

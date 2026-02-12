@@ -9,6 +9,7 @@ import type {
 } from "./types/content.js";
 import { DEFAULT_SEED_EXTRACTOR_CONFIG } from "./types/content.js";
 import { nextSeedId } from "../utils/markdown.js";
+import { wrapUntrusted } from "./security/untrusted-content.js";
 
 const DEFAULT_PROMPT_PATH = path.resolve("src", "agents", "prompts", "content-extractor.md");
 
@@ -42,9 +43,7 @@ function buildExtractionPrompt(input: SeedExtractorInput, config: SeedExtractorC
   lines.push(`Min confidence: ${config.minConfidence}`);
   lines.push("");
   lines.push("Text to extract from:");
-  lines.push("---");
-  lines.push(input.text);
-  lines.push("---");
+  lines.push(wrapUntrusted(input.text, input.source));
   return lines.join("\n");
 }
 

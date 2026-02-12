@@ -78,6 +78,16 @@ export interface AtomicFact {
   /** Extractor confidence score (0.0–1.0) */
   readonly confidence: number;
 
+  /**
+   * Trust level of the original source content.
+   * - "trusted": Manually entered or from verified internal sources
+   * - "untrusted": Extracted from external content (emails, web scrapes, meeting transcripts)
+   *
+   * Downstream agents (e.g. memory-synthesizer) should weight untrusted facts
+   * lower when conflicts arise with trusted facts.
+   */
+  readonly sourceTrust?: "trusted" | "untrusted";
+
   /** Whether this fact is still current or has been superseded */
   readonly status: FactStatus;
 
