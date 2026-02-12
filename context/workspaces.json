@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "projectId": "cortex",
+      "instances": [
+        {
+          "instanceType": "claude"
+        },
+        {
+          "instanceType": "codex"
+        }
+      ]
+    },
+    {
+      "projectId": "indexing-co-marketing-tool",
+      "instances": [
+        {
+          "instanceType": "claude"
+        },
+        {
+          "instanceType": "codex"
+        }
+      ]
+    }
+  ]
+}

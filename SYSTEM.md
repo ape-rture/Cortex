@@ -10,6 +10,8 @@ When referring to the system as a whole (the swarm, the subagents, the orchestra
 
 This is a markdown-based system where all context, notes, and tracking lives in organized folders. You maintain everything automatically. I just talk to you naturally.
 
+start terminal: `npm run dev:ui`
+
 ## My Tools & Integrations
 
 - **Google Calendar** - Scheduling, meeting management

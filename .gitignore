@@ -17,6 +17,7 @@ src/ui/dist/
 
 # Runtime data
 data/
+context/workspaces-scrollback/
 
 # Claude Code
 .claude/

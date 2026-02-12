@@ -73,7 +73,21 @@
       "prompt_path": "src/agents/prompts/project-analyst.md",
       "permissions": {
         "agent": "project-analyst",
-        "can_read": ["**/*"],
+        "can_read": [
+          "src/**",
+          "context/**",
+          ".cortex/**",
+          "actions/**",
+          "projects/**",
+          "decisions/**",
+          "research/**",
+          "SYSTEM.md",
+          "CONVENTIONS.md",
+          "CLAUDE.md",
+          "AGENTS.md",
+          "package.json",
+          "tsconfig.json"
+        ],
         "can_write": [],
         "can_call_apis": [],
         "can_send_messages": false,

@@ -10,6 +10,8 @@ import { codeWatcherAgent } from "../agents/code-watcher.js";
 import { projectHeartbeatAgent } from "../agents/project-heartbeat.js";
 import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
+import { TerminalSessionManager } from "./terminal/terminal-session-manager.js";
+import { createTerminalWsServer } from "./terminal/ws-server.js";
 
 async function loadSystemPrompt(): Promise<string> {
   const filePath = path.resolve("SYSTEM.md");
@@ -31,14 +33,23 @@ async function start(): Promise<void> {
   const systemPrompt = await loadSystemPrompt();
   const orchestratorConfigPath =
     process.env.ORCHESTRATOR_CONFIG_PATH ?? path.resolve("context", "orchestrator.json");
+  const terminalSessionManager = new TerminalSessionManager();
+
   const app = createApp({
     systemPrompt,
     orchestrator: createUiOrchestrator(orchestratorConfigPath),
+    terminalSessionManager,
   });
   const port = Number.parseInt(process.env.UI_PORT ?? "8787", 10);
 
-  serve({ fetch: app.fetch, port });
+  const httpServer = serve({ fetch: app.fetch, port });
+  createTerminalWsServer(httpServer, terminalSessionManager);
   console.log(`Cortex UI listening on http://localhost:${port}`);
+
+  process.on("SIGINT", async () => {
+    await terminalSessionManager.dispose();
+    process.exit(0);
+  });
 }
 
 import { fileURLToPath } from "node:url";

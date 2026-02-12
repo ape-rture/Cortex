@@ -11,6 +11,7 @@ const items: NavItem[] = [
   { path: "/chat", icon: "\u{1F4AC}", label: "Chat" },
   { path: "/dashboard", icon: "\u{1F4CA}", label: "Overview" },
   { path: "/projects", icon: "\u{1F4C1}", label: "Projects" },
+  { path: "/workspaces", icon: "\u{1F5A5}", label: "Workspaces" },
   { path: "/monitor", icon: "\u{1F50D}", label: "Monitor" },
   { path: "/review", icon: "\u{1F514}", label: "Review" },
 ];

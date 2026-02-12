@@ -1,11 +1,15 @@
 import type {
   ChatSession,
   ChatSessionLite,
+  CreateSessionRequest,
   CycleSummary,
   DashboardData,
+  GitCommitInfo,
   ProjectHealthReport,
   ReviewItem,
   TaskSummary,
+  TerminalSessionInfo,
+  WorkspaceConfig,
 } from "./types";
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -27,6 +31,16 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
 async function fetchDelete(url: string): Promise<void> {
   const res = await fetch(url, { method: "DELETE" });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+}
+
+async function putJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json() as Promise<T>;
 }
 
 export const api = {
@@ -72,4 +86,23 @@ export const api = {
   connectMonitor: () => new EventSource("/api/monitor/stream"),
   triggerCycle: (agents?: string[]) =>
     postJson<{ cycle_id: string; status: string }>("/api/orchestrate/trigger", { agents }),
+
+  // Terminal / Workspaces
+  getTerminalSessions: () =>
+    fetchJson<{ sessions: TerminalSessionInfo[] }>("/api/terminal/sessions"),
+  createTerminalSession: (req: CreateSessionRequest) =>
+    postJson<TerminalSessionInfo>("/api/terminal/sessions", req),
+  killTerminalSession: (id: string) => fetchDelete(`/api/terminal/sessions/${id}`),
+  restartTerminalSession: (id: string) =>
+    postJson<TerminalSessionInfo>(`/api/terminal/sessions/${id}/restart`),
+  getWorkspaceConfig: () => fetchJson<WorkspaceConfig>("/api/terminal/config"),
+  saveWorkspaceConfig: (config: WorkspaceConfig) =>
+    putJson<{ ok: true }>("/api/terminal/config", config),
+  getTerminalProjects: () =>
+    fetchJson<{ projects: { id: string; name: string; path: string }[] }>("/api/terminal/projects")
+      .then((r) => r.projects),
+  getProjectGitInfo: (id: string) =>
+    fetchJson<{ lastCommit: GitCommitInfo | null }>(`/api/terminal/projects/${id}/git-info`),
+  getSessionRss: (id: string) =>
+    fetchJson<{ sessionId: string; rssKb: number | null }>(`/api/terminal/sessions/${id}/rss`),
 };

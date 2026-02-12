@@ -8,6 +8,7 @@ import { InMemoryCycleStore } from "./cycle-store.js";
 import { MarkdownReviewStore } from "./review-store.js";
 import { MonitorBroker } from "./monitor-broker.js";
 import type { Orchestrator } from "../core/types/orchestrator.js";
+import type { TerminalSessionManager } from "./terminal/terminal-session-manager.js";
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html",
@@ -28,6 +29,7 @@ type AppConfig = {
   reviewQueuePath?: string;
   reviewStatePath?: string;
   projectRegistryPath?: string;
+  terminalSessionManager?: TerminalSessionManager;
 };
 
 export function createApp(config: AppConfig): Hono {
@@ -53,6 +55,7 @@ export function createApp(config: AppConfig): Hono {
     monitorBroker,
     taskBoardPath,
     projectRegistryPath,
+    terminalSessionManager: config.terminalSessionManager,
   });
 
   // Serve Vite dashboard build if available, otherwise fall back to legacy static

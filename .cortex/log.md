@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-02-12 claude -- Workspaces: multi-project CLI terminal manager
+
+### Built full-stack terminal management system (Phase 1-4)
+
+Added a "Workspaces" view to the Cortex dashboard that spawns Claude CLI, Codex CLI, and shell terminals per project — all managed via the browser.
+
+**Backend (6 new files):**
+- `src/ui/terminal/types.ts` — shared types, WS protocol messages
+- `src/ui/terminal/scrollback-buffer.ts` — 500KB ring buffer
+- `src/ui/terminal/terminal-session-manager.ts` — node-pty (ConPTY) lifecycle, process tree cleanup, scrollback disk persistence
+- `src/ui/terminal/ws-server.ts` — WebSocket server (`ws` library, noServer mode)
+- `src/ui/terminal/workspace-config-store.ts` — persist layout to `context/workspaces.json`
+- `src/ui/handlers/terminal.ts` — 9 REST endpoints (session CRUD, config, git info)
+
+**Frontend (5 new files):**
+- `src/ui/dashboard/src/views/workspaces.tsx` — main view with project tabs, auto-spawn, config persistence
+- `src/ui/dashboard/src/components/terminal-pane.tsx` — xterm.js wrapper with FitAddon
+- `src/ui/dashboard/src/components/project-tabs.tsx` — project tab bar with git commit subtitle
+- `src/ui/dashboard/src/components/instance-tabs.tsx` — CLI sub-tabs with status dot, restart, close
+- `src/ui/dashboard/src/hooks/use-websocket.ts` — WebSocket hook with exponential backoff reconnect
+
+**Key behaviors:** auto-spawns Claude + Codex on project select, max 4 per project, restart button for exited processes, workspace config auto-saved, scrollback flushed every 30s, SIGINT cleanup.
+
+**Dependencies added:** `ws`, `node-pty`, `@xterm/xterm`, `@xterm/addon-fit`, `@xterm/addon-webgl`, `@xterm/addon-canvas`
+
+### Remaining (Phase 5)
+- WebGL/canvas addon swapping for multiple visible terminals
+- RSS memory monitoring display
+- Full Cortex integration for project status overview
+
+---
+
 ## 2026-02-10 claude -- Gmail integration Phase 1 foundation
 
 ### Designed types, auth script, and Codex tasks for Gmail integration

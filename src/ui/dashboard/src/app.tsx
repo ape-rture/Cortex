@@ -5,6 +5,7 @@ import { DashboardView } from "./views/dashboard";
 import { MonitorView } from "./views/monitor";
 import { ProjectsView } from "./views/projects";
 import { ReviewView } from "./views/review";
+import { WorkspacesView } from "./views/workspaces";
 
 function CurrentView() {
   switch (route.value) {
@@ -16,6 +17,8 @@ function CurrentView() {
       return <ReviewView />;
     case "/projects":
       return <ProjectsView />;
+    case "/workspaces":
+      return <WorkspacesView />;
     case "/chat":
     default:
       return <ChatView />;

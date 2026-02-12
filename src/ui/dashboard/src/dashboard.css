@@ -691,3 +691,320 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #4a4a4a;
 }
+
+/* ===== Workspaces view ===== */
+
+.workspaces-view {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workspace-project-tabs {
+  display: flex;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.project-tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.project-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.project-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.project-tab-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.project-tab-name {
+  font-weight: 500;
+}
+
+.project-tab-instances {
+  display: flex;
+  gap: 3px;
+}
+
+.project-tab-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Active: CLI is producing output (green, pulsing) */
+.project-tab-dot.active {
+  background: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+/* Idle: process alive but no output for 30s+ (amber, static) */
+.project-tab-dot.idle {
+  background: rgba(251, 191, 36, 0.25);
+  color: #fbbf24;
+}
+
+/* Exited: process finished (gray, static) */
+.project-tab-dot.exited {
+  background: rgba(107, 114, 128, 0.35);
+  color: #9ca3af;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.project-tab-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.project-tab-badge.active {
+  background: rgba(74, 222, 128, 0.25);
+  color: #4ade80;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+.project-tab-badge.idle {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.project-tab-badge.done {
+  background: rgba(107, 114, 128, 0.25);
+  color: #9ca3af;
+}
+
+.project-tab-commit {
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Terminal Grid --- */
+
+.terminal-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 1px;
+  background: var(--border);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.terminal-grid.rows-2 {
+  grid-template-rows: 1fr 1fr;
+}
+
+.terminal-grid-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* --- Terminal Cell (each pane with header) --- */
+
+.terminal-cell {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Single terminal spans full width */
+.terminal-cell:only-child {
+  grid-column: span 2;
+}
+
+.terminal-cell-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-height: 24px;
+}
+
+.terminal-cell-header .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.terminal-cell-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
+.terminal-cell-rss {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.terminal-cell-rss.warning {
+  color: var(--status-warn);
+  font-weight: 600;
+}
+
+.terminal-cell-status {
+  font-size: 10px;
+}
+
+.terminal-cell-status.disconnected {
+  color: var(--status-warn);
+}
+
+.terminal-cell-btn {
+  padding: 0 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.terminal-cell-header:hover .terminal-cell-btn {
+  opacity: 1;
+}
+
+.terminal-cell-btn.close {
+  color: var(--text-secondary);
+}
+
+.terminal-cell-btn.close:hover {
+  color: var(--error);
+}
+
+.terminal-cell-btn.restart {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.terminal-cell-btn.restart:hover {
+  color: var(--accent-hover);
+}
+
+.terminal-cell-body {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* --- Add Instance Cell (placeholder in grid) --- */
+
+.add-instance-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.add-instance-cell-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.add-instance-cell-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.add-instance-cell-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.add-instance-cell-label {
+  font-size: 12px;
+}
+
+.add-instance-cell-menu {
+  position: absolute;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  min-width: 130px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.add-instance-cell-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.add-instance-cell-option:hover {
+  background: var(--bg-tertiary);
+}

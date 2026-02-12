@@ -124,3 +124,47 @@ export interface ProjectHealthReport {
   lastCommitAt?: string;
   error?: string;
 }
+
+// Terminal / Workspaces types
+
+export type InstanceType = "claude" | "codex" | "shell";
+
+export interface TerminalSessionInfo {
+  sessionId: string;
+  projectId: string;
+  instanceType: InstanceType;
+  pid: number;
+  createdAt: string;
+  alive: boolean;
+  lastOutputAt: number;
+}
+
+export interface CreateSessionRequest {
+  projectId: string;
+  instanceType: InstanceType;
+  cols?: number;
+  rows?: number;
+}
+
+export interface GitCommitInfo {
+  hash: string;
+  message: string;
+  author: string;
+  relativeDate: string;
+}
+
+export interface WorkspaceConfig {
+  version: 1;
+  projects: WorkspaceProjectConfig[];
+}
+
+export interface WorkspaceProjectConfig {
+  projectId: string;
+  instances: WorkspaceInstanceConfig[];
+}
+
+export interface WorkspaceInstanceConfig {
+  instanceType: InstanceType;
+  label?: string;
+  claudeSessionId?: string;
+}
