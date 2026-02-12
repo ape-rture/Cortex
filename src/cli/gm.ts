@@ -4,12 +4,14 @@ import { readMarkdownFile, parseTaskQueue } from "../utils/markdown.js";
 import type { GmailMailSummary, GmailMessageHeader } from "../core/types/gmail.js";
 import { fetchTodayEvents } from "../integrations/google-calendar.js";
 import { GMAIL_ACCOUNTS, GoogleGmailClient } from "../integrations/gmail.js";
+import { FocusClient } from "../integrations/focus.js";
 import { SimpleGitMonitor } from "../core/git-monitor.js";
 import { ProjectHeartbeatMonitor } from "../core/project-heartbeat.js";
 import { MarkdownSessionSnapshotStore } from "../core/session-snapshot.js";
 import { MarkdownContactStore } from "../utils/contact-store.js";
 import { SimpleDecayDetector } from "../core/decay-detector.js";
 import { MarkdownContentStore } from "../core/content-store.js";
+import { fetchLinkedInAcceptances, formatLinkedInAcceptances } from "./linkedin-acceptances.js";
 
 function formatSection(title: string, body: string): string {
   return `## ${title}\n${body.trim()}\n`;
@@ -184,6 +186,7 @@ export async function runMorningBriefing(): Promise<string> {
 
   const contentStore = new MarkdownContentStore();
   const gmailClient = new GoogleGmailClient();
+  const focusClient = new FocusClient();
 
   const [weeklyFocus, pendingActions, queueContent, calendar, mailSummary, gitReports, projectHealth, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
@@ -198,6 +201,9 @@ export async function runMorningBriefing(): Promise<string> {
     contentStore.loadIdeas().catch(() => [] as const),
     contentStore.loadSeeds().catch(() => [] as const),
   ]);
+
+  // LinkedIn acceptances — fetched after mail summary to avoid slowing down the main batch
+  const linkedInAcceptances = await fetchLinkedInAcceptances(gmailClient, focusClient).catch(() => []);
 
   const calendarSummary = calendar.warning
     ? `(calendar unavailable) ${calendar.warning}`
@@ -214,6 +220,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));
   output.push(formatSection("Email", summarizeMail(mailSummary)));
+  output.push(formatSection("LinkedIn Acceptances", formatLinkedInAcceptances(linkedInAcceptances)));
   output.push(formatSection("Git", summarizeGit(gitReports)));
   output.push(formatSection("Project Health", summarizeProjectHealth(projectHealth)));
   output.push(formatSection("Relationship Alerts", summarizeDecay(decayAlerts)));
