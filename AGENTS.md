@@ -63,6 +63,42 @@ You are the backend and data specialist. You handle:
 - Never push to `main` directly
 - After completing a branch, note in `.cortex/log.md` that it's ready for merge
 
+### Workspace Setup (required)
+
+**Option A — Worktree (preferred):**
+
+Work in a dedicated worktree to prevent dirty-tree conflicts with other agents.
+
+```bash
+git worktree add ../cortex-codex-<task> -b codex/<branch> main
+cd ../cortex-codex-<task>
+```
+
+After your branch is merged, clean up:
+```bash
+git worktree remove ../cortex-codex-<task>
+```
+
+This requires `sandbox_mode = "workspace-write"` in `~/.codex/config.toml` with `writable_roots` covering the parent directory.
+
+**Option B — Clean-branch fallback:**
+
+If worktree creation fails (sandbox restrictions), use a branch in the primary checkout:
+
+```bash
+# 1. Verify tree is clean
+git status --porcelain  # must be empty
+# 2. Branch from main
+git checkout -b codex/<branch> main
+# 3. Work + commit
+# 4. Push when done
+git push -u origin codex/<branch>
+# 5. Return to main — never leave uncommitted changes
+git checkout main
+```
+
+**Critical rule:** Whichever option you use, never leave uncommitted changes when your session ends.
+
 ---
 
 ## Coordination with Claude Code

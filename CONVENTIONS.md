@@ -113,18 +113,35 @@ dennis: update SYSTEM.md with new requirements
 - Never edit files on another agent's branch
 - Never switch branches with uncommitted changes in the working tree
 
-**Concurrent work — use separate worktrees:**
+**Concurrent work — use separate worktrees (preferred):**
 - If two agents need to work simultaneously in the same repo, use separate git worktrees rather than sharing one working tree:
   ```
-  git worktree add ../project-claude claude/layout
-  git worktree add ../project-codex codex/db-schema
+  git worktree add ../cortex-codex-<task> -b codex/<branch> main
+  git worktree add ../cortex-claude-<task> -b claude/<branch> main
   ```
 - Each agent operates exclusively in their own worktree directory
 - The agent that creates the worktree is responsible for cleaning it up when done: `git worktree remove <path>`
 
+**Codex sandbox config:** Worktree creation requires `sandbox_mode = "workspace-write"` with `writable_roots` including the parent directory. See `~/.codex/config.toml`.
+
+**Fallback: clean-branch workflow:**
+If worktree creation fails (sandbox restrictions, permissions, etc.):
+
+1. **Verify clean tree:** `git status --porcelain` must return empty. If not, stash or abort.
+2. **Branch from main:** `git checkout -b codex/<branch> main`
+3. **Work and commit:** Make changes, commit frequently.
+4. **Push:** `git push -u origin codex/<branch>` when done.
+5. **Return to main:** `git checkout main` — never leave uncommitted changes.
+
+**Critical rule:** Never leave uncommitted changes in the working tree when your session ends.
+
 **Shared files:**
 - `.cortex/` files are always safe for any agent to read and write — that's their purpose
 - `package.json`, lock files, and config files: one agent at a time — reserve via `.cortex/active.md` before editing
+
+### Log Hygiene
+
+Before appending to `.cortex/log.md`, check whether your entry already exists (match on task numbers + date). Do not duplicate entries.
 
 ### What Dennis Never Needs To Do
 - Dennis does NOT merge branches -- agents handle this
