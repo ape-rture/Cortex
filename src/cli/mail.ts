@@ -6,13 +6,16 @@ import { GMAIL_ACCOUNTS, GoogleGmailClient } from "../integrations/gmail.js";
 function usage(): string {
   return [
     "Usage:",
-    "  npm run mail",
-    "  npm run mail inbox",
-    "  npm run mail search <gmail-query>",
-    "  npm run mail read <message-id>",
-    "  npm run mail read <account> <message-id>",
-    "  npm run mail labels [account]",
-    "  npm run mail unread",
+    "  /mail                              — inbox summary",
+    "  /mail inbox                        — inbox summary",
+    "  /mail search <gmail-query>         — search messages",
+    "  /mail read <message-id>            — read a message",
+    "  /mail read <account> <message-id>  — read from specific account",
+    "  /mail labels [account]             — list labels",
+    "  /mail unread                       — unread counts",
+    "  /mail archive <account> <id> ...   — archive messages",
+    "  /mail trash <account> <id> ...     — trash messages",
+    "  /mail done <account> <id> ...      — mark as read",
   ].join("\n");
 }
 
@@ -204,6 +207,42 @@ async function labels(accountArg?: string): Promise<string> {
   return lines.join("\n").trimEnd();
 }
 
+function resolveAccountAndIds(args: readonly string[]): { accountId: string; messageIds: string[] } | string {
+  const [accountArg, ...ids] = args;
+  if (!accountArg || ids.length === 0) {
+    return "Usage: /mail <action> <account> <message-id> [message-id ...]";
+  }
+  const accountId = normalizeAccount(accountArg);
+  if (!accountId) {
+    return `Unknown account: "${accountArg}". Use one of: ${GMAIL_ACCOUNTS.map((a) => a.id).join(", ")}`;
+  }
+  return { accountId, messageIds: ids };
+}
+
+async function archiveMessages(args: readonly string[]): Promise<string> {
+  const resolved = resolveAccountAndIds(args);
+  if (typeof resolved === "string") return resolved;
+  const client = new GoogleGmailClient();
+  await client.archiveMessages(resolved.accountId, resolved.messageIds);
+  return `Archived ${resolved.messageIds.length} message(s) from ${resolved.accountId}.`;
+}
+
+async function trashMessages(args: readonly string[]): Promise<string> {
+  const resolved = resolveAccountAndIds(args);
+  if (typeof resolved === "string") return resolved;
+  const client = new GoogleGmailClient();
+  await client.trashMessages(resolved.accountId, resolved.messageIds);
+  return `Trashed ${resolved.messageIds.length} message(s) from ${resolved.accountId}.`;
+}
+
+async function markRead(args: readonly string[]): Promise<string> {
+  const resolved = resolveAccountAndIds(args);
+  if (typeof resolved === "string") return resolved;
+  const client = new GoogleGmailClient();
+  await client.removeLabel(resolved.accountId, resolved.messageIds, "UNREAD");
+  return `Marked ${resolved.messageIds.length} message(s) as read in ${resolved.accountId}.`;
+}
+
 export async function runMail(args: readonly string[]): Promise<string> {
   const [command, ...rest] = args;
   if (!command || command === "inbox") {
@@ -226,6 +265,18 @@ export async function runMail(args: readonly string[]): Promise<string> {
 
   if (command === "unread") {
     return await unread();
+  }
+
+  if (command === "archive") {
+    return await archiveMessages(rest);
+  }
+
+  if (command === "trash") {
+    return await trashMessages(rest);
+  }
+
+  if (command === "done" || command === "mark-read") {
+    return await markRead(rest);
   }
 
   return usage();

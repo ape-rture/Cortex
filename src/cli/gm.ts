@@ -32,18 +32,59 @@ function summarizeEvents(events: { summary: string; start: string; end: string }
 }
 
 const URGENT_SUBJECT_PATTERN = /\b(urgent|asap|action required|deadline|due|eod|important|follow up|reply needed)\b/i;
+const MONEY_PATTERN = /\b(invoice|payment|paid|overdue|billing|refund|\$\d+)\b/i;
 
-function scoreUrgency(message: GmailMessageHeader): number {
+/** Gmail auto-assigned category labels — low value for morning triage. */
+const NOISE_LABELS = new Set([
+  "CATEGORY_PROMOTIONS",
+  "CATEGORY_SOCIAL",
+  "CATEGORY_FORUMS",
+]);
+
+function scoreUrgency(message: GmailMessageHeader, accountEmail?: string): number {
   let score = 0;
+
+  // Penalize noise categories heavily — promotions/social/forums shouldn't surface
+  for (const label of message.labelIds) {
+    if (NOISE_LABELS.has(label)) {
+      score -= 200;
+      break;
+    }
+  }
+
+  // Subject urgency keywords
   if (URGENT_SUBJECT_PATTERN.test(message.subject)) score += 100;
+
+  // Money/billing signals in subject or snippet
+  if (MONEY_PATTERN.test(message.subject) || MONEY_PATTERN.test(message.snippet)) score += 60;
+
+  // Gmail's IMPORTANT label
   if (message.labelIds.includes("IMPORTANT")) score += 40;
-  if (message.isUnread) score += 10;
+
+  // Question in subject — likely expects a reply
+  if (message.subject.includes("?")) score += 30;
+
+  // Direct-to: user is an explicit recipient (not just CC'd or BCC'd)
+  if (accountEmail) {
+    const emailLower = accountEmail.toLowerCase();
+    if (message.to.some((r) => r.toLowerCase().includes(emailLower))) score += 25;
+  }
+
+  // Internal work emails (same domain) get a boost
+  if (message.accountId === "indexing" && message.from.includes("@indexing.co")) score += 20;
+
+  // Read = already handled. Heavy penalty so they don't surface.
+  if (message.isUnread) score += 30;
+  else score -= 150;
+
   if (message.hasAttachments) score += 5;
+
+  // Recency bonus (bounded, decays by 1 point per day)
   const parsedDate = Date.parse(message.date);
   if (!Number.isNaN(parsedDate)) {
-    // Favor recency with a bounded contribution.
     score += Math.max(0, 20 - Math.floor((Date.now() - parsedDate) / (1000 * 60 * 60 * 24)));
   }
+
   return score;
 }
 
@@ -59,26 +100,49 @@ function summarizeMail(summary: GmailMailSummary): string {
     }
   }
 
-  const urgent = summary.accounts
+  // Build email lookup for direct-to scoring
+  const emailByAccount = new Map(
+    summary.accounts.map((a) => [a.accountId, a.email]),
+  );
+
+  const scored = summary.accounts
     .flatMap((account) => account.topUnread.map((message) => ({
       accountLabel: account.label,
       message,
-      score: scoreUrgency(message),
+      score: scoreUrgency(message, emailByAccount.get(account.accountId)),
     })))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+    .sort((a, b) => b.score - a.score);
 
-  if (urgent.length === 0) {
+  // Split: actionable (positive score) vs noise (promotions, social, etc.)
+  const actionable = scored.filter((e) => e.score > 0).slice(0, 5);
+  const noiseCount = scored.filter((e) => e.score <= 0).length;
+
+  if (actionable.length === 0) {
     lines.push("");
-    lines.push("Top urgent subjects: (none)");
+    lines.push("Action needed: (none)");
+    if (noiseCount > 0) {
+      lines.push(`(${noiseCount} low-priority emails filtered)`);
+    }
     return lines.join("\n");
   }
 
   lines.push("");
-  lines.push("Top urgent subjects:");
-  for (const entry of urgent) {
+  lines.push("**Action needed:**");
+  for (const entry of actionable) {
+    const snippet = entry.message.snippet.length > 80
+      ? entry.message.snippet.slice(0, 80) + "..."
+      : entry.message.snippet;
     lines.push(`- [${entry.accountLabel}] ${entry.message.subject} (${entry.message.from})`);
+    if (snippet) {
+      lines.push(`  > ${snippet}`);
+    }
   }
+
+  if (noiseCount > 0) {
+    lines.push("");
+    lines.push(`(${noiseCount} low-priority emails filtered)`);
+  }
+
   return lines.join("\n");
 }
 
@@ -223,7 +287,7 @@ export async function runMorningBriefing(): Promise<string> {
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
     fetchTodayEvents(),
-    gmailClient.fetchMailSummary(3).catch((error) => buildMailFallback(error)),
+    gmailClient.fetchMailSummary(10).catch((error) => buildMailFallback(error)),
     new SimpleGitMonitor().checkAll(),
     new ProjectHeartbeatMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
