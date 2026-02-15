@@ -14,10 +14,12 @@
  */
 
 import "dotenv/config";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { CortexOrchestrator } from "../core/orchestrator.js";
 import { ConfigRouter } from "../core/routing.js";
-import { MarkdownTaskQueue } from "../core/task-queue.js";
+import { interceptCommandShortcut } from "../core/command-interceptor.js";
 import { resolveCommand, formatOrchestratorEvent } from "../core/command-registry.js";
 import { runOrchestrate } from "./orchestrate.js";
 import { salesWatcherAgent } from "../agents/sales-watcher.js";
@@ -27,6 +29,8 @@ import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
 import { createSlackApp, readSlackConfig } from "../integrations/slack/client.js";
 import { formatForSlack, formatProgressUpdate } from "../integrations/slack/formatter.js";
+import { enqueueSlackMessage } from "../integrations/slack/message-queue.js";
+import { processSlackQueueBatch } from "../integrations/slack/queue-worker.js";
 
 // ---------------------------------------------------------------------------
 // Orchestrator setup (same pattern as daemon.ts)
@@ -73,6 +77,29 @@ function createThrottle(intervalMs: number): (fn: () => Promise<void>) => void {
   };
 }
 
+function normalizePollInterval(value: string | undefined): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 4000;
+  return parsed;
+}
+
+function normalizeBatchSize(value: string | undefined): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 1;
+  return Math.min(parsed, 10);
+}
+
+function trimSlackMessage(value: string, maxLength = 3500): string {
+  const normalized = value.trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
+async function loadSystemPrompt(): Promise<string> {
+  const filePath = path.resolve("SYSTEM.md");
+  return await fs.readFile(filePath, "utf8");
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -81,27 +108,87 @@ export async function runSlackBot(): Promise<void> {
   const config = readSlackConfig();
   const orchestrator = new CortexOrchestrator(config.orchestratorConfigPath);
   registerDefaultAgents(orchestrator);
+  const systemPrompt = await loadSystemPrompt();
 
   const router = new ConfigRouter();
   const app = createSlackApp(config);
+  const pollIntervalMs = normalizePollInterval(process.env.SLACK_QUEUE_POLL_MS);
+  const batchSize = normalizeBatchSize(process.env.SLACK_QUEUE_BATCH_SIZE);
+  let workerActive = false;
 
-  // Listen to messages in #cortex channel
+  const queueWorkerTimer = setInterval(() => {
+    if (workerActive) return;
+
+    workerActive = true;
+    void (async () => {
+      try {
+        const outcomes = await processSlackQueueBatch({
+          router,
+          systemPrompt,
+          maxTasks: batchSize,
+        });
+        for (const outcome of outcomes) {
+          if (!outcome.refs?.channelId) continue;
+
+          const threadTs = outcome.refs.threadTs ?? outcome.refs.messageTs;
+          if (outcome.status === "done") {
+            await app.client.chat.postMessage({
+              channel: outcome.refs.channelId,
+              thread_ts: threadTs,
+              text: trimSlackMessage(
+                formatForSlack(
+                  `Task ${outcome.taskId} (${outcome.result.modelUsed})\n\n${outcome.result.content}`,
+                ),
+              ),
+            });
+          } else {
+            await app.client.chat.postMessage({
+              channel: outcome.refs.channelId,
+              thread_ts: threadTs,
+              text: trimSlackMessage(`Task ${outcome.taskId} failed: ${outcome.error}`),
+            });
+          }
+        }
+      } catch (error) {
+        console.error(
+          "[slack] Queue worker error:",
+          error instanceof Error ? error.message : String(error),
+        );
+      } finally {
+        workerActive = false;
+      }
+    })();
+  }, pollIntervalMs);
+
+  // Listen to messages in #cortex channel and DMs
   app.message(async ({ message, say, client }) => {
-    // Only respond in #cortex
-    const msg = message as { channel: string; subtype?: string; text?: string; ts: string; user?: string };
-    if (msg.channel !== config.cortexChannelId) return;
+    const msg = message as {
+      channel: string;
+      channel_type?: string;
+      subtype?: string;
+      text?: string;
+      ts: string;
+      thread_ts?: string;
+      user?: string;
+    };
+    // Accept #cortex channel OR direct messages to the bot
+    const isDM = msg.channel_type === "im" || msg.channel.startsWith("D");
+    if (msg.channel !== config.cortexChannelId && !isDM) return;
     if (msg.subtype) return; // ignore edits, joins, bot messages, etc.
 
     const text = msg.text?.trim();
     if (!text) return;
+    const intercepted = interceptCommandShortcut(text);
+    const interceptedText = intercepted.prompt;
+    const responseThreadTs = msg.thread_ts ?? msg.ts;
 
     try {
       // Special case: /orchestrate with progress streaming
-      const orchestrateMatch = text.match(/^\/orchestrate(?:\s+(.*))?$/i);
+      const orchestrateMatch = interceptedText.match(/^\/orchestrate(?:\s+(.*))?$/i);
       if (orchestrateMatch) {
         const initial = await say({
           text: "Running orchestrator...",
-          thread_ts: msg.ts,
+          thread_ts: responseThreadTs,
         });
 
         const progressLines: string[] = [];
@@ -135,34 +222,36 @@ export async function runSlackBot(): Promise<void> {
       }
 
       // Try shared command resolution
-      const commandResult = await resolveCommand(text, router);
+      const commandResult = await resolveCommand(interceptedText, router);
       if (commandResult) {
         await say({
           text: formatForSlack(commandResult.content),
-          thread_ts: msg.ts,
+          thread_ts: responseThreadTs,
         });
         return;
       }
 
       // Natural language -> capture as task queue item
-      const taskQueue = new MarkdownTaskQueue();
-      await taskQueue.add({
-        title: text.slice(0, 120),
-        description: text.length > 120 ? text : undefined,
-        priority: "p2",
-        source: "slack",
+      const queued = await enqueueSlackMessage({
+        channelId: msg.channel,
+        messageTs: msg.ts,
+        threadTs: msg.thread_ts,
+        text,
+        userId: msg.user,
       });
 
       await say({
-        text: `Captured to task queue: "${text.slice(0, 80)}${text.length > 80 ? "..." : ""}"`,
-        thread_ts: msg.ts,
+        text: queued.duplicate
+          ? `Already queued as ${queued.taskId}: "${queued.preview}"`
+          : `Queued for Cortex (${queued.priority}) as ${queued.taskId}: "${queued.preview}"`,
+        thread_ts: responseThreadTs,
       });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
       console.error(`[slack] Error handling message: ${errorMsg}`);
       await say({
         text: `Error: ${errorMsg}`,
-        thread_ts: msg.ts,
+        thread_ts: responseThreadTs,
       });
     }
   });
@@ -170,6 +259,16 @@ export async function runSlackBot(): Promise<void> {
   await app.start();
   console.log("[slack] Cortex Slack bot connected via Socket Mode");
   console.log(`[slack] Listening in channel: ${config.cortexChannelId}`);
+  console.log(`[slack] Queue worker polling every ${pollIntervalMs}ms (batch size ${batchSize})`);
+
+  const shutdown = () => {
+    clearInterval(queueWorkerTimer);
+    console.log("[slack] Shutting down...");
+    process.exit(0);
+  };
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 // ---------------------------------------------------------------------------
@@ -180,15 +279,6 @@ const isMain = fileURLToPath(import.meta.url) === process.argv[1];
 
 if (isMain) {
   runSlackBot()
-    .then(() => {
-      const shutdown = () => {
-        console.log("[slack] Shutting down...");
-        process.exit(0);
-      };
-
-      process.on("SIGINT", shutdown);
-      process.on("SIGTERM", shutdown);
-    })
     .catch((err) => {
       console.error("[slack] Failed to start:", err instanceof Error ? err.message : String(err));
       process.exit(1);
