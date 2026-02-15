@@ -179,6 +179,36 @@ function summarizeDecay(alerts: readonly { contact: { name: string; company?: st
     .join("\n");
 }
 
+function summarizePostingReminders(
+  ideas: readonly { status: string; topic: string; platform: string }[],
+): string {
+  const ready = ideas.filter((i) => i.status === "draft" || i.status === "approved");
+
+  const lines: string[] = [];
+
+  // X reminder
+  lines.push("**X (Twitter)**");
+  const xDraft = ready.find((i) => i.platform === "x");
+  if (xDraft) {
+    lines.push(`- Ready to post: "${xDraft.topic}"`);
+  } else {
+    lines.push("- No draft ready. Consider sharing a quick insight or thread today.");
+  }
+
+  lines.push("");
+
+  // LinkedIn reminder
+  lines.push("**LinkedIn**");
+  const liDraft = ready.find((i) => i.platform === "linkedin");
+  if (liDraft) {
+    lines.push(`- Ready to post: "${liDraft.topic}"`);
+  } else {
+    lines.push("- No draft ready. Consider posting about a recent project or lesson learned.");
+  }
+
+  return lines.join("\n");
+}
+
 export async function runMorningBriefing(): Promise<string> {
   const weeklyFocusPath = path.resolve("context", "weekly-focus.md");
   const pendingPath = path.resolve("actions", "pending.md");
@@ -227,6 +257,7 @@ export async function runMorningBriefing(): Promise<string> {
   const unprocessedSeeds = contentSeeds.filter((s) => !s.promoted).length;
   const promotedSeeds = contentSeeds.length - unprocessedSeeds;
   output.push(formatSection("Content Pipeline", summarizeContentPipeline(contentIdeas, { unprocessed: unprocessedSeeds, promoted: promotedSeeds })));
+  output.push(formatSection("Post Today", summarizePostingReminders(contentIdeas)));
   output.push(formatSection("Picking Up Where We Left Off", summarizeSnapshot(snapshot)));
 
   return output.join("\n").trimEnd() + "\n";
