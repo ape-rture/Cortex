@@ -44,7 +44,7 @@ You are the architect, planner, and design lead. You handle:
 2. Read `.cortex/active.md` -- is Codex working on anything? Are files reserved?
 3. Read `.cortex/tasks.md` -- any tasks assigned to you?
 4. Read `.cortex/log.md` (last 3-5 entries) -- what happened recently?
-5. Check `/actions/queue.md` for pending work
+5. Check `/actions/queue.md` for pending work — run `/inbox` to triage Slack captures
 
 ### On Session End
 1. Write a **warm handoff note** to `.cortex/log.md`:

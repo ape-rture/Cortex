@@ -112,53 +112,61 @@ export async function runSlackBot(): Promise<void> {
 
   const router = new ConfigRouter();
   const app = createSlackApp(config);
-  const pollIntervalMs = normalizePollInterval(process.env.SLACK_QUEUE_POLL_MS);
-  const batchSize = normalizeBatchSize(process.env.SLACK_QUEUE_BATCH_SIZE);
-  let workerActive = false;
+  const autoProcess = process.env.SLACK_QUEUE_AUTOPROCESS === "true";
 
-  const queueWorkerTimer = setInterval(() => {
-    if (workerActive) return;
+  let queueWorkerTimer: ReturnType<typeof setInterval> | undefined;
 
-    workerActive = true;
-    void (async () => {
-      try {
-        const outcomes = await processSlackQueueBatch({
-          router,
-          systemPrompt,
-          maxTasks: batchSize,
-        });
-        for (const outcome of outcomes) {
-          if (!outcome.refs?.channelId) continue;
+  if (autoProcess) {
+    const pollIntervalMs = normalizePollInterval(process.env.SLACK_QUEUE_POLL_MS);
+    const batchSize = normalizeBatchSize(process.env.SLACK_QUEUE_BATCH_SIZE);
+    let workerActive = false;
 
-          const threadTs = outcome.refs.threadTs ?? outcome.refs.messageTs;
-          if (outcome.status === "done") {
-            await app.client.chat.postMessage({
-              channel: outcome.refs.channelId,
-              thread_ts: threadTs,
-              text: trimSlackMessage(
-                formatForSlack(
-                  `Task ${outcome.taskId} (${outcome.result.modelUsed})\n\n${outcome.result.content}`,
+    queueWorkerTimer = setInterval(() => {
+      if (workerActive) return;
+
+      workerActive = true;
+      void (async () => {
+        try {
+          const outcomes = await processSlackQueueBatch({
+            router,
+            systemPrompt,
+            maxTasks: batchSize,
+          });
+          for (const outcome of outcomes) {
+            if (!outcome.refs?.channelId) continue;
+
+            const threadTs = outcome.refs.threadTs ?? outcome.refs.messageTs;
+            if (outcome.status === "done") {
+              await app.client.chat.postMessage({
+                channel: outcome.refs.channelId,
+                thread_ts: threadTs,
+                text: trimSlackMessage(
+                  formatForSlack(
+                    `Task ${outcome.taskId} (${outcome.result.modelUsed})\n\n${outcome.result.content}`,
+                  ),
                 ),
-              ),
-            });
-          } else {
-            await app.client.chat.postMessage({
-              channel: outcome.refs.channelId,
-              thread_ts: threadTs,
-              text: trimSlackMessage(`Task ${outcome.taskId} failed: ${outcome.error}`),
-            });
+              });
+            } else {
+              await app.client.chat.postMessage({
+                channel: outcome.refs.channelId,
+                thread_ts: threadTs,
+                text: trimSlackMessage(`Task ${outcome.taskId} failed: ${outcome.error}`),
+              });
+            }
           }
+        } catch (error) {
+          console.error(
+            "[slack] Queue worker error:",
+            error instanceof Error ? error.message : String(error),
+          );
+        } finally {
+          workerActive = false;
         }
-      } catch (error) {
-        console.error(
-          "[slack] Queue worker error:",
-          error instanceof Error ? error.message : String(error),
-        );
-      } finally {
-        workerActive = false;
-      }
-    })();
-  }, pollIntervalMs);
+      })();
+    }, pollIntervalMs);
+
+    console.log(`[slack] Queue worker polling every ${pollIntervalMs}ms (batch size ${batchSize})`);
+  }
 
   // Listen to messages in #cortex channel and DMs
   app.message(async ({ message, say, client }) => {
@@ -242,8 +250,8 @@ export async function runSlackBot(): Promise<void> {
 
       await say({
         text: queued.duplicate
-          ? `Already queued as ${queued.taskId}: "${queued.preview}"`
-          : `Queued for Cortex (${queued.priority}) as ${queued.taskId}: "${queued.preview}"`,
+          ? `Already captured as ${queued.taskId}: "${queued.preview}"`
+          : `Captured (${queued.priority}) as ${queued.taskId}: "${queued.preview}"`,
         thread_ts: responseThreadTs,
       });
     } catch (err) {
@@ -259,10 +267,10 @@ export async function runSlackBot(): Promise<void> {
   await app.start();
   console.log("[slack] Cortex Slack bot connected via Socket Mode");
   console.log(`[slack] Listening in channel: ${config.cortexChannelId}`);
-  console.log(`[slack] Queue worker polling every ${pollIntervalMs}ms (batch size ${batchSize})`);
+  console.log(`[slack] Mode: ${autoProcess ? "capture + auto-process" : "capture only"}`);
 
   const shutdown = () => {
-    clearInterval(queueWorkerTimer);
+    if (queueWorkerTimer) clearInterval(queueWorkerTimer);
     console.log("[slack] Shutting down...");
     process.exit(0);
   };

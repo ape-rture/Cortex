@@ -17,6 +17,15 @@ import { runMail } from "../cli/mail.js";
 import { runProject } from "../cli/project.js";
 import { runOrchestrate } from "../cli/orchestrate.js";
 import { MarkdownTaskQueue } from "./task-queue.js";
+import { interceptCommandShortcut } from "./command-interceptor.js";
+import {
+  formatQueueSummary,
+  listFailedSlackTasks,
+  parseQueueLimitArg,
+  retryFailedSlackTasks,
+  retryQueueTaskById,
+  summarizeQueue,
+} from "./queue-admin.js";
 import { MarkdownContactStore } from "../utils/contact-store.js";
 import { MarkdownSessionSnapshotStore } from "./session-snapshot.js";
 import { ConfigRouter } from "./routing.js";
@@ -31,6 +40,91 @@ export type CommandHandler = (args: string) => Promise<string>;
 export interface CommandResult {
   readonly content: string;
   readonly modelUsed: string;
+}
+
+function relativeAge(isoDate: string): string {
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+async function runInboxCommand(args: string): Promise<string> {
+  const queue = new MarkdownTaskQueue();
+  const parts = args.trim().split(/\s+/).filter(Boolean);
+  const sub = (parts[0] ?? "").toLowerCase();
+
+  // /inbox done <id> — mark as done
+  if (sub === "done") {
+    const taskId = parts[1];
+    if (!taskId) return "Usage: /inbox done <task-id>";
+    await queue.update(taskId, "done");
+    return `Marked ${taskId} as done.`;
+  }
+
+  // /inbox cancel <id> — mark as cancelled
+  if (sub === "cancel") {
+    const taskId = parts[1];
+    if (!taskId) return "Usage: /inbox cancel <task-id>";
+    await queue.update(taskId, "cancelled");
+    return `Cancelled ${taskId}.`;
+  }
+
+  // /inbox (default) — list unprocessed Slack captures
+  const tasks = await queue.list({ status: "queued" });
+  const slackTasks = tasks
+    .filter((t) => t.source === "slack")
+    .sort((a, b) => {
+      const byPriority = a.priority.localeCompare(b.priority);
+      if (byPriority !== 0) return byPriority;
+      return a.created_at.localeCompare(b.created_at);
+    });
+
+  if (slackTasks.length === 0) return "Inbox empty.";
+
+  const lines = [`**Inbox** — ${slackTasks.length} item${slackTasks.length === 1 ? "" : "s"}`, ""];
+  for (const task of slackTasks) {
+    const age = relativeAge(task.created_at);
+    const preview = task.title.length > 80 ? `${task.title.slice(0, 77)}...` : task.title;
+    lines.push(`- \`${task.id}\` (${task.priority}, ${age}) ${preview}`);
+  }
+  lines.push("", "_Use `/inbox done <id>` or `/inbox cancel <id>` to clear items._");
+  return lines.join("\n");
+}
+
+async function runQueueCommand(args: string): Promise<string> {
+  const queue = new MarkdownTaskQueue();
+  const parts = args.trim().split(/\s+/).filter(Boolean);
+  const sub = (parts[0] ?? "status").toLowerCase();
+
+  if (sub === "status" || sub === "summary") {
+    const summary = await summarizeQueue(queue);
+    return formatQueueSummary(summary);
+  }
+
+  if (sub === "failed") {
+    const limit = parseQueueLimitArg(parts[1], 10);
+    return await listFailedSlackTasks(queue, { limit });
+  }
+
+  if (sub === "retry") {
+    const target = (parts[1] ?? "").trim();
+    if (!target) {
+      return "Usage: /queue retry <task-id|failed>";
+    }
+
+    if (target === "failed" || target === "all" || target === "all-failed") {
+      return await retryFailedSlackTasks(queue);
+    }
+
+    return await retryQueueTaskById(queue, target);
+  }
+
+  return "Usage: /queue status | /queue failed [limit] | /queue retry <task-id|failed>";
 }
 
 // ---------------------------------------------------------------------------
@@ -75,6 +169,8 @@ export function getCommandRegistry(): Record<string, CommandHandler> {
       }
       return lines.join("\n");
     },
+    "/inbox": (args) => runInboxCommand(args),
+    "/queue": (args) => runQueueCommand(args),
     "/contacts": async (args) => {
       const query = args.trim();
       const store = new MarkdownContactStore();
@@ -151,8 +247,11 @@ export async function resolveCommand(
   prompt: string,
   router: ConfigRouter,
 ): Promise<CommandResult | null> {
+  const intercepted = interceptCommandShortcut(prompt);
+  const input = intercepted.prompt;
+
   // Morning briefing (special: hybrid mode)
-  const morning = parseMorningCommand(prompt);
+  const morning = parseMorningCommand(input);
   if (morning) {
     const briefing = await runMorningBriefing();
     if (!morning.instruction) {
@@ -171,7 +270,7 @@ export async function resolveCommand(
   }
 
   // Legacy aliases (no slash)
-  const normalized = prompt.trim().toLowerCase();
+  const normalized = input.trim().toLowerCase();
   if (normalized === "digest") {
     const content = await runDailyDigest();
     return { content, modelUsed: "local:digest" };
@@ -179,7 +278,7 @@ export async function resolveCommand(
 
   // Slash command registry
   const commands = getCommandRegistry();
-  const match = prompt.trim().match(/^(\/\w+)(?:\s+(.*))?$/);
+  const match = input.trim().match(/^(\/\w+)(?:\s+(.*))?$/);
   if (match) {
     const cmd = match[1].toLowerCase();
     const args = match[2] ?? "";
