@@ -9,6 +9,7 @@ import {
   resolveCommand,
   formatOrchestratorEvent,
 } from "../../core/command-registry.js";
+import { query } from "@anthropic-ai/claude-agent-sdk";
 
 type SSEEvent = "message_start" | "delta" | "message_end" | "error";
 
@@ -18,11 +19,88 @@ function encodeEvent(event: SSEEvent, data: unknown): Uint8Array {
 }
 
 // ---------------------------------------------------------------------------
+// Claude Code agent for free-form chat
+// ---------------------------------------------------------------------------
+
+const CHAT_AGENT_MODEL = "haiku";
+const CHAT_AGENT_MAX_TURNS = 8;
+const CHAT_AGENT_TIMEOUT_MS = 90_000;
+const CHAT_AGENT_TOOLS = ["Read", "Glob", "Grep"];
+
+async function streamClaudeCodeAgent(
+  userPrompt: string,
+  conversationContext: string,
+  systemPrompt: string,
+  controller: ReadableStreamDefaultController<Uint8Array>,
+): Promise<{ content: string; latencyMs: number }> {
+  const start = Date.now();
+  const modelLabel = `claude-code:${CHAT_AGENT_MODEL}`;
+
+  controller.enqueue(encodeEvent("message_start", { model: modelLabel }));
+
+  const abortController = new AbortController();
+  const timer = setTimeout(() => abortController.abort(), CHAT_AGENT_TIMEOUT_MS);
+
+  // Include recent conversation context so the agent knows what was discussed
+  const fullPrompt = conversationContext
+    ? `Previous conversation:\n${conversationContext}\n\nUser: ${userPrompt}`
+    : userPrompt;
+
+  const chunks: string[] = [];
+
+  try {
+    const q = query({
+      prompt: fullPrompt,
+      options: {
+        systemPrompt,
+        model: CHAT_AGENT_MODEL,
+        tools: [...CHAT_AGENT_TOOLS],
+        allowedTools: [...CHAT_AGENT_TOOLS],
+        maxTurns: CHAT_AGENT_MAX_TURNS,
+        cwd: process.cwd(),
+        persistSession: false,
+        permissionMode: "bypassPermissions",
+        allowDangerouslySkipPermissions: true,
+        abortController,
+      },
+    });
+
+    for await (const message of q) {
+      if ((message as { type: string }).type === "result") break;
+
+      const msgAny = message as Record<string, unknown>;
+      if (msgAny.type === "assistant" && Array.isArray(msgAny.content)) {
+        for (const block of msgAny.content as Array<Record<string, unknown>>) {
+          if (block.type === "text" && typeof block.text === "string") {
+            chunks.push(block.text);
+            controller.enqueue(encodeEvent("delta", { content: block.text }));
+          }
+        }
+      }
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const latencyMs = Date.now() - start;
+  return { content: chunks.join(""), latencyMs };
+}
+
+// ---------------------------------------------------------------------------
 // Route handlers
 // ---------------------------------------------------------------------------
 
 function buildPrompt(messages: readonly { role: string; content: string }[]): string {
   return buildConversation(messages);
+}
+
+function buildConversationContext(messages: readonly { role: string; content: string }[]): string {
+  // Include up to the last 10 messages for conversation context (excluding the latest user message)
+  const contextMessages = messages.slice(0, -1).slice(-10);
+  if (contextMessages.length === 0) return "";
+  return contextMessages
+    .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+    .join("\n");
 }
 
 export function registerChatHandlers(
@@ -49,7 +127,6 @@ export function registerChatHandlers(
     if (!pendingPrompt) return jsonError(c, "No pending message", 400);
 
     const assistantMessage = store.startAssistantMessage(sessionId);
-    const prompt = buildPrompt(session.messages);
     const intercepted = interceptCommandShortcut(pendingPrompt);
     const interceptedPrompt = intercepted.prompt;
 
@@ -97,22 +174,28 @@ export function registerChatHandlers(
             return;
           }
 
+          // Try local command resolution first (instant, no API call)
           const commandResult = await resolveCommand(interceptedPrompt, router);
-          const response = commandResult
-            ? {
-                content: commandResult.content,
-                model_used: commandResult.modelUsed,
-              }
-            : await router.route({
-                prompt,
-                system_prompt: systemPrompt,
-              });
-          controller.enqueue(encodeEvent("message_start", { message_id: assistantMessage.id, model: response.model_used }));
-          const latencyMs = Date.now() - start;
-          const content = response.content ?? "";
-          controller.enqueue(encodeEvent("delta", { content }));
+          if (commandResult) {
+            controller.enqueue(encodeEvent("message_start", { message_id: assistantMessage.id, model: commandResult.modelUsed }));
+            const latencyMs = Date.now() - start;
+            controller.enqueue(encodeEvent("delta", { content: commandResult.content }));
+            controller.enqueue(encodeEvent("message_end", { message_id: assistantMessage.id, latency_ms: latencyMs }));
+            store.finishAssistantMessage(sessionId, assistantMessage.id, commandResult.content, commandResult.modelUsed, latencyMs);
+            return;
+          }
+
+          // Free-form chat: route through Claude Code agent (full context, tools, file access)
+          const conversationContext = buildConversationContext(session.messages);
+          const { content, latencyMs } = await streamClaudeCodeAgent(
+            pendingPrompt,
+            conversationContext,
+            systemPrompt,
+            controller,
+          );
+          const modelLabel = `claude-code:${CHAT_AGENT_MODEL}`;
           controller.enqueue(encodeEvent("message_end", { message_id: assistantMessage.id, latency_ms: latencyMs }));
-          store.finishAssistantMessage(sessionId, assistantMessage.id, content, response.model_used, latencyMs);
+          store.finishAssistantMessage(sessionId, assistantMessage.id, content, modelLabel, latencyMs);
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           controller.enqueue(encodeEvent("error", { error: message }));
