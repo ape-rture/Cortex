@@ -20,43 +20,12 @@
 
 ## In Progress
 
-### Telegram Bot Integration (Phase 7)
+*Agent moves task here when starting.*
 
-**Agent: codex** — Branch: `codex/telegram-bot`
-
-Shared type contracts already updated on `main` (`TaskSource` + `parseSource`). Build the Telegram transport layer mirroring the Slack integration pattern.
-
-**Task 1: Create Telegram integration module**
-- `npm install telegraf`
-- `src/integrations/telegram/types.ts` — `TelegramConfig` (botToken, allowedUserIds, orchestratorConfigPath), `TelegramCommandContext`
-- `src/integrations/telegram/client.ts` — `readTelegramConfig()` (reads `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ALLOWED_USER_IDS` from env), `createTelegramBot()` (Telegraf instance), `isAllowedUser()`
-- `src/integrations/telegram/formatter.ts` — `formatForTelegram()` (markdown→Telegram HTML: `<b>`, `<i>`, `<code>`, `<pre>`, `<a>`), `trimTelegramMessage()` (4096 char limit)
-- `src/integrations/telegram/message-queue.ts` — `parseTelegramQueueMessage()` (same priority prefix parsing as Slack: `!!`=p0, `!`=p1, `[p2]`, `[p3]`), `enqueueTelegramMessage()` (source: "telegram", context_refs: `telegram:{chatId}:{messageId}`, tags: `["telegram", "chat:{id}", "user:{id}"]`)
-- `src/integrations/telegram/index.ts` — barrel export
-- Follow pattern in `src/integrations/slack/` exactly
-
-**Task 2: Create Telegram bot CLI entrypoint**
-- `src/cli/telegram.ts` — mirror `src/cli/slack.ts` structure:
-  - Read config, create bot, load SYSTEM.md, create orchestrator + router
-  - Add auth middleware: silently ignore messages from users not in `allowedUserIds`
-  - Message handler with 3 paths: `/orchestrate` (streaming), `resolveCommand()`, `enqueueTelegramMessage()`
-  - Voice message handler: reply with "please use Telegram's transcription"
-  - Optional queue worker (env: `TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`)
-  - Graceful shutdown on SIGINT/SIGTERM
-- Add to `package.json` scripts: `"telegram": "node --import tsx src/cli/telegram.ts"`
-
-**Task 3: Update queue admin + inbox for Telegram**
-- `src/core/queue-admin.ts` — add `telegram: QueueStatusCounts` to `QueueSummary`, update `summarizeQueue()` + `formatQueueSummary()`. Generalize `listFailedSlackTasks`/`retryFailedSlackTasks` to accept a `source` param (keep old names as aliases)
-- `src/core/command-registry.ts` — update `/inbox` filter from `source === "slack"` to `["slack", "telegram"].includes(source)`
-
-**Task 4: Tests**
-- `src/integrations/telegram/message-queue.test.ts` — priority parsing, enqueue with correct metadata, dedup
-- `src/integrations/telegram/formatter.test.ts` — HTML conversion, entity escaping, truncation
-- Update `src/core/queue-admin.test.ts` for telegram counts
-- Verify: `npm run typecheck` + `npm run test:unit`
-
+*No tasks currently in progress.*
 ## Done
 
+- **Telegram Bot Integration (Phase 7)** -- Agent: codex -- Branch: `codex/telegram-bot` (merged to `main`). Added Telegram transport in `src/integrations/telegram/` (client/config/auth, markdown->HTML formatter + trim, queue ingest/parser + worker, barrel + tests), shipped Telegram bot CLI entrypoint in `src/cli/telegram.ts` with allowlist middleware, `/orchestrate` streaming updates, shared command routing, capture queueing, voice reply guard, optional auto-worker (`TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`), and graceful shutdown; wired script/export/integration barrels (`package.json`, `src/cli/index.ts`, `src/integrations/index.ts`); updated queue admin + `/inbox` for Telegram source support in `src/core/queue-admin.ts` and `src/core/command-registry.ts` with expanded tests in `src/core/queue-admin.test.ts`. Validation: `npm run typecheck`, `npm run test:unit`.
 - **P2 Step 5: Command/shortcut interception layer** -- Agent: codex -- Branch: `main`. Added explicit shortcut interception (`src/core/command-interceptor.ts`) for digest/queue/orchestrate shortcuts and integrated it before command routing in web chat streaming (`src/ui/handlers/chat.ts`), Slack bot handling (`src/cli/slack.ts`), and shared command resolution (`src/core/command-registry.ts`). Added tests in `src/core/command-interceptor.test.ts`.
 - **P2 Step 4: Chat multi-tab sessions (max 3)** -- Agent: codex -- Branch: `main`. Reworked chat UI to use a tab bar with max 3 concurrent sessions (`src/ui/dashboard/src/views/chat.tsx`), added deterministic tab naming + default-session guarantee, and updated styling/responsive behavior (`src/ui/dashboard/src/dashboard.css`). Validation: `npm run typecheck`, `npm run build:dashboard`.
 - **P3: Slack message queue (ingest + worker + retries)** -- Agent: codex -- Branch: `main`. Implemented Slack queue ingestion + metadata/dedupe (`src/integrations/slack/message-queue.ts`), queue worker processing with batch + explicit failure handling (`src/integrations/slack/queue-worker.ts`), Slack bot poller/response loop + worker config envs (`src/cli/slack.ts`), and queue admin commands for status/failed/retry (`src/core/queue-admin.ts`, wired in `src/core/command-registry.ts`). Added tests in `src/integrations/slack/message-queue.test.ts`, `src/integrations/slack/queue-worker.test.ts`, and `src/core/queue-admin.test.ts`; updated queue markdown parsing/serialization to preserve `Description` in `src/utils/markdown.ts` + tests.
@@ -118,6 +87,7 @@ Shared type contracts already updated on `main` (`TaskSource` + `parseSource`). 
 - **Implement Granola URL scraper** -- Agent: claude -- `src/integrations/granola.ts`. Fetches Granola shareable link, extracts meeting transcript via HTML scraping.
 - **Add draft/revise/podcast/extract/seeds/promote CLI subcommands** -- Agent: claude -- Extended `src/cli/content.ts` with all Phase 3b+3c subcommands: draft, revise, podcast (interactive), extract (file/Granola URL), seeds, promote. Podcast creates 3-idea chain.
 - **Add content pipeline section to /gm** -- Agent: claude -- Added Content Pipeline section to `src/cli/gm.ts` showing idea counts by status and unprocessed seed count.
+
 
 
 

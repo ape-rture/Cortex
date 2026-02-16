@@ -2,26 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Telegram bot integration module + CLI + queue/inbox wiring + tests
-Branch: codex/telegram-bot
-Files:
-  - package.json
-  - src/cli/telegram.ts
-  - src/core/command-registry.ts
-  - src/core/queue-admin.ts
-  - src/core/queue-admin.test.ts
-  - src/integrations/index.ts
-  - src/integrations/telegram/types.ts
-  - src/integrations/telegram/client.ts
-  - src/integrations/telegram/formatter.ts
-  - src/integrations/telegram/formatter.test.ts
-  - src/integrations/telegram/message-queue.ts
-  - src/integrations/telegram/message-queue.test.ts
-  - src/integrations/telegram/queue-worker.ts
-  - src/integrations/telegram/queue-worker.test.ts
-  - src/integrations/telegram/index.ts
-Started: 2026-02-16T18:48Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 

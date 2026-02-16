@@ -1167,3 +1167,38 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Validation run:
   - `node --import tsx --test --test-isolation=none src/core/command-interceptor.test.ts src/core/queue-admin.test.ts src/integrations/slack/message-queue.test.ts src/integrations/slack/queue-worker.test.ts src/utils/markdown.test.ts`
   - `npm run typecheck`
+
+## 2026-02-16 codex -- telegram bot integration phase 7
+
+- Implemented Telegram integration module in `src/integrations/telegram/`:
+  - `types.ts`: `TelegramConfig`, `TelegramCommandContext`
+  - `client.ts`: `readTelegramConfig()`, `createTelegramBot()`, `isAllowedUser()`
+  - `formatter.ts`: `formatForTelegram()` (markdown -> Telegram HTML), `trimTelegramMessage()`
+  - `message-queue.ts`: `parseTelegramQueueMessage()`, `enqueueTelegramMessage()` with Telegram refs/tags/dedupe
+  - `queue-worker.ts`: queue execution path (`processNextTelegramQueuedTask`, batch processing, ref parsing)
+  - `index.ts`: barrel export
+- Added Telegram CLI entrypoint `src/cli/telegram.ts` with:
+  - allowlist auth middleware (`TELEGRAM_ALLOWED_USER_IDS`)
+  - `/orchestrate` streaming progress updates
+  - shared command handling via `resolveCommand()`
+  - queue capture fallback via `enqueueTelegramMessage()`
+  - voice-message reply guard
+  - optional queue auto-worker (`TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`)
+  - graceful SIGINT/SIGTERM shutdown
+- Wired exports/scripts:
+  - added `telegram` script in `package.json`
+  - exported CLI in `src/cli/index.ts`
+  - exported integration in `src/integrations/index.ts`
+  - added dependency `telegraf` in `package.json`/`package-lock.json`
+- Updated queue admin + command routing for Telegram source support:
+  - `src/core/queue-admin.ts`: Telegram counts in summary + source-aware failed/retry helpers, Slack aliases preserved
+  - `src/core/command-registry.ts`: `/inbox` includes Slack + Telegram; `/queue failed` and `/queue retry failed` accept optional `slack|telegram` source
+- Tests added/updated:
+  - `src/integrations/telegram/formatter.test.ts`
+  - `src/integrations/telegram/message-queue.test.ts`
+  - `src/integrations/telegram/queue-worker.test.ts`
+  - `src/core/queue-admin.test.ts` updated for Telegram coverage
+- Validation run:
+  - `npm run typecheck`
+  - `npm run test:unit`
+- Branch `codex/telegram-bot` merged to `main` and deleted locally.
