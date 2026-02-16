@@ -18,6 +18,8 @@
 
 ### Gmail Integration (Phase 6)
 
+## In Progress
+
 ### Telegram Bot Integration (Phase 7)
 
 **Agent: codex** — Branch: `codex/telegram-bot`
@@ -52,13 +54,6 @@ Shared type contracts already updated on `main` (`TaskSource` + `parseSource`). 
 - `src/integrations/telegram/formatter.test.ts` — HTML conversion, entity escaping, truncation
 - Update `src/core/queue-admin.test.ts` for telegram counts
 - Verify: `npm run typecheck` + `npm run test:unit`
-
-
-## In Progress
-
-*Agent moves task here when starting.*
-
-*No tasks currently in progress.*
 
 ## Done
 
