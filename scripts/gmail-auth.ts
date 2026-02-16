@@ -29,6 +29,7 @@ config();
 const SCOPES = [
   "https://www.googleapis.com/auth/gmail.modify",
   "https://www.googleapis.com/auth/gmail.compose",
+  "https://www.googleapis.com/auth/calendar.readonly",
 ];
 
 async function main(): Promise<void> {

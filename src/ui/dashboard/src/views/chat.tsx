@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { api } from "../api";
 import type { ChatMessage, ChatSession, ChatSessionLite } from "../types";
 
+const MAX_CHAT_TABS = 3;
+
 // --- Message bubble ---
 
 function Message({ message }: { message: ChatMessage }) {
@@ -19,51 +21,87 @@ function Message({ message }: { message: ChatMessage }) {
   );
 }
 
-// --- Session list sidebar ---
+// --- Session tabs ---
 
-function SessionList({
+function SessionTabs({
   sessions,
   activeId,
   onSelect,
   onCreate,
   onDelete,
+  canCreate,
 }: {
   sessions: ChatSessionLite[];
   activeId: string | null;
   onSelect: (id: string) => void;
   onCreate: () => void;
   onDelete: (id: string) => void;
+  canCreate: boolean;
 }) {
   return (
-    <div class="session-list">
-      <div class="session-header">
-        <span>Sessions</span>
-        <button class="btn-new" onClick={onCreate}>
-          + New
-        </button>
-      </div>
-      <div class="session-items">
+    <div class="session-tabs">
+      <div class="session-tabs-list">
         {sessions.map((s) => (
-          <div
+          <button
             key={s.id}
-            class={`session-item${s.id === activeId ? " active" : ""}`}
+            type="button"
+            class={`session-tab${s.id === activeId ? " active" : ""}`}
             onClick={() => onSelect(s.id)}
+            title={s.name}
           >
-            <span class="session-name">{s.name}</span>
-            <button
-              class="btn-delete"
+            <span class="session-tab-name">{s.name}</span>
+            <span
+              class="session-tab-close"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(s.id);
               }}
+              title="Close tab"
             >
               x
-            </button>
-          </div>
+            </span>
+          </button>
         ))}
       </div>
+      <button
+        class="session-tab-add"
+        onClick={onCreate}
+        disabled={!canCreate}
+        title={canCreate ? "Open new session tab" : "Max 3 session tabs"}
+      >
+        +
+      </button>
+      {!canCreate && (
+        <span class="session-tab-hint">max {MAX_CHAT_TABS}</span>
+      )}
     </div>
   );
+}
+
+function nextSessionName(sessions: readonly ChatSessionLite[]): string {
+  const usedNumbers = new Set<number>();
+  for (const session of sessions) {
+    const match = session.name.match(/^Session\s+(\d+)$/i);
+    if (!match) continue;
+    const num = Number.parseInt(match[1], 10);
+    if (Number.isFinite(num)) {
+      usedNumbers.add(num);
+    }
+  }
+
+  let index = 1;
+  while (usedNumbers.has(index)) {
+    index += 1;
+  }
+  return `Session ${index}`;
+}
+
+async function ensureDefaultSession(
+  sessions: readonly ChatSessionLite[],
+): Promise<ChatSessionLite[]> {
+  if (sessions.length > 0) return [...sessions];
+  const created = await api.createSession("Session 1");
+  return [created];
 }
 
 // --- Chat pane ---
@@ -141,7 +179,7 @@ function ChatPane({
   );
 }
 
-// --- Chat view (full page with session list + chat pane) ---
+// --- Chat view (full page with session tabs + chat pane) ---
 
 export function ChatView() {
   const [sessions, setSessions] = useState<ChatSessionLite[]>([]);
@@ -155,14 +193,17 @@ export function ChatView() {
   // Load sessions on mount, auto-create one if empty
   useEffect(() => {
     api.getSessions().then(async (existing) => {
-      if (existing.length === 0) {
-        const newSession = await api.createSession("Session 1");
-        setSessions([newSession]);
-        setActiveSessionId(newSession.id);
-      } else {
-        setSessions(existing);
-      }
+      const nextSessions = await ensureDefaultSession(existing);
+      setSessions(nextSessions);
+      setActiveSessionId(nextSessions[0]?.id ?? null);
     });
+  }, []);
+
+  // Close stream on unmount
+  useEffect(() => {
+    return () => {
+      eventSourceRef.current?.close();
+    };
   }, []);
 
   // Load active session when selection changes
@@ -175,10 +216,15 @@ export function ChatView() {
   }, [activeSessionId]);
 
   const handleCreateSession = async () => {
+    if (sessions.length >= MAX_CHAT_TABS) {
+      setError(`Max ${MAX_CHAT_TABS} session tabs reached. Close one first.`);
+      return;
+    }
+
     try {
-      const name = `Session ${sessions.length + 1}`;
+      const name = nextSessionName(sessions);
       const newSession = await api.createSession(name);
-      setSessions([...sessions, newSession]);
+      setSessions((prev) => [...prev, newSession]);
       setActiveSessionId(newSession.id);
     } catch (err) {
       setError(`Failed to create session: ${err instanceof Error ? err.message : String(err)}`);
@@ -186,10 +232,23 @@ export function ChatView() {
   };
 
   const handleDeleteSession = async (id: string) => {
-    await api.deleteSession(id);
-    setSessions(sessions.filter((s) => s.id !== id));
-    if (activeSessionId === id) {
-      setActiveSessionId(null);
+    try {
+      await api.deleteSession(id);
+      const remaining = sessions.filter((s) => s.id !== id);
+
+      if (remaining.length > 0) {
+        setSessions(remaining);
+        if (activeSessionId === id) {
+          setActiveSessionId(remaining[0].id);
+        }
+        return;
+      }
+
+      const fallback = await api.createSession("Session 1");
+      setSessions([fallback]);
+      setActiveSessionId(fallback.id);
+    } catch (err) {
+      setError(`Failed to delete session: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
@@ -276,7 +335,7 @@ export function ChatView() {
   };
 
   return (
-    <div class="chat-layout">
+    <div class="chat-layout tabs-layout">
       {error && (
         <div
           style={{
@@ -294,13 +353,16 @@ export function ChatView() {
           {error}
         </div>
       )}
-      <SessionList
+
+      <SessionTabs
         sessions={sessions}
         activeId={activeSessionId}
         onSelect={setActiveSessionId}
         onCreate={handleCreateSession}
         onDelete={handleDeleteSession}
+        canCreate={sessions.length < MAX_CHAT_TABS}
       />
+
       <ChatPane
         session={activeSession}
         onSend={handleSendMessage}
