@@ -4,6 +4,7 @@ import { jsonError, buildConversation } from "../utils.js";
 import { InMemorySessionStore } from "../store.js";
 import { ConfigRouter } from "../../core/routing.js";
 import { runOrchestrate } from "../../cli/orchestrate.js";
+import { interceptCommandShortcut } from "../../core/command-interceptor.js";
 import {
   resolveCommand,
   formatOrchestratorEvent,
@@ -49,12 +50,14 @@ export function registerChatHandlers(
 
     const assistantMessage = store.startAssistantMessage(sessionId);
     const prompt = buildPrompt(session.messages);
+    const intercepted = interceptCommandShortcut(pendingPrompt);
+    const interceptedPrompt = intercepted.prompt;
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         try {
           const start = Date.now();
-          const orchestrateMatch = pendingPrompt.trim().match(/^\/orchestrate(?:\s+(.*))?$/i);
+          const orchestrateMatch = interceptedPrompt.trim().match(/^\/orchestrate(?:\s+(.*))?$/i);
 
           if (orchestrateMatch) {
             const chunks: string[] = [];
@@ -94,7 +97,7 @@ export function registerChatHandlers(
             return;
           }
 
-          const commandResult = await resolveCommand(pendingPrompt, router);
+          const commandResult = await resolveCommand(interceptedPrompt, router);
           const response = commandResult
             ? {
                 content: commandResult.content,

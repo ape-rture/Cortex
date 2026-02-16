@@ -34,6 +34,14 @@ test("serializeTaskQueue groups by status", () => {
   assert.ok(output.includes("task-a"));
 });
 
+test("parseTaskQueue and serializeTaskQueue preserve description", () => {
+  const tasks = parseTaskQueue(`## Queued\n- [ ] **A**\n  - ID: task-a\n  - Status: queued\n  - Priority: p2\n  - Description: Keep full context from Slack\n  - Added: 2026-02-02T00:00:00Z\n  - Updated: 2026-02-02T00:00:00Z\n  - Source: slack\n`);
+  assert.equal(tasks[0].description, "Keep full context from Slack");
+
+  const output = serializeTaskQueue(tasks);
+  assert.ok(output.includes("Description: Keep full context from Slack"));
+});
+
 test("parseContactFile extracts sections", () => {
   const content = `# Jane Doe
 **Company**: Example Inc

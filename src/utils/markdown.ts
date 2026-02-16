@@ -66,7 +66,7 @@ function parseStatus(value: string | undefined, checkbox: "checked" | "unchecked
 function parseSource(value: string | undefined): TaskSource {
   if (!value) return "cli";
   const v = value.toLowerCase();
-  if (v === "cli" || v === "slack" || v === "agent" || v === "cron" || v === "webhook") return v as TaskSource;
+  if (v === "cli" || v === "slack" || v === "telegram" || v === "agent" || v === "cron" || v === "webhook") return v as TaskSource;
   return "cli";
 }
 
@@ -219,6 +219,9 @@ export function parseTaskQueue(content: string): Task[] {
       case "title":
         current.title = kv.value || current.title;
         break;
+      case "description":
+        current.description = kv.value || undefined;
+        break;
       default:
         break;
     }
@@ -249,6 +252,9 @@ export function serializeTaskQueue(tasks: readonly Task[]): string {
     lines.push(`  - ID: ${task.id}`);
     lines.push(`  - Status: ${task.status}`);
     lines.push(`  - Priority: ${task.priority}`);
+    if (task.description) {
+      lines.push(`  - Description: ${task.description.replace(/\s+/g, " ").trim()}`);
+    }
     lines.push(`  - Added: ${task.created_at}`);
     lines.push(`  - Updated: ${task.updated_at}`);
     lines.push(`  - Source: ${task.source}`);
