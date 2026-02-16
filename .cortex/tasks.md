@@ -18,6 +18,41 @@
 
 ### Gmail Integration (Phase 6)
 
+### Telegram Bot Integration (Phase 7)
+
+**Agent: codex** — Branch: `codex/telegram-bot`
+
+Shared type contracts already updated on `main` (`TaskSource` + `parseSource`). Build the Telegram transport layer mirroring the Slack integration pattern.
+
+**Task 1: Create Telegram integration module**
+- `npm install telegraf`
+- `src/integrations/telegram/types.ts` — `TelegramConfig` (botToken, allowedUserIds, orchestratorConfigPath), `TelegramCommandContext`
+- `src/integrations/telegram/client.ts` — `readTelegramConfig()` (reads `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ALLOWED_USER_IDS` from env), `createTelegramBot()` (Telegraf instance), `isAllowedUser()`
+- `src/integrations/telegram/formatter.ts` — `formatForTelegram()` (markdown→Telegram HTML: `<b>`, `<i>`, `<code>`, `<pre>`, `<a>`), `trimTelegramMessage()` (4096 char limit)
+- `src/integrations/telegram/message-queue.ts` — `parseTelegramQueueMessage()` (same priority prefix parsing as Slack: `!!`=p0, `!`=p1, `[p2]`, `[p3]`), `enqueueTelegramMessage()` (source: "telegram", context_refs: `telegram:{chatId}:{messageId}`, tags: `["telegram", "chat:{id}", "user:{id}"]`)
+- `src/integrations/telegram/index.ts` — barrel export
+- Follow pattern in `src/integrations/slack/` exactly
+
+**Task 2: Create Telegram bot CLI entrypoint**
+- `src/cli/telegram.ts` — mirror `src/cli/slack.ts` structure:
+  - Read config, create bot, load SYSTEM.md, create orchestrator + router
+  - Add auth middleware: silently ignore messages from users not in `allowedUserIds`
+  - Message handler with 3 paths: `/orchestrate` (streaming), `resolveCommand()`, `enqueueTelegramMessage()`
+  - Voice message handler: reply with "please use Telegram's transcription"
+  - Optional queue worker (env: `TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`)
+  - Graceful shutdown on SIGINT/SIGTERM
+- Add to `package.json` scripts: `"telegram": "node --import tsx src/cli/telegram.ts"`
+
+**Task 3: Update queue admin + inbox for Telegram**
+- `src/core/queue-admin.ts` — add `telegram: QueueStatusCounts` to `QueueSummary`, update `summarizeQueue()` + `formatQueueSummary()`. Generalize `listFailedSlackTasks`/`retryFailedSlackTasks` to accept a `source` param (keep old names as aliases)
+- `src/core/command-registry.ts` — update `/inbox` filter from `source === "slack"` to `["slack", "telegram"].includes(source)`
+
+**Task 4: Tests**
+- `src/integrations/telegram/message-queue.test.ts` — priority parsing, enqueue with correct metadata, dedup
+- `src/integrations/telegram/formatter.test.ts` — HTML conversion, entity escaping, truncation
+- Update `src/core/queue-admin.test.ts` for telegram counts
+- Verify: `npm run typecheck` + `npm run test:unit`
+
 
 ## In Progress
 
@@ -27,6 +62,9 @@
 
 ## Done
 
+- **P2 Step 5: Command/shortcut interception layer** -- Agent: codex -- Branch: `main`. Added explicit shortcut interception (`src/core/command-interceptor.ts`) for digest/queue/orchestrate shortcuts and integrated it before command routing in web chat streaming (`src/ui/handlers/chat.ts`), Slack bot handling (`src/cli/slack.ts`), and shared command resolution (`src/core/command-registry.ts`). Added tests in `src/core/command-interceptor.test.ts`.
+- **P2 Step 4: Chat multi-tab sessions (max 3)** -- Agent: codex -- Branch: `main`. Reworked chat UI to use a tab bar with max 3 concurrent sessions (`src/ui/dashboard/src/views/chat.tsx`), added deterministic tab naming + default-session guarantee, and updated styling/responsive behavior (`src/ui/dashboard/src/dashboard.css`). Validation: `npm run typecheck`, `npm run build:dashboard`.
+- **P3: Slack message queue (ingest + worker + retries)** -- Agent: codex -- Branch: `main`. Implemented Slack queue ingestion + metadata/dedupe (`src/integrations/slack/message-queue.ts`), queue worker processing with batch + explicit failure handling (`src/integrations/slack/queue-worker.ts`), Slack bot poller/response loop + worker config envs (`src/cli/slack.ts`), and queue admin commands for status/failed/retry (`src/core/queue-admin.ts`, wired in `src/core/command-registry.ts`). Added tests in `src/integrations/slack/message-queue.test.ts`, `src/integrations/slack/queue-worker.test.ts`, and `src/core/queue-admin.test.ts`; updated queue markdown parsing/serialization to preserve `Description` in `src/utils/markdown.ts` + tests.
 - **Gmail Integration (Phase 6)** -- Agent: codex -- Branch: `codex/gmail-integration` (merged to `main`). Implemented `GoogleGmailClient` with multi-account Gmail support and full CRUD flows in `src/integrations/gmail.ts`, added mocked integration coverage in `src/integrations/gmail.test.ts`, shipped `/mail` CLI in `src/cli/mail.ts` (inbox/search/read/labels/unread), wired command + script exports (`src/core/command-registry.ts`, `src/cli/index.ts`, `package.json`), and added an Email section to `/gm` with per-account unread counts and top urgent subjects (`src/cli/gm.ts`, plus `src/integrations/index.ts` export).
 - **Implement fact-extractor + memory-synthesizer agents and tests (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `src/agents/fact-extractor.ts` (recent file scan in `meetings/` + `daily/`, LLM extraction via `ConfigRouter.route()`, entity creation/appends via `EntityStore`) and `src/agents/memory-synthesizer.ts` (entity scan, stale detection, synthesis routing, supersession + summary writes). Added tests in `src/agents/fact-extractor.test.ts` and `src/agents/memory-synthesizer.test.ts`. Wired local registration in `src/cli/orchestrate.ts`, `src/cli/daemon.ts`, `src/cli/slack.ts`, and `src/ui/server.ts`.
 - **Implement MarkdownEntityStore (Phase 5.5)** -- Agent: codex -- Branch: `codex/memory-flywheel` (merged to `main`). Added `MarkdownEntityStore` in `src/core/entity-store.ts` implementing full entity CRUD/scaffolding (`listEntities`, `loadSummary`, `loadFacts`, `loadActiveFacts`, `appendFacts`, `supersedeFacts`, `writeSummary`, `createEntity`) with template-based initialization from `entities/_template-summary.md` and `entities/_template-facts.json`. Added coverage in `src/core/entity-store.test.ts`.

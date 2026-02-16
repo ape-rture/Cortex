@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-02-16 claude -- Telegram bot integration (Phase 7) — design + contracts
+
+### Switching personal capture from Slack DMs to Telegram
+
+Dennis wants to use Telegram instead of Slack DMs for personal idea capture. Telegram has built-in voice-to-text, is separate from the Indexing Co workspace, and avoids context switching concerns.
+
+**Shared contracts updated (on `main`):**
+- `src/core/types/task-queue.ts` — added `"telegram"` to `TaskSource` union
+- `src/utils/markdown.ts` — added `"telegram"` to `parseSource()` recognition
+- `SYSTEM.md` — updated Telegram from "read-only data source" to "Personal capture channel"
+
+**Architecture:** Mirrors Slack integration exactly. Telegram transport layer → same shared core (MarkdownTaskQueue, resolveCommand, ConfigRouter). Uses Telegraf v4 with long polling (no public URL needed). User ID whitelist for auth.
+
+**For Codex:** 4 tasks written to `.cortex/tasks.md` under "Telegram Bot Integration (Phase 7)". Branch: `codex/telegram-bot`. Tasks cover: integration module, CLI entrypoint, queue admin updates, tests.
+
+**For Dennis (before Codex can test):**
+1. Create bot via @BotFather → get `TELEGRAM_BOT_TOKEN`
+2. Get numeric user ID via @userinfobot → set `TELEGRAM_ALLOWED_USER_IDS`
+3. Add both to `.env`
+
+**Plan file:** `C:\Users\Dennis\.claude\plans\optimized-roaming-penguin.md`
+
+---
+
 ## 2026-02-12 claude -- Workspaces: multi-project CLI terminal manager
 
 ### Built full-stack terminal management system (Phase 1-4)
@@ -1099,3 +1123,47 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run typecheck`
   - `npm run test:unit`
 - Branch: `codex/gmail-integration` merged to `main` and deleted locally.
+
+## 2026-02-15 codex -- p3 slack message queue end-to-end pipeline
+
+- Completed P3 Slack queue flow in local runtime:
+  - Slack ingestion parser + enqueue metadata/dedupe in `src/integrations/slack/message-queue.ts`.
+  - Queue worker processing + task status transitions + ref parsing in `src/integrations/slack/queue-worker.ts`.
+  - Slack bot polling worker + threaded success/failure responses and batch controls in `src/cli/slack.ts`.
+  - Queue admin utilities and `/queue` command (`status`, `failed`, `retry`) in `src/core/queue-admin.ts` and `src/core/command-registry.ts`.
+- Queue markdown now preserves `Description` fields for long Slack prompts in `src/utils/markdown.ts`.
+- Tests added:
+  - `src/integrations/slack/message-queue.test.ts`
+  - `src/integrations/slack/queue-worker.test.ts`
+  - `src/core/queue-admin.test.ts`
+  - Updated `src/utils/markdown.test.ts`
+- Validation run:
+  - `node --import tsx --test --test-isolation=none src/core/queue-admin.test.ts src/integrations/slack/message-queue.test.ts src/integrations/slack/queue-worker.test.ts src/utils/markdown.test.ts`
+  - `npm run typecheck`
+
+## 2026-02-15 codex -- p2 step 4 multi-tab chat sessions
+
+- Implemented chat tab UX with max 3 sessions in `src/ui/dashboard/src/views/chat.tsx`:
+  - Replaced sidebar session list with top tab bar.
+  - Added capped creation (`MAX_CHAT_TABS = 3`) with disabled `+` when full.
+  - Added close/select behavior per tab and default-session fallback when all are closed.
+  - Added deterministic next tab naming (`Session N`) and stream cleanup on unmount.
+- Added tab bar styling + mobile adjustments in `src/ui/dashboard/src/dashboard.css`.
+- Validation run:
+  - `npm run typecheck`
+  - `npm run build:dashboard`
+
+## 2026-02-15 codex -- p2 step 5 command and shortcut interception
+
+- Added explicit command/shortcut interception layer in `src/core/command-interceptor.ts`:
+  - Digest aliases (`eod`, `daily digest`, etc.) -> `/digest`
+  - Queue aliases (`queue`, `tasks`, `retry failed`, etc.) -> `/queue ...`
+  - Orchestrate alias (`orchestrate`) -> `/orchestrate`
+- Wired interceptor before command routing in:
+  - `src/core/command-registry.ts` (`resolveCommand`)
+  - `src/ui/handlers/chat.ts` (so orchestrate streaming also works for shortcuts)
+  - `src/cli/slack.ts` (shortcut parsing in Slack transport)
+- Added tests in `src/core/command-interceptor.test.ts`.
+- Validation run:
+  - `node --import tsx --test --test-isolation=none src/core/command-interceptor.test.ts src/core/queue-admin.test.ts src/integrations/slack/message-queue.test.ts src/integrations/slack/queue-worker.test.ts src/utils/markdown.test.ts`
+  - `npm run typecheck`

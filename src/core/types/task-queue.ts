@@ -34,6 +34,7 @@ export type TaskPriority = "p0" | "p1" | "p2" | "p3";
 export type TaskSource =
   | "cli"          // User typed a command
   | "slack"        // Message in #cortex channel
+  | "telegram"     // Telegram DM capture
   | "agent"        // Runtime agent suggested an action
   | "cron"         // Scheduled trigger
   | "webhook";     // External webhook (GitHub, Attio, etc.)

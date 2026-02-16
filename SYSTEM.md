@@ -17,7 +17,7 @@ start terminal: `npm run dev:ui`
 - **Google Calendar** - Scheduling, meeting management
 - **Slack** - Team communication + **Cortex command interface** (dedicated `#cortex` channel)
 - **GitHub** - Code, PRs, repositories
-- **Telegram** - Messaging, sales conversations (read-only data source for relationship context -- NOT command input)
+- **Telegram** - **Personal capture channel** (voice-to-text, quick idea capture, commands via bot) + sales conversations (read-only for relationship context)
 - **X (Twitter)** - Social media, content publishing, audience analytics
 - **LinkedIn** - Professional networking, content publishing
 - **YouTube** - Video content (Indexing Co channel)
