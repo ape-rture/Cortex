@@ -13,7 +13,10 @@ interface QueueSummary {
   total: number;
   all: QueueStatusCounts;
   slack: QueueStatusCounts;
+  telegram: QueueStatusCounts;
 }
+
+type QueueTaskSource = "slack" | "telegram";
 
 const RETRYABLE_STATUSES = new Set<TaskStatus>(["failed", "blocked", "cancelled"]);
 
@@ -57,10 +60,12 @@ function oneLine(value: string): string {
 export async function summarizeQueue(queue: TaskQueue): Promise<QueueSummary> {
   const tasks = await queue.list();
   const slackTasks = tasks.filter((task) => task.source === "slack");
+  const telegramTasks = tasks.filter((task) => task.source === "telegram");
   return {
     total: tasks.length,
     all: countByStatus(tasks),
     slack: countByStatus(slackTasks),
+    telegram: countByStatus(telegramTasks),
   };
 }
 
@@ -72,25 +77,31 @@ export function formatQueueSummary(summary: QueueSummary): string {
     "",
     formatStatusLine("All", summary.all),
     formatStatusLine("Slack", summary.slack),
+    formatStatusLine("Telegram", summary.telegram),
   ].join("\n");
 }
 
-export async function listFailedSlackTasks(
+function formatSourceLabel(source: QueueTaskSource): string {
+  return source[0].toUpperCase() + source.slice(1);
+}
+
+export async function listFailedSourceTasks(
   queue: TaskQueue,
-  options?: { limit?: number },
+  options?: { limit?: number; source?: QueueTaskSource },
 ): Promise<string> {
+  const source = options?.source ?? "slack";
   const all = await queue.list();
   const failed = all
-    .filter((task) => task.source === "slack" && task.status === "failed")
+    .filter((task) => task.source === source && task.status === "failed")
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
   if (failed.length === 0) {
-    return "No failed Slack queue tasks.";
+    return `No failed ${formatSourceLabel(source)} queue tasks.`;
   }
 
   const limit = options?.limit ?? 10;
   const selected = failed.slice(0, limit);
-  const lines = [`# Failed Slack Queue Tasks (${selected.length}/${failed.length})`, ""];
+  const lines = [`# Failed ${formatSourceLabel(source)} Queue Tasks (${selected.length}/${failed.length})`, ""];
   for (const task of selected) {
     const result = task.result ? oneLine(task.result) : "(no error message)";
     lines.push(`- ${task.id} | ${task.priority} | ${task.updated_at}`);
@@ -98,6 +109,26 @@ export async function listFailedSlackTasks(
     lines.push(`  Error: ${result}`);
   }
   return lines.join("\n");
+}
+
+export async function listFailedSlackTasks(
+  queue: TaskQueue,
+  options?: { limit?: number },
+): Promise<string> {
+  return await listFailedSourceTasks(queue, {
+    limit: options?.limit,
+    source: "slack",
+  });
+}
+
+export async function listFailedTelegramTasks(
+  queue: TaskQueue,
+  options?: { limit?: number },
+): Promise<string> {
+  return await listFailedSourceTasks(queue, {
+    limit: options?.limit,
+    source: "telegram",
+  });
 }
 
 export async function retryQueueTaskById(
@@ -117,20 +148,33 @@ export async function retryQueueTaskById(
   return `Requeued ${task.id} (${task.source})`;
 }
 
-export async function retryFailedSlackTasks(
+export async function retryFailedSourceTasks(
   queue: TaskQueue,
+  source: QueueTaskSource = "slack",
 ): Promise<string> {
   const all = await queue.list();
-  const retryCandidates = all.filter((task) => task.source === "slack" && retryable(task));
+  const retryCandidates = all.filter((task) => task.source === source && retryable(task));
   if (retryCandidates.length === 0) {
-    return "No retryable Slack tasks found.";
+    return `No retryable ${formatSourceLabel(source)} tasks found.`;
   }
 
   for (const task of retryCandidates) {
     await queue.update(task.id, "queued", `Retry requested at ${new Date().toISOString()}`);
   }
 
-  return `Requeued ${retryCandidates.length} Slack task(s).`;
+  return `Requeued ${retryCandidates.length} ${formatSourceLabel(source)} task(s).`;
+}
+
+export async function retryFailedSlackTasks(
+  queue: TaskQueue,
+): Promise<string> {
+  return await retryFailedSourceTasks(queue, "slack");
+}
+
+export async function retryFailedTelegramTasks(
+  queue: TaskQueue,
+): Promise<string> {
+  return await retryFailedSourceTasks(queue, "telegram");
 }
 
 export function parseQueueLimitArg(raw: string | undefined, fallback = 10): number {

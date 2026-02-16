@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Shared Command Registry
  *
  * Extracted from src/ui/handlers/chat.ts so both the web terminal
@@ -20,9 +20,9 @@ import { MarkdownTaskQueue } from "./task-queue.js";
 import { interceptCommandShortcut } from "./command-interceptor.js";
 import {
   formatQueueSummary,
-  listFailedSlackTasks,
+  listFailedSourceTasks,
   parseQueueLimitArg,
-  retryFailedSlackTasks,
+  retryFailedSourceTasks,
   retryQueueTaskById,
   summarizeQueue,
 } from "./queue-admin.js";
@@ -58,7 +58,7 @@ async function runInboxCommand(args: string): Promise<string> {
   const parts = args.trim().split(/\s+/).filter(Boolean);
   const sub = (parts[0] ?? "").toLowerCase();
 
-  // /inbox done <id> — mark as done
+  // /inbox done <id> - mark as done
   if (sub === "done") {
     const taskId = parts[1];
     if (!taskId) return "Usage: /inbox done <task-id>";
@@ -66,7 +66,7 @@ async function runInboxCommand(args: string): Promise<string> {
     return `Marked ${taskId} as done.`;
   }
 
-  // /inbox cancel <id> — mark as cancelled
+  // /inbox cancel <id> - mark as cancelled
   if (sub === "cancel") {
     const taskId = parts[1];
     if (!taskId) return "Usage: /inbox cancel <task-id>";
@@ -74,26 +74,32 @@ async function runInboxCommand(args: string): Promise<string> {
     return `Cancelled ${taskId}.`;
   }
 
-  // /inbox (default) — list unprocessed Slack captures
+  // /inbox (default) - list unprocessed Slack/Telegram captures
   const tasks = await queue.list({ status: "queued" });
-  const slackTasks = tasks
-    .filter((t) => t.source === "slack")
+  const inboxTasks = tasks
+    .filter((t) => t.source === "slack" || t.source === "telegram")
     .sort((a, b) => {
       const byPriority = a.priority.localeCompare(b.priority);
       if (byPriority !== 0) return byPriority;
       return a.created_at.localeCompare(b.created_at);
     });
 
-  if (slackTasks.length === 0) return "Inbox empty.";
+  if (inboxTasks.length === 0) return "Inbox empty.";
 
-  const lines = [`**Inbox** — ${slackTasks.length} item${slackTasks.length === 1 ? "" : "s"}`, ""];
-  for (const task of slackTasks) {
+  const lines = [`**Inbox** - ${inboxTasks.length} item${inboxTasks.length === 1 ? "" : "s"}`, ""];
+  for (const task of inboxTasks) {
     const age = relativeAge(task.created_at);
     const preview = task.title.length > 80 ? `${task.title.slice(0, 77)}...` : task.title;
     lines.push(`- \`${task.id}\` (${task.priority}, ${age}) ${preview}`);
   }
   lines.push("", "_Use `/inbox done <id>` or `/inbox cancel <id>` to clear items._");
   return lines.join("\n");
+}
+
+function parseQueueSourceArg(value: string | undefined): "slack" | "telegram" | undefined {
+  const normalized = (value ?? "").trim().toLowerCase();
+  if (normalized === "slack" || normalized === "telegram") return normalized;
+  return undefined;
 }
 
 async function runQueueCommand(args: string): Promise<string> {
@@ -107,8 +113,10 @@ async function runQueueCommand(args: string): Promise<string> {
   }
 
   if (sub === "failed") {
-    const limit = parseQueueLimitArg(parts[1], 10);
-    return await listFailedSlackTasks(queue, { limit });
+    const sourceFromFirstArg = parseQueueSourceArg(parts[1]);
+    const limit = parseQueueLimitArg(sourceFromFirstArg ? undefined : parts[1], 10);
+    const source = sourceFromFirstArg ?? parseQueueSourceArg(parts[2]) ?? "slack";
+    return await listFailedSourceTasks(queue, { limit, source });
   }
 
   if (sub === "retry") {
@@ -118,13 +126,14 @@ async function runQueueCommand(args: string): Promise<string> {
     }
 
     if (target === "failed" || target === "all" || target === "all-failed") {
-      return await retryFailedSlackTasks(queue);
+      const source = parseQueueSourceArg(parts[2]) ?? "slack";
+      return await retryFailedSourceTasks(queue, source);
     }
 
     return await retryQueueTaskById(queue, target);
   }
 
-  return "Usage: /queue status | /queue failed [limit] | /queue retry <task-id|failed>";
+  return "Usage: /queue status | /queue failed [limit] [slack|telegram] | /queue retry <task-id|failed> [slack|telegram]";
 }
 
 // ---------------------------------------------------------------------------
@@ -177,11 +186,11 @@ export function getCommandRegistry(): Record<string, CommandHandler> {
       if (!query) {
         const all = await store.loadAll();
         if (all.length === 0) return "(no contacts)";
-        return all.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} — ${c.type}`).join("\n");
+        return all.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} â€” ${c.type}`).join("\n");
       }
       const results = await store.search(query);
       if (results.length === 0) return `No contacts matching "${query}"`;
-      return results.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} — ${c.type}`).join("\n");
+      return results.map((c) => `- **${c.name}**${c.company ? ` (${c.company})` : ""} â€” ${c.type}`).join("\n");
     },
     "/snapshot": async () => {
       const snapshot = await new MarkdownSessionSnapshotStore().load();
@@ -292,3 +301,4 @@ export async function resolveCommand(
 
   return null;
 }
+

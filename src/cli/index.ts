@@ -8,3 +8,4 @@ export * from "./project.js";
 export * from "./orchestrate.js";
 export * from "./daemon.js";
 export * from "./slack.js";
+export * from "./telegram.js";

@@ -6,13 +6,15 @@ import path from "node:path";
 import { MarkdownTaskQueue } from "./task-queue.js";
 import {
   formatQueueSummary,
+  listFailedSourceTasks,
   listFailedSlackTasks,
+  retryFailedSourceTasks,
   retryFailedSlackTasks,
   retryQueueTaskById,
   summarizeQueue,
 } from "./queue-admin.js";
 
-test("summarizeQueue returns all + slack counts", async () => {
+test("summarizeQueue returns all + slack + telegram counts", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-queue-admin-"));
   const queue = new MarkdownTaskQueue(path.join(tempDir, "queue.md"));
 
@@ -30,16 +32,27 @@ test("summarizeQueue returns all + slack counts", async () => {
   });
   await queue.update(cliTask, "done", "OK");
 
+  const telegramTask = await queue.add({
+    title: "Telegram blocked item",
+    priority: "p2",
+    source: "telegram",
+  });
+  await queue.update(telegramTask, "blocked", "Waiting for response");
+
   const summary = await summarizeQueue(queue);
-  assert.equal(summary.total, 2);
+  assert.equal(summary.total, 3);
   assert.equal(summary.all.failed, 1);
   assert.equal(summary.all.done, 1);
+  assert.equal(summary.all.blocked, 1);
   assert.equal(summary.slack.failed, 1);
   assert.equal(summary.slack.done, 0);
+  assert.equal(summary.telegram.blocked, 1);
+  assert.equal(summary.telegram.failed, 0);
 
   const rendered = formatQueueSummary(summary);
-  assert.match(rendered, /Total tasks: 2/);
+  assert.match(rendered, /Total tasks: 3/);
   assert.match(rendered, /Slack: queued=0, in_progress=0, failed=1/);
+  assert.match(rendered, /Telegram: queued=0, in_progress=0, failed=0, blocked=1/);
 });
 
 test("listFailedSlackTasks only returns failed slack tasks", async () => {
@@ -64,6 +77,30 @@ test("listFailedSlackTasks only returns failed slack tasks", async () => {
   assert.match(output, /Slack failed task/);
   assert.match(output, /network timeout/);
   assert.doesNotMatch(output, /CLI failed task/);
+});
+
+test("listFailedSourceTasks can target telegram", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-queue-admin-"));
+  const queue = new MarkdownTaskQueue(path.join(tempDir, "queue.md"));
+
+  const telegramTask = await queue.add({
+    title: "Telegram failed task",
+    priority: "p2",
+    source: "telegram",
+  });
+  await queue.update(telegramTask, "failed", "telegram issue");
+
+  const slackTask = await queue.add({
+    title: "Slack failed task",
+    priority: "p1",
+    source: "slack",
+  });
+  await queue.update(slackTask, "failed", "slack issue");
+
+  const output = await listFailedSourceTasks(queue, { source: "telegram" });
+  assert.match(output, /Failed Telegram Queue Tasks/);
+  assert.match(output, /Telegram failed task/);
+  assert.doesNotMatch(output, /Slack failed task/);
 });
 
 test("retryQueueTaskById requeues retryable task and rejects done", async () => {
@@ -131,4 +168,32 @@ test("retryFailedSlackTasks requeues failed slack tasks only", async () => {
   assert.equal(slackFailedTask?.status, "queued");
   assert.equal(slackBlockedTask?.status, "queued");
   assert.equal(cliFailedTask?.status, "failed");
+});
+
+test("retryFailedSourceTasks requeues telegram tasks only", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-queue-admin-"));
+  const queue = new MarkdownTaskQueue(path.join(tempDir, "queue.md"));
+
+  const telegramFailed = await queue.add({
+    title: "Telegram failed",
+    priority: "p2",
+    source: "telegram",
+  });
+  await queue.update(telegramFailed, "failed", "oops");
+
+  const slackFailed = await queue.add({
+    title: "Slack failed",
+    priority: "p1",
+    source: "slack",
+  });
+  await queue.update(slackFailed, "failed", "oops");
+
+  const msg = await retryFailedSourceTasks(queue, "telegram");
+  assert.match(msg, /Requeued 1 Telegram task\(s\)/);
+
+  const all = await queue.list();
+  const telegramTask = all.find((task) => task.id === telegramFailed);
+  const slackTask = all.find((task) => task.id === slackFailed);
+  assert.equal(telegramTask?.status, "queued");
+  assert.equal(slackTask?.status, "failed");
 });
