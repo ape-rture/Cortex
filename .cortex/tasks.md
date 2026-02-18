@@ -18,6 +18,10 @@
 
 ### Gmail Integration (Phase 6)
 
+### Typed Capture System (Phase 8)
+
+*Completed (moved to Done).*
+
 ## In Progress
 
 *Agent moves task here when starting.*
@@ -25,6 +29,7 @@
 *No tasks currently in progress.*
 ## Done
 
+- **Typed Capture System (Phase 8)** -- Agent: codex -- Branch: `codex/typed-capture` (ready for merge). Implemented `MarkdownResearchStore`, `MarkdownFeatureStore`, and `MarkdownIdeaStore` with parse/serialize support in `src/utils/markdown.ts`; added tests in `src/core/research-store.test.ts`, `src/core/feature-store.test.ts`, `src/core/idea-store.test.ts`, plus parser tests in `src/utils/markdown.test.ts`. Added `/capture` command in `src/cli/capture.ts` (typed subcommands, `/capture list`, `/capture inbox`, auto-classification), wired into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`, with tests in `src/cli/capture.test.ts`. Updated Telegram capture typing in `src/integrations/telegram/message-queue.ts` and `src/integrations/telegram/message-queue.test.ts` for `#research/#feature/#seed/#task/#content/#action` tags. Updated `src/agents/telegram-triage.ts` to route `research`, `cortex_feature`, and `project_seed` directly to new stores and skip LLM classification when `capture_type:*` tag is present. Validation: targeted typed-capture tests passed and `npm run typecheck` passed; `npm run test:unit` still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`.
 - **Telegram Bot Integration (Phase 7)** -- Agent: codex -- Branch: `codex/telegram-bot` (merged to `main`). Added Telegram transport in `src/integrations/telegram/` (client/config/auth, markdown->HTML formatter + trim, queue ingest/parser + worker, barrel + tests), shipped Telegram bot CLI entrypoint in `src/cli/telegram.ts` with allowlist middleware, `/orchestrate` streaming updates, shared command routing, capture queueing, voice reply guard, optional auto-worker (`TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`), and graceful shutdown; wired script/export/integration barrels (`package.json`, `src/cli/index.ts`, `src/integrations/index.ts`); updated queue admin + `/inbox` for Telegram source support in `src/core/queue-admin.ts` and `src/core/command-registry.ts` with expanded tests in `src/core/queue-admin.test.ts`. Validation: `npm run typecheck`, `npm run test:unit`.
 - **P2 Step 5: Command/shortcut interception layer** -- Agent: codex -- Branch: `main`. Added explicit shortcut interception (`src/core/command-interceptor.ts`) for digest/queue/orchestrate shortcuts and integrated it before command routing in web chat streaming (`src/ui/handlers/chat.ts`), Slack bot handling (`src/cli/slack.ts`), and shared command resolution (`src/core/command-registry.ts`). Added tests in `src/core/command-interceptor.test.ts`.
 - **P2 Step 4: Chat multi-tab sessions (max 3)** -- Agent: codex -- Branch: `main`. Reworked chat UI to use a tab bar with max 3 concurrent sessions (`src/ui/dashboard/src/views/chat.tsx`), added deterministic tab naming + default-session guarantee, and updated styling/responsive behavior (`src/ui/dashboard/src/dashboard.css`). Validation: `npm run typecheck`, `npm run build:dashboard`.

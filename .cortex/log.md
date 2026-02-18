@@ -1,53 +1,193 @@
-# Cortex Activity Log
+﻿# Cortex Activity Log
 
 *Newest entries at top. Both agents append here when completing work.*
 
 ---
 
-## 2026-02-16 claude -- Telegram bot integration (Phase 7) — design + contracts
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
+
+## 2026-02-18 claude -- Typed Capture System (Phase 8) â€” design + contracts
+
+### Problem
+Everything captured via Telegram/CLI lands in a flat `actions/queue.md` as undifferentiated tasks. Research links, project IDs, Cortex feature ideas, and new project seeds all look the same â€” making triage painful.
+
+### Solution: typed capture with 3 entry points
+- **Telegram** (async): capture â†’ queue â†’ triage agent classifies â†’ routes to typed store
+- **CLI `/capture`** (interactive): parses optional type tag, writes directly or auto-classifies via LLM
+- **Web terminal** (interactive): same as CLI via command registry
+
+### 7 capture types with separate stores
+| Type | Store |
+|---|---|
+| `research` | `actions/research-queue.md` |
+| `content_idea` | `projects/content-ideas.md` (existing) |
+| `project_task` | `.cortex/tasks.md` (existing) |
+| `cortex_feature` | `projects/feature-proposals.md` |
+| `project_seed` | `projects/ideas.md` |
+| `action_item` | `actions/pending.md` (existing) |
+| `needs_review` | stays in queue as blocked |
+
+### What Claude did
+- Designed types + interfaces: `src/core/types/capture.ts` (CaptureType, ResearchItem/Store, FeatureProposal/Store, ProjectSeed/IdeaStore)
+- Expanded triage prompt: `src/agents/prompts/telegram-triage.md` (4 â†’ 7 categories with classification signals)
+- Scaffolded store files: `actions/research-queue.md`, `projects/feature-proposals.md`, updated `projects/ideas.md`
+
+### For Codex
+6 tasks in `.cortex/tasks.md` under "Typed Capture System (Phase 8)". Branch: `codex/typed-capture`.
+1. MarkdownResearchStore + parse/serialize + tests
+2. MarkdownFeatureStore + parse/serialize + tests
+3. MarkdownIdeaStore + parse/serialize + tests
+4. `/capture` CLI command + command registry wiring + tests
+5. Update telegram-triage agent routing for new categories
+6. Add Telegram type prefix parsing (`#research`, `#feature`, etc.)
+
+### Plan file
+`C:\Users\Dennis\.claude\plans\serialized-chasing-naur.md`
+
+---
+
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
+## 2026-02-16 claude -- Telegram bot integration (Phase 7) â€” design + contracts
 
 ### Switching personal capture from Slack DMs to Telegram
 
 Dennis wants to use Telegram instead of Slack DMs for personal idea capture. Telegram has built-in voice-to-text, is separate from the Indexing Co workspace, and avoids context switching concerns.
 
 **Shared contracts updated (on `main`):**
-- `src/core/types/task-queue.ts` — added `"telegram"` to `TaskSource` union
-- `src/utils/markdown.ts` — added `"telegram"` to `parseSource()` recognition
-- `SYSTEM.md` — updated Telegram from "read-only data source" to "Personal capture channel"
+- `src/core/types/task-queue.ts` â€” added `"telegram"` to `TaskSource` union
+- `src/utils/markdown.ts` â€” added `"telegram"` to `parseSource()` recognition
+- `SYSTEM.md` â€” updated Telegram from "read-only data source" to "Personal capture channel"
 
-**Architecture:** Mirrors Slack integration exactly. Telegram transport layer → same shared core (MarkdownTaskQueue, resolveCommand, ConfigRouter). Uses Telegraf v4 with long polling (no public URL needed). User ID whitelist for auth.
+**Architecture:** Mirrors Slack integration exactly. Telegram transport layer â†’ same shared core (MarkdownTaskQueue, resolveCommand, ConfigRouter). Uses Telegraf v4 with long polling (no public URL needed). User ID whitelist for auth.
 
 **For Codex:** 4 tasks written to `.cortex/tasks.md` under "Telegram Bot Integration (Phase 7)". Branch: `codex/telegram-bot`. Tasks cover: integration module, CLI entrypoint, queue admin updates, tests.
 
 **For Dennis (before Codex can test):**
-1. Create bot via @BotFather → get `TELEGRAM_BOT_TOKEN`
-2. Get numeric user ID via @userinfobot → set `TELEGRAM_ALLOWED_USER_IDS`
+1. Create bot via @BotFather â†’ get `TELEGRAM_BOT_TOKEN`
+2. Get numeric user ID via @userinfobot â†’ set `TELEGRAM_ALLOWED_USER_IDS`
 3. Add both to `.env`
 
 **Plan file:** `C:\Users\Dennis\.claude\plans\optimized-roaming-penguin.md`
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-12 claude -- Workspaces: multi-project CLI terminal manager
 
 ### Built full-stack terminal management system (Phase 1-4)
 
-Added a "Workspaces" view to the Cortex dashboard that spawns Claude CLI, Codex CLI, and shell terminals per project — all managed via the browser.
+Added a "Workspaces" view to the Cortex dashboard that spawns Claude CLI, Codex CLI, and shell terminals per project â€” all managed via the browser.
 
 **Backend (6 new files):**
-- `src/ui/terminal/types.ts` — shared types, WS protocol messages
-- `src/ui/terminal/scrollback-buffer.ts` — 500KB ring buffer
-- `src/ui/terminal/terminal-session-manager.ts` — node-pty (ConPTY) lifecycle, process tree cleanup, scrollback disk persistence
-- `src/ui/terminal/ws-server.ts` — WebSocket server (`ws` library, noServer mode)
-- `src/ui/terminal/workspace-config-store.ts` — persist layout to `context/workspaces.json`
-- `src/ui/handlers/terminal.ts` — 9 REST endpoints (session CRUD, config, git info)
+- `src/ui/terminal/types.ts` â€” shared types, WS protocol messages
+- `src/ui/terminal/scrollback-buffer.ts` â€” 500KB ring buffer
+- `src/ui/terminal/terminal-session-manager.ts` â€” node-pty (ConPTY) lifecycle, process tree cleanup, scrollback disk persistence
+- `src/ui/terminal/ws-server.ts` â€” WebSocket server (`ws` library, noServer mode)
+- `src/ui/terminal/workspace-config-store.ts` â€” persist layout to `context/workspaces.json`
+- `src/ui/handlers/terminal.ts` â€” 9 REST endpoints (session CRUD, config, git info)
 
 **Frontend (5 new files):**
-- `src/ui/dashboard/src/views/workspaces.tsx` — main view with project tabs, auto-spawn, config persistence
-- `src/ui/dashboard/src/components/terminal-pane.tsx` — xterm.js wrapper with FitAddon
-- `src/ui/dashboard/src/components/project-tabs.tsx` — project tab bar with git commit subtitle
-- `src/ui/dashboard/src/components/instance-tabs.tsx` — CLI sub-tabs with status dot, restart, close
-- `src/ui/dashboard/src/hooks/use-websocket.ts` — WebSocket hook with exponential backoff reconnect
+- `src/ui/dashboard/src/views/workspaces.tsx` â€” main view with project tabs, auto-spawn, config persistence
+- `src/ui/dashboard/src/components/terminal-pane.tsx` â€” xterm.js wrapper with FitAddon
+- `src/ui/dashboard/src/components/project-tabs.tsx` â€” project tab bar with git commit subtitle
+- `src/ui/dashboard/src/components/instance-tabs.tsx` â€” CLI sub-tabs with status dot, restart, close
+- `src/ui/dashboard/src/hooks/use-websocket.ts` â€” WebSocket hook with exponential backoff reconnect
 
 **Key behaviors:** auto-spawns Claude + Codex on project select, max 4 per project, restart button for exited processes, workspace config auto-saved, scrollback flushed every 30s, SIGINT cleanup.
 
@@ -60,14 +200,47 @@ Added a "Workspaces" view to the Cortex dashboard that spawns Claude CLI, Codex 
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 claude -- Gmail integration Phase 1 foundation
 
 ### Designed types, auth script, and Codex tasks for Gmail integration
 
 Two Gmail accounts: `dennis@indexing.co` and `dennisverstappen1@gmail.com`. Access level: read + modify + create drafts (no send).
 
-- **Types**: `src/core/types/gmail.ts` — GmailClient interface, GmailMessageHeader/GmailMessage, GmailSearchOptions, GmailFetchResult, GmailMailSummary, MailClassification (for Phase 3), GmailAction (for Phase 4)
-- **Auth script**: `scripts/gmail-auth.ts` — interactive OAuth2 flow to generate refresh tokens per account. Uses same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` as calendar. Scopes: `gmail.modify` + `gmail.compose`
+- **Types**: `src/core/types/gmail.ts` â€” GmailClient interface, GmailMessageHeader/GmailMessage, GmailSearchOptions, GmailFetchResult, GmailMailSummary, MailClassification (for Phase 3), GmailAction (for Phase 4)
+- **Auth script**: `scripts/gmail-auth.ts` â€” interactive OAuth2 flow to generate refresh tokens per account. Uses same `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` as calendar. Scopes: `gmail.modify` + `gmail.compose`
 - **Types barrel**: Updated `src/core/types/index.ts` with all Gmail type exports
 - **Codex tasks**: 4 tasks written to `.cortex/tasks.md` under "Gmail Integration (Phase 6)":
   1. Implement `GoogleGmailClient` in `src/integrations/gmail.ts`
@@ -77,14 +250,14 @@ Two Gmail accounts: `dennis@indexing.co` and `dennisverstappen1@gmail.com`. Acce
 
 ### Validation
 
-- `npm run typecheck` — clean
+- `npm run typecheck` â€” clean
 - Branch: `claude/gmail-integration`
 
 ### For Dennis (before Codex can start)
 
 1. Enable Gmail API in Google Cloud Console (same project as Calendar)
-2. Run `npx tsx scripts/gmail-auth.ts` — authorize `dennis@indexing.co`, save token as `GMAIL_INDEXING_REFRESH_TOKEN`
-3. Run again — authorize `dennisverstappen1@gmail.com`, save token as `GMAIL_PERSONAL_REFRESH_TOKEN`
+2. Run `npx tsx scripts/gmail-auth.ts` â€” authorize `dennis@indexing.co`, save token as `GMAIL_INDEXING_REFRESH_TOKEN`
+3. Run again â€” authorize `dennisverstappen1@gmail.com`, save token as `GMAIL_PERSONAL_REFRESH_TOKEN`
 4. Add both tokens to `.env`
 5. Merge `claude/gmail-integration` to `main`
 
@@ -100,6 +273,39 @@ Pick up the 4 tasks in `.cortex/tasks.md` under "Gmail Integration (Phase 6)" on
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- implement memory flywheel runtime agents (Phase 5.5)
 
 ### Built fact extraction and weekly synthesis agents
@@ -145,6 +351,39 @@ Pick up the 4 tasks in `.cortex/tasks.md` under "Gmail Integration (Phase 6)" on
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- implement MarkdownEntityStore (Phase 5.5)
 
 ### Implemented file-backed knowledge graph entity store
@@ -173,6 +412,39 @@ Pick up the 4 tasks in `.cortex/tasks.md` under "Gmail Integration (Phase 6)" on
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -204,6 +476,39 @@ Pick up the 4 tasks in `.cortex/tasks.md` under "Gmail Integration (Phase 6)" on
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 claude -- Memory Flywheel types, prompts, and scaffolding (Phase 5.5)
 
 ### Designed knowledge graph layer for the Memory Flywheel
@@ -226,6 +531,39 @@ Created the foundational types, agent prompts, and directory structure for entit
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -261,6 +599,39 @@ Created the foundational types, agent prompts, and directory structure for entit
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -291,17 +662,17 @@ Created the foundational types, agent prompts, and directory structure for entit
 Agents can now run as full Claude Code sessions with autonomous reasoning capabilities. Each agent spawns an isolated SDK session via `@anthropic-ai/claude-agent-sdk` with scoped tools, structured JSON output (enforced via json_schema), and budget caps.
 
 ### Key decisions:
-- **SDK over subprocess**: Started with CLI subprocess spawning, hit Windows arg escaping issues. Discovered `@anthropic-ai/claude-agent-sdk` package — programmatic API is much cleaner.
+- **SDK over subprocess**: Started with CLI subprocess spawning, hit Windows arg escaping issues. Discovered `@anthropic-ai/claude-agent-sdk` package â€” programmatic API is much cleaner.
 - **Structured output**: JSON schema enforcement via `outputFormat` ensures agents always return valid `{ findings, memory_updates, errors }`.
 - **Budget caps**: Each agent limited to $0.50 per run via `maxBudgetUsd`.
 - **Haiku for agents**: Sonnet was too slow for background agents. Haiku with 15 turns completes in ~3.5 min.
 - **maxTurns matters**: With 5 turns, agents ran out of turns reading files and never produced output. 15 turns is the sweet spot.
 
 ### Files:
-- `src/core/claude-code-process.ts` — SDK-based executor (query, parse, normalize)
-- `src/agents/prompts/project-analyst.md` — first Claude Code agent
-- Modified `src/core/agent-runner.ts` — claude_code routing, timeout handling
-- Modified `src/core/types/orchestrator.ts` — new execution type, max_turns, allowed_tools
+- `src/core/claude-code-process.ts` â€” SDK-based executor (query, parse, normalize)
+- `src/agents/prompts/project-analyst.md` â€” first Claude Code agent
+- Modified `src/core/agent-runner.ts` â€” claude_code routing, timeout handling
+- Modified `src/core/types/orchestrator.ts` â€” new execution type, max_turns, allowed_tools
 
 ### Branch: `claude/claude-code-agents`
 
@@ -315,6 +686,39 @@ Agents can now run as full Claude Code sessions with autonomous reasoning capabi
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -342,33 +746,33 @@ Agents can now run as full Claude Code sessions with autonomous reasoning capabi
 
 ### Implemented the Dennett-inspired orchestrator
 
-Thin, non-intelligent scheduler that spawns agents in parallel, scores findings by salience, and surfaces only what passes the fame threshold. Zero LLM cost — all 3 agents are local TypeScript functions.
+Thin, non-intelligent scheduler that spawns agents in parallel, scores findings by salience, and surfaces only what passes the fame threshold. Zero LLM cost â€” all 3 agents are local TypeScript functions.
 
 ### Files created:
-- `src/core/salience.ts` — `RuleBasedSalienceScorer` (weighted avg: urgency/relevance/novelty/actionability, hash-based novelty dedup)
-- `src/core/permission-validator.ts` — `PermissionValidator` (glob-match memory updates against permission envelopes)
-- `src/core/memory-writer.ts` — `MemoryWriter` (append/update/flag operations on markdown files)
-- `src/core/agent-runner.ts` — `AgentRunner` (local_script execution, event emission, timeout enforcement)
-- `src/core/orchestrator.ts` — `CortexOrchestrator` implementing `Orchestrator` interface (parallel execution, scoring, fame threshold filtering)
-- `src/agents/sales-watcher.ts` — relationship decay via `SimpleDecayDetector`
-- `src/agents/content-scanner.ts` — content pipeline health via `MarkdownContentStore`
-- `src/agents/code-watcher.ts` — unpushed commits via `SimpleGitMonitor`
-- `context/orchestrator.json` — agent definitions, permission envelopes, fame threshold config
-- `src/cli/orchestrate.ts` — CLI entrypoint with `--agents`, `--verbose`, `--history` flags
+- `src/core/salience.ts` â€” `RuleBasedSalienceScorer` (weighted avg: urgency/relevance/novelty/actionability, hash-based novelty dedup)
+- `src/core/permission-validator.ts` â€” `PermissionValidator` (glob-match memory updates against permission envelopes)
+- `src/core/memory-writer.ts` â€” `MemoryWriter` (append/update/flag operations on markdown files)
+- `src/core/agent-runner.ts` â€” `AgentRunner` (local_script execution, event emission, timeout enforcement)
+- `src/core/orchestrator.ts` â€” `CortexOrchestrator` implementing `Orchestrator` interface (parallel execution, scoring, fame threshold filtering)
+- `src/agents/sales-watcher.ts` â€” relationship decay via `SimpleDecayDetector`
+- `src/agents/content-scanner.ts` â€” content pipeline health via `MarkdownContentStore`
+- `src/agents/code-watcher.ts` â€” unpushed commits via `SimpleGitMonitor`
+- `context/orchestrator.json` â€” agent definitions, permission envelopes, fame threshold config
+- `src/cli/orchestrate.ts` â€” CLI entrypoint with `--agents`, `--verbose`, `--history` flags
 
 ### Files modified:
-- `src/cli/index.ts` — added orchestrate export
-- `package.json` — added `orchestrate` npm script
+- `src/cli/index.ts` â€” added orchestrate export
+- `package.json` â€” added `orchestrate` npm script
 
 ### Validation:
-- `npm run typecheck` — clean
-- `npm run test:unit` — 50/51 passed (1 skipped, 0 regressions)
-- `npm run orchestrate` — runs 3 agents, surfaces 2 findings (decay alert + empty pipeline)
+- `npm run typecheck` â€” clean
+- `npm run test:unit` â€” 50/51 passed (1 skipped, 0 regressions)
+- `npm run orchestrate` â€” runs 3 agents, surfaces 2 findings (decay alert + empty pipeline)
 - Branch: `claude/orchestrator-mvp`, merged to `main`
 
 ### Key design decisions:
-- **Local agents first** — zero LLM cost, fast, testable. LLM agents in next iteration
-- **Weighted average** for salience (not product — product collapses too aggressively)
+- **Local agents first** â€” zero LLM cost, fast, testable. LLM agents in next iteration
+- **Weighted average** for salience (not product â€” product collapses too aggressively)
 - **In-memory** cycle history (no file persistence for MVP)
 - **Permission validation** before any memory writes
 
@@ -379,6 +783,39 @@ Thin, non-intelligent scheduler that spawns agents in parallel, scores findings 
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -416,6 +853,39 @@ Thin, non-intelligent scheduler that spawns agents in parallel, scores findings 
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -466,8 +936,8 @@ Analyzed when local BM25/embeddings vs cloud DB+RAG makes sense:
 
 ### Architecture Decision: Two-Domain Model
 
-1. **Cortex Personal** → Local markdown + git (unchanged)
-2. **Indexing Co Content** → Managed Postgres + pgvector (Supabase)
+1. **Cortex Personal** â†’ Local markdown + git (unchanged)
+2. **Indexing Co Content** â†’ Managed Postgres + pgvector (Supabase)
 
 Integration via MCP Server (`@indexingco/content-mcp`):
 - Cortex calls `content_search`, `content_upsert` as MCP tools
@@ -476,9 +946,9 @@ Integration via MCP Server (`@indexingco/content-mcp`):
 
 ### Documents Created
 
-- `research/13-content-db-architecture.md` — Full technical research
-- `decisions/2026-02-05-content-db-integration.md` — Architecture decision
-- `decisions/2026-02-05-content-db-implementation-plan.md` — Phased implementation plan
+- `research/13-content-db-architecture.md` â€” Full technical research
+- `decisions/2026-02-05-content-db-integration.md` â€” Architecture decision
+- `decisions/2026-02-05-content-db-implementation-plan.md` â€” Phased implementation plan
 
 ### Key Decisions
 
@@ -495,6 +965,39 @@ Phase 2 of implementation plan: Build `@indexingco/content-mcp` server with:
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -523,16 +1026,16 @@ Phase 2 of implementation plan: Build `@indexingco/content-mcp` server with:
 ### Phase 4: Project Management (design complete)
 
 **Types created:**
-- `src/core/types/project.ts` — Project, ProjectStore, ProjectGitStatus, ProjectGitOperations, ScaffoldConfig, ScaffoldResult, ProjectScaffolder interfaces
+- `src/core/types/project.ts` â€” Project, ProjectStore, ProjectGitStatus, ProjectGitOperations, ScaffoldConfig, ScaffoldResult, ProjectScaffolder interfaces
 - Added exports to `src/core/types/index.ts`
 
 **Template generalized:**
-- Renamed `.cortex/` → `.collab/` in all template files under `exports/llm-collab-playbook/template-root/`
+- Renamed `.cortex/` â†’ `.collab/` in all template files under `exports/llm-collab-playbook/template-root/`
 - Updated references in CONVENTIONS.md, CLAUDE.md, AGENTS.md to use `.collab/`
 - Updated README.md with scaffolding instructions
 
 **Registry created:**
-- `projects/project-registry.md` — initial registry with Cortex as first entry
+- `projects/project-registry.md` â€” initial registry with Cortex as first entry
 
 **Codex tasks added:**
 - parseProjects/serializeProjects utilities
@@ -565,26 +1068,26 @@ Plan at: `C:\Users\Dennis\.claude\plans\floofy-enchanting-tarjan.md`
 ## 2026-02-04 claude -- Phase 3b+3c implementation (draft generator, podcast, seed extractor, Granola, CLI)
 
 ### Files created:
-- `src/core/content-draft-generator.ts` — `LLMContentDraftGenerator` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, handles both thread (posts[]) and single-post (full_text) formats, supports draft revision with feedback.
-- `src/core/podcast-distribution.ts` — `LLMPodcastDistributionGenerator` implementing `PodcastDistributionGenerator`. Builds episode prompt from PodcastEpisode metadata, returns youtube_description + company_tweet + personal_post.
-- `src/core/content-seed-extractor.ts` — `LLMContentSeedExtractor` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, filters by confidence threshold, generates seed IDs with `nextSeedId`.
-- `src/integrations/granola.ts` — Granola URL scraper. `isGranolaUrl()` detects Granola links, `fetchGranolaTranscript()` extracts text from HTML (main/article/content div, strips scripts/styles/tags).
+- `src/core/content-draft-generator.ts` â€” `LLMContentDraftGenerator` implementing `ContentDraftGenerator`. Uses `content_drafting` task type for ConfigRouter, loads thread-builder.md prompt, handles both thread (posts[]) and single-post (full_text) formats, supports draft revision with feedback.
+- `src/core/podcast-distribution.ts` â€” `LLMPodcastDistributionGenerator` implementing `PodcastDistributionGenerator`. Builds episode prompt from PodcastEpisode metadata, returns youtube_description + company_tweet + personal_post.
+- `src/core/content-seed-extractor.ts` â€” `LLMContentSeedExtractor` implementing `ContentSeedExtractor`. Loads content-extractor.md prompt, filters by confidence threshold, generates seed IDs with `nextSeedId`.
+- `src/integrations/granola.ts` â€” Granola URL scraper. `isGranolaUrl()` detects Granola links, `fetchGranolaTranscript()` extracts text from HTML (main/article/content div, strips scripts/styles/tags).
 
 ### Files modified:
-- `src/cli/content.ts` — Added all Phase 3b+3c subcommands:
-  - `draft <id>` — generates draft for an idea via thread-builder
-  - `revise <id> "feedback"` — revises existing draft with feedback
-  - `podcast` — interactive episode input, generates distribution pack, saves as 3-idea chain (YouTube desc + @indexingco tweet + @ape_rture post)
-  - `extract <file-or-url>` — runs file or Granola URL through seed extractor
-  - `seeds` — lists unprocessed seeds
-  - `promote <seed-id>` — converts seed to content idea
+- `src/cli/content.ts` â€” Added all Phase 3b+3c subcommands:
+  - `draft <id>` â€” generates draft for an idea via thread-builder
+  - `revise <id> "feedback"` â€” revises existing draft with feedback
+  - `podcast` â€” interactive episode input, generates distribution pack, saves as 3-idea chain (YouTube desc + @indexingco tweet + @ape_rture post)
+  - `extract <file-or-url>` â€” runs file or Granola URL through seed extractor
+  - `seeds` â€” lists unprocessed seeds
+  - `promote <seed-id>` â€” converts seed to content idea
   - Updated `run()` switch and `runContent()` export for web terminal
-- `src/cli/gm.ts` — Added Content Pipeline section to /gm briefing (idea counts by status, unprocessed seed count)
-- `.cortex/tasks.md` — Moved Phase 3b+3c+integration tasks to Done
+- `src/cli/gm.ts` â€” Added Content Pipeline section to /gm briefing (idea counts by status, unprocessed seed count)
+- `.cortex/tasks.md` â€” Moved Phase 3b+3c+integration tasks to Done
 
 ### Validation:
-- `npm run typecheck` — clean
-- `npm test` — 26/26 passed
+- `npm run typecheck` â€” clean
+- `npm test` â€” 26/26 passed
 - All content subcommands wired in both CLI and web terminal
 
 ### Note:
@@ -611,11 +1114,11 @@ Unit tests for the new generators (draft, podcast, seed extractor, granola) were
 ## 2026-02-04 claude -- Phase 3 content pipeline design + Takopi patterns
 
 ### Takopi Integration (completed earlier this session)
-- Created `src/core/types/events.ts` — normalized event model (StartedEvent, ActionEvent, CompletedEvent)
-- Extended `src/core/types/routing.ts` — agent auto-router types (AgentAffinity, AgentRouteConfig, AgentRouter)
-- Extended `src/core/types/session.ts` — resume tokens for cross-interface continuity
-- Extended `src/core/types/task-queue.ts` — ThreadScheduler for per-context serialization
-- Updated `src/core/types/orchestrator.ts` — integrated events + agent routing
+- Created `src/core/types/events.ts` â€” normalized event model (StartedEvent, ActionEvent, CompletedEvent)
+- Extended `src/core/types/routing.ts` â€” agent auto-router types (AgentAffinity, AgentRouteConfig, AgentRouter)
+- Extended `src/core/types/session.ts` â€” resume tokens for cross-interface continuity
+- Extended `src/core/types/task-queue.ts` â€” ThreadScheduler for per-context serialization
+- Updated `src/core/types/orchestrator.ts` â€” integrated events + agent routing
 - Updated barrel exports in `src/core/types/index.ts`
 - Updated `projects/feature-roadmap.md` with Phase 5/7/8 additions
 - Updated `context/model-routing-spec.md` with agent routing schema
@@ -624,21 +1127,21 @@ Unit tests for the new generators (draft, podcast, seed extractor, granola) were
 ### Phase 3 Content Pipeline (designed this session)
 
 **Files created:**
-- `src/core/types/content.ts` — all content pipeline types: ContentIdea, ContentSeed, ContentDraft, ContentChain, PodcastEpisode, PodcastDistributionPack, plus Store/Generator/Extractor interfaces
-- `src/agents/prompts/thread-builder.md` — thread/post drafting prompt with Dennis's voice profile, platform rules, anti-patterns, examples
-- `src/agents/prompts/podcast-distribution.md` — Block by Block distribution pack prompt (YouTube desc + @indexingco tweet + @ape_rture longform). Absorbs `block-by-block-distribution.md` into Cortex agent system
-- `src/agents/prompts/content-extractor.md` — seed extraction prompt with confidence scoring, privacy rules, examples
+- `src/core/types/content.ts` â€” all content pipeline types: ContentIdea, ContentSeed, ContentDraft, ContentChain, PodcastEpisode, PodcastDistributionPack, plus Store/Generator/Extractor interfaces
+- `src/agents/prompts/thread-builder.md` â€” thread/post drafting prompt with Dennis's voice profile, platform rules, anti-patterns, examples
+- `src/agents/prompts/podcast-distribution.md` â€” Block by Block distribution pack prompt (YouTube desc + @indexingco tweet + @ape_rture longform). Absorbs `block-by-block-distribution.md` into Cortex agent system
+- `src/agents/prompts/content-extractor.md` â€” seed extraction prompt with confidence scoring, privacy rules, examples
 
 **Files modified:**
-- `src/core/types/index.ts` — added barrel exports for all content types
-- `projects/content-ideas.md` — upgraded table format (added ID and Source columns)
-- `projects/feature-roadmap.md` — Phase 3 now has sub-phases (3a/3b/3c/3d) with status tracking
-- `.cortex/tasks.md` — added 10 Codex tasks across Phase 3a/3b/3c + integration
+- `src/core/types/index.ts` â€” added barrel exports for all content types
+- `projects/content-ideas.md` â€” upgraded table format (added ID and Source columns)
+- `projects/feature-roadmap.md` â€” Phase 3 now has sub-phases (3a/3b/3c/3d) with status tracking
+- `.cortex/tasks.md` â€” added 10 Codex tasks across Phase 3a/3b/3c + integration
 
 **Files created (templates):**
-- `projects/content-seeds.md` — seed tracking (unprocessed/promoted)
-- `projects/content-chains.md` — cross-platform recycling tracker
-- `projects/content-drafts/.gitkeep` — draft storage directory
+- `projects/content-seeds.md` â€” seed tracking (unprocessed/promoted)
+- `projects/content-chains.md` â€” cross-platform recycling tracker
+- `projects/content-drafts/.gitkeep` â€” draft storage directory
 
 ### For Codex (Phase 3a first):
 1. Content markdown utilities in `src/utils/markdown.ts`
@@ -872,6 +1375,39 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 
 ---
 
+## 2026-02-18 codex -- Typed Capture System (Phase 8) implementation
+
+- Implemented typed capture stores:
+  - `src/core/research-store.ts`
+  - `src/core/feature-store.ts`
+  - `src/core/idea-store.ts`
+- Added capture markdown parsing/serialization:
+  - `parseResearchQueue()` / `serializeResearchQueue()`
+  - `parseFeatureProposals()` / `serializeFeatureProposals()`
+  - `parseProjectSeeds()` / `serializeProjectSeeds()`
+  - Files: `src/utils/markdown.ts`, `src/utils/markdown.test.ts`
+- Added `/capture` CLI in `src/cli/capture.ts` with typed subcommands, `/capture list [type]`, `/capture inbox`, and untagged auto-classification via `ConfigRouter.route()`
+- Wired `/capture` into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`; added tests in `src/cli/capture.test.ts`
+- Updated Telegram typed capture flow:
+  - prefix parsing for `#research`, `#feature`, `#seed`, `#task`, `#content`, `#action` in `src/integrations/telegram/message-queue.ts`
+  - `capture_type:*` tagging + tests in `src/integrations/telegram/message-queue.test.ts`
+  - triage routing additions (`research`, `cortex_feature`, `project_seed`) and tag-based LLM skip in `src/agents/telegram-triage.ts`
+- Added store tests:
+  - `src/core/research-store.test.ts`
+  - `src/core/feature-store.test.ts`
+  - `src/core/idea-store.test.ts`
+- Included shared typed-capture contracts/prompts/scaffolding from handoff:
+  - `src/core/types/capture.ts`
+  - `src/agents/prompts/telegram-triage.md`
+  - `actions/research-queue.md`
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+- Validation:
+  - `node --import tsx --test src/core/research-store.test.ts src/core/feature-store.test.ts src/core/idea-store.test.ts src/utils/markdown.test.ts src/integrations/telegram/message-queue.test.ts src/cli/capture.test.ts` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+---
 ## 2026-02-10 codex -- complete Phase 5 routing/scheduling follow-up
 
 ### Implemented remaining Phase 5 backend pieces
@@ -1202,3 +1738,5 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run typecheck`
   - `npm run test:unit`
 - Branch `codex/telegram-bot` merged to `main` and deleted locally.
+
+
