@@ -1,5 +1,6 @@
 import { MarkdownTaskQueue } from "../../core/task-queue.js";
 import type { TaskPriority, TaskQueue } from "../../core/types/task-queue.js";
+import { CAPTURE_TAG_MAP, type CaptureType } from "../../core/types/capture.js";
 
 const DEFAULT_PRIORITY: TaskPriority = "p2";
 const MAX_TITLE_LENGTH = 160;
@@ -22,6 +23,7 @@ export interface TelegramQueuedTask {
 interface ParsedTelegramMessage {
   readonly content: string;
   readonly priority: TaskPriority;
+  readonly captureType?: CaptureType;
 }
 
 function normalizeWhitespace(value: string): string {
@@ -69,12 +71,30 @@ function parsePriorityPrefix(value: string): ParsedTelegramMessage {
   };
 }
 
+function parseCaptureTypePrefix(value: string): { content: string; captureType?: CaptureType } {
+  const match = value.match(/^(#\w+)\s*(.*)$/);
+  if (!match) return { content: value };
+  const token = match[1].toLowerCase();
+  const captureType = CAPTURE_TAG_MAP[token];
+  if (!captureType) return { content: value };
+  return {
+    captureType,
+    content: normalizeWhitespace(match[2] ?? ""),
+  };
+}
+
 export function parseTelegramQueueMessage(text: string): ParsedTelegramMessage {
   const normalized = normalizeWhitespace(removeLeadingMention(text));
   if (!normalized) {
     return { priority: DEFAULT_PRIORITY, content: "" };
   }
-  return parsePriorityPrefix(normalized);
+  const priorityParsed = parsePriorityPrefix(normalized);
+  const captureParsed = parseCaptureTypePrefix(priorityParsed.content);
+  return {
+    priority: priorityParsed.priority,
+    content: captureParsed.content,
+    captureType: captureParsed.captureType,
+  };
 }
 
 export async function enqueueTelegramMessage(
@@ -117,6 +137,7 @@ export async function enqueueTelegramMessage(
     tags: [
       "telegram",
       `chat:${chatId}`,
+      ...(parsed.captureType ? [`capture_type:${parsed.captureType}`] : []),
       ...(userId ? [`user:${userId}`] : []),
     ],
   });

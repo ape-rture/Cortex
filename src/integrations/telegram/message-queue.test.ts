@@ -20,6 +20,12 @@ test("parseTelegramQueueMessage parses priority prefixes", () => {
   assert.equal(p3.content, "trim backlog");
 });
 
+test("parseTelegramQueueMessage parses capture type prefixes", () => {
+  const parsed = parseTelegramQueueMessage("#research explore this benchmark");
+  assert.equal(parsed.captureType, "research");
+  assert.equal(parsed.content, "explore this benchmark");
+});
+
 test("enqueueTelegramMessage stores metadata for queueing", async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-telegram-queue-"));
   const queue = new MarkdownTaskQueue(path.join(tempDir, "queue.md"));
@@ -46,6 +52,26 @@ test("enqueueTelegramMessage stores metadata for queueing", async () => {
   assert.ok(all[0].tags?.includes("telegram"));
   assert.ok(all[0].tags?.includes("chat:-1001234567890"));
   assert.ok(all[0].tags?.includes("user:99"));
+});
+
+test("enqueueTelegramMessage stores capture type tag when prefixed", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "cortex-telegram-queue-"));
+  const queue = new MarkdownTaskQueue(path.join(tempDir, "queue.md"));
+
+  await enqueueTelegramMessage(
+    {
+      chatId: "-1001234567890",
+      messageId: 2222,
+      userId: 55,
+      text: "#feature add typed capture dashboard cards",
+    },
+    queue,
+  );
+
+  const all = await queue.list();
+  assert.equal(all.length, 1);
+  assert.ok(all[0].tags?.includes("capture_type:cortex_feature"));
+  assert.equal(all[0].title, "add typed capture dashboard cards");
 });
 
 test("enqueueTelegramMessage deduplicates repeated delivery", async () => {

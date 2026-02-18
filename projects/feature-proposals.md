@@ -1,6 +1,13 @@
 # Feature Proposals
 
-Capture proposed automation and system improvements.
+Ideas and proposals for improving Cortex — new agents, commands, integrations, capabilities.
 
-| Date | Proposal | Rationale | Effort | Priority | Status |
-|---|---|---|---|---|---|
+## Proposed
+
+## Planned
+
+## Assigned
+
+## Done
+
+## Rejected

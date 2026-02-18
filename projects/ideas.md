@@ -1,7 +1,13 @@
 # Ideas Backlog
 
-Capture lightweight ideas with minimal friction.
+Potential new projects, tools, and things to build. Not tied to any existing project yet.
 
-## Ideas
+## Seed
 
-- [date] [category]: [idea] (tags: [optional])
+## Evaluating
+
+## Accepted
+
+## Parked
+
+## Rejected

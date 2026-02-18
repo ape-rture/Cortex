@@ -12,6 +12,12 @@ import {
   serializeContentSeeds,
   parseProjects,
   serializeProjects,
+  parseResearchQueue,
+  serializeResearchQueue,
+  parseFeatureProposals,
+  serializeFeatureProposals,
+  parseProjectSeeds,
+  serializeProjectSeeds,
 } from "./markdown.js";
 
 test("parseTaskQueue extracts tasks and metadata", () => {
@@ -190,6 +196,76 @@ test("serializeContentSeeds renders both sections", () => {
   assert.ok(markdown.includes("## Unprocessed"));
   assert.ok(markdown.includes("## Promoted"));
   assert.ok(markdown.includes("seed-2"));
+});
+
+test("parseResearchQueue and serializeResearchQueue roundtrip", () => {
+  const markdown = serializeResearchQueue([
+    {
+      id: "research-001",
+      title: "Investigate parser edge case",
+      description: "Look at multiline title handling",
+      sourceUrl: "https://example.com/parser",
+      sourceRef: "telegram:-100:20",
+      tags: ["capture_type:research", "parser"],
+      status: "captured",
+      capturedAt: "2026-02-18T10:00:00Z",
+      updatedAt: "2026-02-18T10:00:00Z",
+      source: "telegram",
+      result: undefined,
+    },
+  ]);
+
+  const parsed = parseResearchQueue(markdown);
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].id, "research-001");
+  assert.equal(parsed[0].status, "captured");
+  assert.equal(parsed[0].source, "telegram");
+  assert.equal(parsed[0].sourceUrl, "https://example.com/parser");
+});
+
+test("parseFeatureProposals and serializeFeatureProposals roundtrip", () => {
+  const markdown = serializeFeatureProposals([
+    {
+      id: "feature-001",
+      title: "Typed capture dashboard",
+      description: "Group by capture type",
+      rationale: "Faster triage",
+      status: "assigned",
+      assignedTo: "codex",
+      capturedAt: "2026-02-18T11:00:00Z",
+      updatedAt: "2026-02-18T11:00:00Z",
+      source: "cli",
+    },
+  ]);
+
+  const parsed = parseFeatureProposals(markdown);
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].id, "feature-001");
+  assert.equal(parsed[0].status, "assigned");
+  assert.equal(parsed[0].assignedTo, "codex");
+});
+
+test("parseProjectSeeds and serializeProjectSeeds roundtrip", () => {
+  const markdown = serializeProjectSeeds([
+    {
+      id: "seed-001",
+      title: "Standalone contact intelligence API",
+      description: "Spin out CRM enrichment service",
+      category: "open-source",
+      status: "evaluating",
+      tags: ["shareable", "api"],
+      capturedAt: "2026-02-18T12:00:00Z",
+      updatedAt: "2026-02-18T12:00:00Z",
+      source: "telegram",
+    },
+  ]);
+
+  const parsed = parseProjectSeeds(markdown);
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].id, "seed-001");
+  assert.equal(parsed[0].status, "evaluating");
+  assert.equal(parsed[0].category, "open-source");
+  assert.deepEqual(parsed[0].tags, ["shareable", "api"]);
 });
 
 test("parseProjects extracts rows from project registry table", () => {

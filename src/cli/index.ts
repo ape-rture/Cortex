@@ -2,6 +2,7 @@
 export * from "./digest.js";
 export * from "./prep.js";
 export * from "./content.js";
+export * from "./capture.js";
 export * from "./mail.js";
 export * from "./scrape.js";
 export * from "./project.js";

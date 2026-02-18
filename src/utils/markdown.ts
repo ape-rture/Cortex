@@ -22,6 +22,15 @@ import type {
   SeedSource,
 } from "../core/types/content.js";
 import type { Project, ProjectStatus } from "../core/types/project.js";
+import type {
+  CaptureSource,
+  FeatureProposal,
+  FeatureStatus,
+  ProjectSeed,
+  ResearchItem,
+  ResearchStatus,
+  SeedStatus,
+} from "../core/types/capture.js";
 
 const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "failed", "cancelled"] as const;
 type MutableTask = { -readonly [K in keyof Task]: Task[K] };
@@ -32,6 +41,9 @@ type MutableContentSeed = { -readonly [K in keyof ContentSeed]: ContentSeed[K] }
 type MutableContentDraft = { -readonly [K in keyof ContentDraft]: ContentDraft[K] };
 type MutableDraftRevision = { -readonly [K in keyof DraftRevision]: DraftRevision[K] };
 type MutableProject = { -readonly [K in keyof Project]: Project[K] };
+type MutableResearchItem = { -readonly [K in keyof ResearchItem]: ResearchItem[K] };
+type MutableFeatureProposal = { -readonly [K in keyof FeatureProposal]: FeatureProposal[K] };
+type MutableProjectSeed = { -readonly [K in keyof ProjectSeed]: ProjectSeed[K] };
 
 function normalizeLine(line: string): string {
   return line.trim();
@@ -70,6 +82,13 @@ function parseSource(value: string | undefined): TaskSource {
   return "cli";
 }
 
+function parseCaptureSource(value: string | undefined): CaptureSource {
+  if (!value) return "cli";
+  const v = value.toLowerCase();
+  if (v === "cli" || v === "slack" || v === "telegram" || v === "agent" || v === "web") return v as CaptureSource;
+  return "cli";
+}
+
 function extractTitleAndAssignee(line: string): { title: string; assignedTo?: string } {
   // Example formats:
   // - [ ] **Title**
@@ -92,6 +111,24 @@ function extractTitleAndAssignee(line: string): { title: string; assignedTo?: st
   return { title: line.trim() };
 }
 
+function extractChecklistTitle(line: string): { checked: boolean; title: string } | undefined {
+  const match = line.match(/^[-*]\s+\[([ xX])\]\s+\*\*(.+?)\*\*(?::\s*(.+))?$/);
+  if (match) {
+    const title = (match[3] ?? match[2]).trim();
+    return {
+      checked: match[1].toLowerCase() === "x",
+      title,
+    };
+  }
+
+  const plainMatch = line.match(/^[-*]\s+\[([ xX])\]\s+(.+)$/);
+  if (!plainMatch) return undefined;
+  return {
+    checked: plainMatch[1].toLowerCase() === "x",
+    title: plainMatch[2].trim(),
+  };
+}
+
 function generateId(title: string, index: number): string {
   const slug = title
     .toLowerCase()
@@ -106,6 +143,63 @@ function splitList(value: string): string[] {
     .split(/[,;]/)
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+}
+
+function parseResearchStatus(value: string | undefined): ResearchStatus {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "captured":
+    case "researching":
+    case "done":
+    case "archived":
+      return normalized;
+    default:
+      return "captured";
+  }
+}
+
+function parseFeatureStatus(value: string | undefined): FeatureStatus {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "proposed":
+    case "planned":
+    case "assigned":
+    case "done":
+    case "rejected":
+      return normalized;
+    default:
+      return "proposed";
+  }
+}
+
+function parseSeedStatus(value: string | undefined): SeedStatus {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "seed":
+    case "evaluating":
+    case "accepted":
+    case "parked":
+    case "rejected":
+      return normalized;
+    default:
+      return "seed";
+  }
+}
+
+function parseCaptureStatusFromSection(
+  section: string | undefined,
+  fallback: "research" | "feature" | "seed",
+): ResearchStatus | FeatureStatus | SeedStatus {
+  if (!section) {
+    if (fallback === "research") return "captured";
+    if (fallback === "feature") return "proposed";
+    return "seed";
+  }
+
+  const normalized = section.trim().toLowerCase();
+  if (fallback === "research") return parseResearchStatus(normalized);
+  if (fallback === "feature") return parseFeatureStatus(normalized);
+  return parseSeedStatus(normalized);
 }
 
 export async function readMarkdownFile(filePath: string): Promise<string> {
@@ -695,6 +789,467 @@ export function serializeProjects(projects: readonly Project[]): string {
     lines.push(
       `| ${escapeTableCell(project.id)} | ${escapeTableCell(project.name)} | ${escapeTableCell(project.path)} | ${escapeTableCell(project.gitRemote ?? "-")} | ${project.status} | ${escapeTableCell(project.techStack.join(","))} | ${escapeTableCell(project.lastActivity ?? "")} | ${escapeTableCell(project.notes ?? "")} |`,
     );
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+export function parseResearchQueue(content: string): ResearchItem[] {
+  const lines = content.split(/\r?\n/);
+  const items: MutableResearchItem[] = [];
+  let section: string | undefined;
+  let current: MutableResearchItem | undefined;
+  let index = 0;
+
+  const flush = () => {
+    if (!current) return;
+    items.push(current);
+    current = undefined;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const headerMatch = line.match(/^##\s+(.+)$/);
+    if (headerMatch) {
+      flush();
+      section = headerMatch[1];
+      continue;
+    }
+
+    const checklist = extractChecklistTitle(line);
+    if (checklist) {
+      flush();
+      const defaultStatus = parseCaptureStatusFromSection(section, "research") as ResearchStatus;
+      const now = nowIso();
+      current = {
+        id: `research-item-${index + 1}`,
+        title: checklist.title,
+        description: undefined,
+        sourceUrl: undefined,
+        sourceRef: undefined,
+        tags: undefined,
+        status: checklist.checked ? "done" : defaultStatus,
+        capturedAt: now,
+        updatedAt: now,
+        source: "cli",
+        result: undefined,
+      };
+      index += 1;
+      continue;
+    }
+
+    if (!current) continue;
+    const kv = parseKeyValue(line);
+    if (!kv) continue;
+
+    switch (kv.key) {
+      case "id":
+        current.id = kv.value || current.id;
+        break;
+      case "status":
+        current.status = parseResearchStatus(kv.value);
+        break;
+      case "captured":
+      case "captured at":
+      case "added":
+        current.capturedAt = kv.value || current.capturedAt;
+        break;
+      case "updated":
+      case "updated at":
+        current.updatedAt = kv.value || current.updatedAt;
+        break;
+      case "source":
+        current.source = parseCaptureSource(kv.value);
+        break;
+      case "description":
+        current.description = kv.value || undefined;
+        break;
+      case "url":
+      case "source url":
+        current.sourceUrl = kv.value || undefined;
+        break;
+      case "source ref":
+        current.sourceRef = kv.value || undefined;
+        break;
+      case "tags":
+        current.tags = splitList(kv.value);
+        break;
+      case "result":
+        current.result = kv.value || undefined;
+        break;
+      default:
+        break;
+    }
+  }
+
+  flush();
+  return items;
+}
+
+export function serializeResearchQueue(items: readonly ResearchItem[]): string {
+  const groups: Record<ResearchStatus, ResearchItem[]> = {
+    captured: [],
+    researching: [],
+    done: [],
+    archived: [],
+  };
+
+  for (const item of items) {
+    groups[item.status]?.push(item);
+  }
+
+  const renderItem = (item: ResearchItem): string[] => {
+    const lines: string[] = [];
+    const checked = item.status === "done" || item.status === "archived" ? "x" : " ";
+    lines.push(`- [${checked}] **${item.title}**`);
+    lines.push(`  - ID: ${item.id}`);
+    lines.push(`  - Status: ${item.status}`);
+    lines.push(`  - Captured: ${item.capturedAt}`);
+    lines.push(`  - Updated: ${item.updatedAt}`);
+    lines.push(`  - Source: ${item.source}`);
+    if (item.description) lines.push(`  - Description: ${item.description.replace(/\s+/g, " ").trim()}`);
+    if (item.sourceUrl) lines.push(`  - URL: ${item.sourceUrl}`);
+    if (item.sourceRef) lines.push(`  - Source Ref: ${item.sourceRef}`);
+    if (item.tags && item.tags.length > 0) lines.push(`  - Tags: ${item.tags.join(", ")}`);
+    if (item.result) lines.push(`  - Result: ${item.result.replace(/\s+/g, " ").trim()}`);
+    return lines;
+  };
+
+  const lines: string[] = [];
+  lines.push("# Research Queue");
+  lines.push("");
+  lines.push("Things to investigate further - concepts, tools, articles, tweets, references.");
+  lines.push("");
+  lines.push("## Captured");
+  lines.push("");
+  for (const item of groups.captured) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Researching");
+  lines.push("");
+  for (const item of groups.researching) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Done");
+  lines.push("");
+  for (const item of groups.done) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Archived");
+  lines.push("");
+  for (const item of groups.archived) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+export function parseFeatureProposals(content: string): FeatureProposal[] {
+  const lines = content.split(/\r?\n/);
+  const proposals: MutableFeatureProposal[] = [];
+  let section: string | undefined;
+  let current: MutableFeatureProposal | undefined;
+  let index = 0;
+
+  const flush = () => {
+    if (!current) return;
+    proposals.push(current);
+    current = undefined;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const headerMatch = line.match(/^##\s+(.+)$/);
+    if (headerMatch) {
+      flush();
+      section = headerMatch[1];
+      continue;
+    }
+
+    const checklist = extractChecklistTitle(line);
+    if (checklist) {
+      flush();
+      const defaultStatus = parseCaptureStatusFromSection(section, "feature") as FeatureStatus;
+      const now = nowIso();
+      current = {
+        id: `feature-item-${index + 1}`,
+        title: checklist.title,
+        description: undefined,
+        rationale: undefined,
+        status: checklist.checked ? "done" : defaultStatus,
+        assignedTo: undefined,
+        capturedAt: now,
+        updatedAt: now,
+        source: "cli",
+      };
+      index += 1;
+      continue;
+    }
+
+    if (!current) continue;
+    const kv = parseKeyValue(line);
+    if (!kv) continue;
+
+    switch (kv.key) {
+      case "id":
+        current.id = kv.value || current.id;
+        break;
+      case "status":
+        current.status = parseFeatureStatus(kv.value);
+        break;
+      case "captured":
+      case "captured at":
+      case "added":
+        current.capturedAt = kv.value || current.capturedAt;
+        break;
+      case "updated":
+      case "updated at":
+        current.updatedAt = kv.value || current.updatedAt;
+        break;
+      case "source":
+        current.source = parseCaptureSource(kv.value);
+        break;
+      case "description":
+        current.description = kv.value || undefined;
+        break;
+      case "rationale":
+        current.rationale = kv.value || undefined;
+        break;
+      case "assigned":
+      case "assigned to":
+        current.assignedTo = kv.value || undefined;
+        break;
+      default:
+        break;
+    }
+  }
+
+  flush();
+  return proposals;
+}
+
+export function serializeFeatureProposals(items: readonly FeatureProposal[]): string {
+  const groups: Record<FeatureStatus, FeatureProposal[]> = {
+    proposed: [],
+    planned: [],
+    assigned: [],
+    done: [],
+    rejected: [],
+  };
+
+  for (const item of items) {
+    groups[item.status]?.push(item);
+  }
+
+  const renderItem = (item: FeatureProposal): string[] => {
+    const lines: string[] = [];
+    const checked = item.status === "done" || item.status === "rejected" ? "x" : " ";
+    lines.push(`- [${checked}] **${item.title}**`);
+    lines.push(`  - ID: ${item.id}`);
+    lines.push(`  - Status: ${item.status}`);
+    lines.push(`  - Captured: ${item.capturedAt}`);
+    lines.push(`  - Updated: ${item.updatedAt}`);
+    lines.push(`  - Source: ${item.source}`);
+    if (item.description) lines.push(`  - Description: ${item.description.replace(/\s+/g, " ").trim()}`);
+    if (item.rationale) lines.push(`  - Rationale: ${item.rationale.replace(/\s+/g, " ").trim()}`);
+    if (item.assignedTo) lines.push(`  - Assigned: ${item.assignedTo}`);
+    return lines;
+  };
+
+  const lines: string[] = [];
+  lines.push("# Feature Proposals");
+  lines.push("");
+  lines.push("Ideas and proposals for improving Cortex - new agents, commands, integrations, capabilities.");
+  lines.push("");
+  lines.push("## Proposed");
+  lines.push("");
+  for (const item of groups.proposed) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Planned");
+  lines.push("");
+  for (const item of groups.planned) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Assigned");
+  lines.push("");
+  for (const item of groups.assigned) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Done");
+  lines.push("");
+  for (const item of groups.done) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Rejected");
+  lines.push("");
+  for (const item of groups.rejected) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+
+  return lines.join("\n").trimEnd() + "\n";
+}
+
+export function parseProjectSeeds(content: string): ProjectSeed[] {
+  const lines = content.split(/\r?\n/);
+  const seeds: MutableProjectSeed[] = [];
+  let section: string | undefined;
+  let current: MutableProjectSeed | undefined;
+  let index = 0;
+
+  const flush = () => {
+    if (!current) return;
+    seeds.push(current);
+    current = undefined;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const headerMatch = line.match(/^##\s+(.+)$/);
+    if (headerMatch) {
+      flush();
+      section = headerMatch[1];
+      continue;
+    }
+
+    const checklist = extractChecklistTitle(line);
+    if (checklist) {
+      flush();
+      const defaultStatus = parseCaptureStatusFromSection(section, "seed") as SeedStatus;
+      const now = nowIso();
+      current = {
+        id: `seed-item-${index + 1}`,
+        title: checklist.title,
+        description: undefined,
+        category: undefined,
+        status: checklist.checked ? "accepted" : defaultStatus,
+        tags: undefined,
+        capturedAt: now,
+        updatedAt: now,
+        source: "cli",
+      };
+      index += 1;
+      continue;
+    }
+
+    if (!current) continue;
+    const kv = parseKeyValue(line);
+    if (!kv) continue;
+
+    switch (kv.key) {
+      case "id":
+        current.id = kv.value || current.id;
+        break;
+      case "status":
+        current.status = parseSeedStatus(kv.value);
+        break;
+      case "captured":
+      case "captured at":
+      case "added":
+        current.capturedAt = kv.value || current.capturedAt;
+        break;
+      case "updated":
+      case "updated at":
+        current.updatedAt = kv.value || current.updatedAt;
+        break;
+      case "source":
+        current.source = parseCaptureSource(kv.value);
+        break;
+      case "description":
+        current.description = kv.value || undefined;
+        break;
+      case "category":
+        current.category = kv.value || undefined;
+        break;
+      case "tags":
+        current.tags = splitList(kv.value);
+        break;
+      default:
+        break;
+    }
+  }
+
+  flush();
+  return seeds;
+}
+
+export function serializeProjectSeeds(items: readonly ProjectSeed[]): string {
+  const groups: Record<SeedStatus, ProjectSeed[]> = {
+    seed: [],
+    evaluating: [],
+    accepted: [],
+    parked: [],
+    rejected: [],
+  };
+
+  for (const item of items) {
+    groups[item.status]?.push(item);
+  }
+
+  const renderItem = (item: ProjectSeed): string[] => {
+    const lines: string[] = [];
+    const checked = item.status === "accepted" || item.status === "rejected" ? "x" : " ";
+    lines.push(`- [${checked}] **${item.title}**`);
+    lines.push(`  - ID: ${item.id}`);
+    lines.push(`  - Status: ${item.status}`);
+    lines.push(`  - Captured: ${item.capturedAt}`);
+    lines.push(`  - Updated: ${item.updatedAt}`);
+    lines.push(`  - Source: ${item.source}`);
+    if (item.description) lines.push(`  - Description: ${item.description.replace(/\s+/g, " ").trim()}`);
+    if (item.category) lines.push(`  - Category: ${item.category}`);
+    if (item.tags && item.tags.length > 0) lines.push(`  - Tags: ${item.tags.join(", ")}`);
+    return lines;
+  };
+
+  const lines: string[] = [];
+  lines.push("# Ideas Backlog");
+  lines.push("");
+  lines.push("Potential new projects, tools, and things to build. Not tied to any existing project yet.");
+  lines.push("");
+  lines.push("## Seed");
+  lines.push("");
+  for (const item of groups.seed) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Evaluating");
+  lines.push("");
+  for (const item of groups.evaluating) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Accepted");
+  lines.push("");
+  for (const item of groups.accepted) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Parked");
+  lines.push("");
+  for (const item of groups.parked) {
+    lines.push(...renderItem(item));
+    lines.push("");
+  }
+  lines.push("## Rejected");
+  lines.push("");
+  for (const item of groups.rejected) {
+    lines.push(...renderItem(item));
+    lines.push("");
   }
 
   return lines.join("\n").trimEnd() + "\n";

@@ -157,6 +157,22 @@ export {
 } from "./content.js";
 
 export type {
+  CaptureType,
+  CaptureSource,
+  ResearchStatus,
+  ResearchItem,
+  ResearchStore,
+  FeatureStatus,
+  FeatureProposal,
+  FeatureStore,
+  SeedStatus,
+  ProjectSeed,
+  IdeaStore,
+} from "./capture.js";
+
+export { CAPTURE_TAG_MAP } from "./capture.js";
+
+export type {
   PageResult,
   PageLink,
   FetchTier,
