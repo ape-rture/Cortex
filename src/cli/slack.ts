@@ -27,6 +27,7 @@ import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
 import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
+import { telegramTriageAgent } from "../agents/telegram-triage.js";
 import { createSlackApp, readSlackConfig } from "../integrations/slack/client.js";
 import { formatForSlack, formatProgressUpdate } from "../integrations/slack/formatter.js";
 import { enqueueSlackMessage } from "../integrations/slack/message-queue.js";
@@ -42,6 +43,7 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
   orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
   orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
+  orchestrator.runner.registerLocal("telegram-triage", telegramTriageAgent);
 }
 
 // ---------------------------------------------------------------------------

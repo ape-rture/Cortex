@@ -12,6 +12,8 @@ import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
 import { TerminalSessionManager } from "./terminal/terminal-session-manager.js";
 import { createTerminalWsServer } from "./terminal/ws-server.js";
+import { telegramTriageAgent } from "../agents/telegram-triage.js";
+import { runTelegramBot } from "../cli/telegram.js";
 
 async function loadSystemPrompt(): Promise<string> {
   const filePath = path.resolve("SYSTEM.md");
@@ -26,6 +28,7 @@ function createUiOrchestrator(configPath: string): CortexOrchestrator {
   orchestrator.runner.registerLocal("project-heartbeat", projectHeartbeatAgent);
   orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
   orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
+  orchestrator.runner.registerLocal("telegram-triage", telegramTriageAgent);
   return orchestrator;
 }
 
@@ -45,6 +48,25 @@ async function start(): Promise<void> {
   const httpServer = serve({ fetch: app.fetch, port });
   createTerminalWsServer(httpServer, terminalSessionManager);
   console.log(`Cortex UI listening on http://localhost:${port}`);
+
+  // Start Telegram bot alongside UI (retry on 409 conflict from stale connections)
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    const startTelegram = async (attempt = 1): Promise<void> => {
+      try {
+        await runTelegramBot();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("409") && attempt <= 3) {
+          const delay = attempt * 10;
+          console.log(`[telegram] Conflict (stale connection), retrying in ${delay}s... (${attempt}/3)`);
+          await new Promise((r) => setTimeout(r, delay * 1000));
+          return startTelegram(attempt + 1);
+        }
+        console.error("[telegram] Bot failed:", msg);
+      }
+    };
+    startTelegram();
+  }
 
   process.on("SIGINT", async () => {
     await terminalSessionManager.dispose();

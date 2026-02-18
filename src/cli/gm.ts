@@ -24,6 +24,32 @@ function summarizeTasks(queueMarkdown: string): string {
   return lines.join("\n");
 }
 
+function summarizeTelegramInbox(queueMarkdown: string): string {
+  const tasks = parseTaskQueue(queueMarkdown);
+  const telegramTasks = tasks.filter((t) => t.source === "telegram");
+  if (telegramTasks.length === 0) return "(no captured messages)";
+
+  const pending = telegramTasks.filter((t) => t.status === "queued");
+  const needsReview = telegramTasks.filter((t) => t.status === "blocked");
+  const routed = telegramTasks.filter((t) => t.status === "done" && t.result?.startsWith("\u2192"));
+
+  const sections: string[] = [];
+
+  if (pending.length > 0) {
+    sections.push(`**Pending** (${pending.length}):\n${pending.map((t) => `- ${t.title}`).join("\n")}`);
+  }
+  if (needsReview.length > 0) {
+    sections.push(`**Needs review** (${needsReview.length}):\n${needsReview.map((t) => `- ${t.title}`).join("\n")}`);
+  }
+  if (routed.length > 0) {
+    const recent = routed.slice(-5);
+    sections.push(`**Recently routed** (${routed.length}):\n${recent.map((t) => `- ${t.title} ${t.result}`).join("\n")}`);
+  }
+
+  if (sections.length === 0) return "(no captured messages)";
+  return sections.join("\n\n");
+}
+
 function summarizeEvents(events: { summary: string; start: string; end: string }[]): string {
   if (events.length === 0) return "(no events today)";
   return events
@@ -310,6 +336,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push("# Morning Briefing");
   output.push("");
   output.push(formatSection("Weekly Focus", weeklyFocus));
+  output.push(formatSection("Telegram Inbox", summarizeTelegramInbox(queueContent)));
   output.push(formatSection("Pending Actions", pendingActions));
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));

@@ -11,6 +11,7 @@ import { codeWatcherAgent } from "../agents/code-watcher.js";
 import { projectHeartbeatAgent } from "../agents/project-heartbeat.js";
 import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
+import { telegramTriageAgent } from "../agents/telegram-triage.js";
 
 const DEFAULT_CONFIG_PATH = "context/orchestrator.json";
 const DAILY_DIR = "daily";
@@ -23,6 +24,7 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("project-heartbeat", projectHeartbeatAgent);
   orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
   orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
+  orchestrator.runner.registerLocal("telegram-triage", telegramTriageAgent);
 }
 
 interface RunDaemonOptions {

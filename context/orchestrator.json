@@ -175,17 +175,34 @@
       },
       "execution_type": "local_script",
       "model": "anthropic:haiku"
+    },
+    "telegram-triage": {
+      "agent": "telegram-triage",
+      "prompt_path": "src/agents/prompts/telegram-triage.md",
+      "permissions": {
+        "agent": "telegram-triage",
+        "can_read": ["actions/queue.md", "projects/content-ideas.md", "actions/pending.md", ".cortex/tasks.md"],
+        "can_write": ["actions/queue.md", "projects/content-ideas.md", "actions/pending.md", ".cortex/tasks.md"],
+        "can_call_apis": [],
+        "can_send_messages": false,
+        "requires_human_approval": [],
+        "max_tokens": 4096,
+        "model": "anthropic:haiku",
+        "timeout_ms": 120000
+      },
+      "execution_type": "local_script",
+      "model": "anthropic:haiku"
     }
   },
   "triggers": [
     {
       "type": "cli",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "telegram-triage"]
     },
     {
       "type": "cli",
       "schedule": "quick",
-      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat"]
+      "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "telegram-triage"]
     },
     {
       "type": "cli",
@@ -196,6 +213,11 @@
       "type": "cli",
       "schedule": "deep",
       "agents": ["sales-watcher", "content-scanner", "code-watcher", "project-heartbeat", "project-analyst", "smart-sales-watcher", "triage-agent", "fact-extractor", "memory-synthesizer"]
+    },
+    {
+      "type": "cron",
+      "schedule": "*/15 * * * *",
+      "agents": ["telegram-triage"]
     },
     {
       "type": "cron",

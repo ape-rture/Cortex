@@ -25,6 +25,7 @@ import { contentScannerAgent } from "../agents/content-scanner.js";
 import { codeWatcherAgent } from "../agents/code-watcher.js";
 import { factExtractorAgent } from "../agents/fact-extractor.js";
 import { memorySynthesizerAgent } from "../agents/memory-synthesizer.js";
+import { telegramTriageAgent } from "../agents/telegram-triage.js";
 import { createTelegramBot, isAllowedUser, readTelegramConfig } from "../integrations/telegram/client.js";
 import { formatForTelegram, trimTelegramMessage } from "../integrations/telegram/formatter.js";
 import { enqueueTelegramMessage } from "../integrations/telegram/message-queue.js";
@@ -36,6 +37,7 @@ function registerDefaultAgents(orchestrator: CortexOrchestrator): void {
   orchestrator.runner.registerLocal("code-watcher", codeWatcherAgent);
   orchestrator.runner.registerLocal("fact-extractor", factExtractorAgent);
   orchestrator.runner.registerLocal("memory-synthesizer", memorySynthesizerAgent);
+  orchestrator.runner.registerLocal("telegram-triage", telegramTriageAgent);
 }
 
 function createThrottle(intervalMs: number): (fn: () => Promise<void>) => void {
@@ -215,10 +217,25 @@ export async function runTelegramBot(): Promise<void> {
         return;
       }
 
+      // Clean up speech-to-text errors before queuing
+      let cleanedText = text;
+      try {
+        const sttResult = await router.route({
+          task_type: "quick_capture",
+          prompt: `Fix obvious speech-to-text errors in this message. Only correct clear mistranscriptions, don't rephrase or add punctuation. Return ONLY the corrected text, nothing else.\n\n${text}`,
+        });
+        const corrected = sttResult.content.trim();
+        if (corrected && corrected.length > 0) {
+          cleanedText = corrected;
+        }
+      } catch {
+        // STT cleanup failed, use original text
+      }
+
       const queued = await enqueueTelegramMessage({
         chatId: ctx.chat.id,
         messageId: ctx.message.message_id,
-        text,
+        text: cleanedText,
         userId: ctx.from?.id,
       });
 
