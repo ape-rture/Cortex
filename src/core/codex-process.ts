@@ -56,6 +56,30 @@ function parseJsonLine(line: string): CodexJsonlEvent | null {
   }
 }
 
+function readStringField(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  return typeof value === "string" ? value : null;
+}
+
+function extractAgentMessage(event: CodexJsonlEvent): string | null {
+  const eventType = readStringField(event, "type");
+  if (eventType === "item.completed") {
+    const item = event.item;
+    if (!item || typeof item !== "object") return null;
+    const itemRecord = item as Record<string, unknown>;
+    const itemType = readStringField(itemRecord, "type");
+    if (itemType === "agent_message") {
+      return readStringField(itemRecord, "text");
+    }
+  }
+
+  if (eventType === "agent_message") {
+    return readStringField(event, "text");
+  }
+
+  return null;
+}
+
 async function waitForExit(child: ChildProcessWithoutNullStreams): Promise<ProcessExit> {
   return await new Promise<ProcessExit>((resolve, reject) => {
     child.once("error", reject);
@@ -108,11 +132,16 @@ export async function executeCodexCliAgent(
   });
 
   const events: CodexJsonlEvent[] = [];
+  let lastMessageFromEvents = "";
   const stdout = createInterface({ input: child.stdout });
   stdout.on("line", (line) => {
     const parsed = parseJsonLine(line);
     if (!parsed) return;
     events.push(parsed);
+    const message = extractAgentMessage(parsed);
+    if (message) {
+      lastMessageFromEvents = message.trim();
+    }
     if (onEvent) onEvent(parsed);
   });
 
@@ -125,11 +154,12 @@ export async function executeCodexCliAgent(
   try {
     child.stdin.end(config.prompt);
     const exit = await waitForExit(child);
-    const lastMessage = await readFileImpl(outputPath, "utf8").catch(() => "");
+    const lastMessageFromFile = await readFileImpl(outputPath, "utf8").catch(() => "");
+    const lastMessage = lastMessageFromFile.trim() || lastMessageFromEvents;
 
     return {
       exitCode: timedOut ? -1 : (exit.code ?? 1),
-      lastMessage: lastMessage.trim(),
+      lastMessage,
       events,
       durationMs: Date.now() - start,
     };
