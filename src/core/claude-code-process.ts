@@ -227,7 +227,7 @@ function tryParseJson(text: string): unknown {
  */
 export async function executeClaudeCodeAgent(
   config: AgentSpawnConfig,
-  context: { cycle_id: string; trigger: Trigger; basePath: string },
+  context: { cycle_id: string; trigger: Trigger; basePath: string; task_prompt?: string },
   deps: ClaudeCodeProcessDeps = {},
 ): Promise<AgentOutput> {
   const readFileImpl: ReadFileFunction =
@@ -246,15 +246,17 @@ export async function executeClaudeCodeAgent(
   }
 
   // Build task prompt
-  const taskPrompt = [
-    `TASK: Run analysis as the "${config.agent}" agent.`,
-    "",
-    `Cycle ID: ${context.cycle_id}`,
-    `Trigger: ${context.trigger.type}${context.trigger.schedule ? ` (${context.trigger.schedule})` : ""}`,
-    "",
-    "Follow your system prompt instructions step by step.",
-    "Read the relevant files, analyze them, and produce your findings.",
-  ].join("\n");
+  const taskPrompt = context.task_prompt?.trim().length
+    ? context.task_prompt
+    : [
+      `TASK: Run analysis as the "${config.agent}" agent.`,
+      "",
+      `Cycle ID: ${context.cycle_id}`,
+      `Trigger: ${context.trigger.type}${context.trigger.schedule ? ` (${context.trigger.schedule})` : ""}`,
+      "",
+      "Follow your system prompt instructions step by step.",
+      "Read the relevant files, analyze them, and produce your findings.",
+    ].join("\n");
 
   // Resolve model
   const model = resolveModel(config.model);
