@@ -41,6 +41,40 @@ export function createTerminalWsServer(
       attachedSessionId = null;
     }
 
+    function attachSession(sessionId: string): boolean {
+      if (attachedSessionId === sessionId) {
+        return true;
+      }
+
+      detach();
+
+      const session = sessionManager.get(sessionId);
+      if (!session) {
+        sendJson(ws, { type: "error", message: `Session ${sessionId} not found` });
+        return false;
+      }
+
+      attachedSessionId = sessionId;
+
+      // Send existing scrollback
+      const scrollback = sessionManager.getScrollback(sessionId);
+      if (scrollback) {
+        sendJson(ws, { type: "scrollback", sessionId, data: scrollback });
+      }
+
+      // Stream live output
+      unsubData = sessionManager.onData(sessionId, (data) => {
+        sendJson(ws, { type: "output", sessionId, data });
+      });
+
+      // Notify on exit
+      unsubExit = sessionManager.onExit(sessionId, (exitCode) => {
+        sendJson(ws, { type: "session_ended", sessionId, exitCode });
+      });
+
+      return true;
+    }
+
     ws.on("message", (raw) => {
       let msg: WsClientMessage;
       try {
@@ -52,44 +86,22 @@ export function createTerminalWsServer(
 
       switch (msg.type) {
         case "attach": {
-          // Detach from previous session if any
-          detach();
-
-          const session = sessionManager.get(msg.sessionId);
-          if (!session) {
-            sendJson(ws, { type: "error", message: `Session ${msg.sessionId} not found` });
-            return;
-          }
-
-          attachedSessionId = msg.sessionId;
-
-          // Send existing scrollback
-          const scrollback = sessionManager.getScrollback(msg.sessionId);
-          if (scrollback) {
-            sendJson(ws, { type: "scrollback", sessionId: msg.sessionId, data: scrollback });
-          }
-
-          // Stream live output
-          unsubData = sessionManager.onData(msg.sessionId, (data) => {
-            sendJson(ws, { type: "output", sessionId: msg.sessionId, data });
-          });
-
-          // Notify on exit
-          unsubExit = sessionManager.onExit(msg.sessionId, (exitCode) => {
-            sendJson(ws, { type: "session_ended", sessionId: msg.sessionId, exitCode });
-          });
+          attachSession(msg.sessionId);
           break;
         }
 
         case "input": {
-          if (attachedSessionId && attachedSessionId === msg.sessionId) {
+          // If attach raced or was dropped during reconnect, recover by attaching
+          // lazily on first input.
+          if (attachSession(msg.sessionId)) {
             sessionManager.write(msg.sessionId, msg.data);
           }
           break;
         }
 
         case "resize": {
-          if (attachedSessionId && attachedSessionId === msg.sessionId) {
+          // Same recovery path as input to avoid dropping resize events.
+          if (attachSession(msg.sessionId)) {
             sessionManager.resize(msg.sessionId, msg.cols, msg.rows);
           }
           break;

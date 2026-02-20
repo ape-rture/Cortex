@@ -13,6 +13,7 @@
  *   npm run orchestrate -- --history                   # show in-memory cycle history
  */
 
+import "dotenv/config";
 import { promises as fs } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { CortexOrchestrator } from "../core/orchestrator.js";

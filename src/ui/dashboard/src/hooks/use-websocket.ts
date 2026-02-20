@@ -12,12 +12,22 @@ export function useWebSocket(
 ): UseWebSocketResult {
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const queuedMessagesRef = useRef<string[]>([]);
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
   const send = useCallback((msg: unknown) => {
+    const payload = JSON.stringify(msg);
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(msg));
+      wsRef.current.send(payload);
+      return;
+    }
+
+    // Queue outbound messages while disconnected so input isn't lost during
+    // reconnect windows.
+    queuedMessagesRef.current.push(payload);
+    if (queuedMessagesRef.current.length > 100) {
+      queuedMessagesRef.current.shift();
     }
   }, []);
 
@@ -38,6 +48,12 @@ export function useWebSocket(
       ws.onopen = () => {
         setConnected(true);
         retryDelay = 1000; // reset backoff
+        if (queuedMessagesRef.current.length > 0) {
+          for (const queued of queuedMessagesRef.current) {
+            ws.send(queued);
+          }
+          queuedMessagesRef.current = [];
+        }
       };
 
       ws.onmessage = (ev) => {
@@ -73,6 +89,7 @@ export function useWebSocket(
       wsRef.current?.close();
       wsRef.current = null;
       setConnected(false);
+      queuedMessagesRef.current = [];
     };
   }, [path, ...deps]);
 

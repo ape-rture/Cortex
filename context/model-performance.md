@@ -34,3 +34,5 @@ Track LLM performance by task type and provider.
 | 2026-02-09T19:59:42.581Z | meeting_summary | anthropic | claude-sonnet-4-20250514 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
 | 2026-02-09T19:59:42.601Z | meeting_summary | anthropic | claude-opus-4-1-20250805 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
 | 2026-02-16T10:02:53.620Z | content_drafting | anthropic | claude-sonnet-4-20250514 | 0 | 0 | 0 | no |  | Missing ANTHROPIC_API_KEY |
+| 2026-02-19T12:48:06.869Z | quick_capture | anthropic | claude-3-5-haiku-20241022 | 73 | 51 | 1917 | yes |  |  |
+| 2026-02-19T12:49:15.902Z | quick_capture | anthropic | claude-3-5-haiku-20241022 | 343 | 261 | 3228 | yes |  |  |

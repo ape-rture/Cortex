@@ -18,6 +18,44 @@
 
 ### Gmail Integration (Phase 6)
 
+### Typed Capture System (Phase 8)
+
+### FOCUS — Mail Enrichment
+
+- **Add more mail functionality and enrichment to Focus** -- Project: `focus-lead-gen` (`D:\Documenten\Programmeren\Python\Cryptocurrency\The Indexing Company\FOCUS - Lead gen system`)
+
+### Unified Capture Store (Phase 9)
+
+Unify all 5 capture stores into a single `MarkdownTaskQueue`. A capture is just a task with a `capture_type` field. Plan: `C:\Users\Dennis\.claude\plans\velvety-twirling-toast.md`
+
+- **Phase 1: Extend Task type and parser** -- Agent: codex -- Branch: `codex/unified-captures`. Add `CaptureType` + optional fields (`source_url`, `rationale`, `category`, `format`, `platform`) to Task interface in `src/core/types/task-queue.ts`. Extend `parseTaskQueue()`/`serializeTaskQueue()` in `src/utils/markdown.ts` for new fields. Delete 8 absorbed parse/serialize functions. Add `listByType()` to `MarkdownTaskQueue`. Trim `src/core/types/capture.ts` (remove `ResearchItem`, `FeatureProposal`, `ProjectSeed`). Delete `research-store.ts`, `feature-store.ts`, `idea-store.ts` + their tests. Update `task-queue.test.ts` and `markdown.test.ts`.
+
+- **Phase 2: Update routing** -- Agent: codex -- Same branch. Rewrite `src/cli/capture.ts` `routeCapture()` to always go through `taskQueue.add()` with `capture_type`. Simplify `src/agents/telegram-triage.ts` — remove multi-store routing, single path: classify then `queue.add()`. Update `src/integrations/telegram/message-queue.ts` to set `capture_type` field. Rewrite `src/cli/capture.test.ts`.
+
+- **Phase 3: Slim ContentStore** -- Agent: codex -- Same branch. Remove `loadIdeas()`/`saveIdeas()`/`addIdea()`/`updateIdeaStatus()`/`searchIdeas()`/`filterByStatus()`/`filterByPlatform()` from `src/core/content-store.ts`. Remove `ContentIdea` from `src/core/types/content.ts`. Update `src/cli/content.ts` idea commands to use TaskQueue. Update `src/cli/gm.ts` and `src/agents/content-scanner.ts`. Update `content-store.test.ts`.
+
+- **Phase 4: Simplify captures handler and UI** -- Agent: claude -- Branch: `claude/unified-captures-handler`. Rewrite `src/ui/handlers/captures.ts` from 5-store aggregation to single `taskQueue.list()` + map. Remove `CaptureStores` interface. Update `src/ui/index.ts` (remove 4 store instantiations). Update `src/ui/dashboard/src/views/captures.tsx` `STATUS_COLUMNS` to unified `TaskStatus` values.
+
+- **Phase 5: Cleanup** -- Agent: codex or claude. Delete empty data files (`actions/research-queue.md`, `projects/feature-proposals.md`, `projects/ideas.md`, `projects/content-ideas.md`). Run full test suite. Update `SYSTEM.md`.
+
+### Ralph Loop — Autonomous Dual-Agent Supervisor (Phase 10)
+
+Supervisor loop that reads `.cortex/tasks.md`, picks the next task, routes to Claude (SDK) or Codex (CLI), waits for completion, and loops until done. Plan: `C:\Users\Dennis\.claude\plans\pure-jumping-elephant.md`
+
+- **Codex CLI subprocess wrapper** -- Agent: codex -- Branch: `codex/ralph-codex-process`. Create `src/core/codex-process.ts` with `executeCodexCliAgent()`. Spawn `codex exec - --full-auto --json --ephemeral -C <dir>`, pipe prompt via stdin, parse JSONL events, capture final message. Tests in `src/core/codex-process.test.ts`.
+
+- **Enhanced task board parser** -- Agent: codex -- Branch: `codex/ralph-board-parser`. Extend `src/ui/handlers/tasks.ts` with `BoardTask` (group, branch, description, lineNumber), `ParsedBoard`, `parseFullBoard()`, `moveTaskOnBoard()`, `findTaskByTitle()`. Enhanced regex to capture branch names. Tests in `src/ui/handlers/tasks.test.ts`.
+
+- **Ralph agent prompts** -- Agent: claude -- Commit to main. Create `src/agents/prompts/ralph-claude-worker.md` and `src/agents/prompts/ralph-codex-worker.md`. System prompts for Claude/Codex when dispatched by Ralph — include coordination protocol (update active/log/tasks files), git workflow, completion criteria.
+
+- **Core Ralph loop** -- Agent: codex -- Branch: `codex/ralph-loop`. Create `src/core/ralph-loop.ts` with `RalphLoop` class. Read board, pick task, route agent, verify completion, stuck detection, abort handling. Depends on codex-process + board-parser + prompts. Tests in `src/core/ralph-loop.test.ts`.
+
+- **Ralph CLI entry point + wiring** -- Agent: claude -- Branch: `claude/ralph-cli`. Create `src/cli/ralph.ts` with arg parsing (--group, --agent, --task, --max-iterations, --dry-run), signal handling, console output. Wire into `package.json` and `src/cli/index.ts`.
+
+- **Forward-compat type extension** -- Agent: codex -- Commit to main. Add `"codex_cli"` to `execution_type` union in `src/core/types/orchestrator.ts`.
+
+*Completed (moved to Done).*
+
 ## In Progress
 
 *Agent moves task here when starting.*
@@ -25,6 +63,7 @@
 *No tasks currently in progress.*
 ## Done
 
+- **Typed Capture System (Phase 8)** -- Agent: codex -- Branch: `codex/typed-capture` (ready for merge). Implemented `MarkdownResearchStore`, `MarkdownFeatureStore`, and `MarkdownIdeaStore` with parse/serialize support in `src/utils/markdown.ts`; added tests in `src/core/research-store.test.ts`, `src/core/feature-store.test.ts`, `src/core/idea-store.test.ts`, plus parser tests in `src/utils/markdown.test.ts`. Added `/capture` command in `src/cli/capture.ts` (typed subcommands, `/capture list`, `/capture inbox`, auto-classification), wired into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`, with tests in `src/cli/capture.test.ts`. Updated Telegram capture typing in `src/integrations/telegram/message-queue.ts` and `src/integrations/telegram/message-queue.test.ts` for `#research/#feature/#seed/#task/#content/#action` tags. Updated `src/agents/telegram-triage.ts` to route `research`, `cortex_feature`, and `project_seed` directly to new stores and skip LLM classification when `capture_type:*` tag is present. Validation: targeted typed-capture tests passed and `npm run typecheck` passed; `npm run test:unit` still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`.
 - **Telegram Bot Integration (Phase 7)** -- Agent: codex -- Branch: `codex/telegram-bot` (merged to `main`). Added Telegram transport in `src/integrations/telegram/` (client/config/auth, markdown->HTML formatter + trim, queue ingest/parser + worker, barrel + tests), shipped Telegram bot CLI entrypoint in `src/cli/telegram.ts` with allowlist middleware, `/orchestrate` streaming updates, shared command routing, capture queueing, voice reply guard, optional auto-worker (`TELEGRAM_QUEUE_AUTOPROCESS`, `TELEGRAM_QUEUE_POLL_MS`, `TELEGRAM_QUEUE_BATCH_SIZE`), and graceful shutdown; wired script/export/integration barrels (`package.json`, `src/cli/index.ts`, `src/integrations/index.ts`); updated queue admin + `/inbox` for Telegram source support in `src/core/queue-admin.ts` and `src/core/command-registry.ts` with expanded tests in `src/core/queue-admin.test.ts`. Validation: `npm run typecheck`, `npm run test:unit`.
 - **P2 Step 5: Command/shortcut interception layer** -- Agent: codex -- Branch: `main`. Added explicit shortcut interception (`src/core/command-interceptor.ts`) for digest/queue/orchestrate shortcuts and integrated it before command routing in web chat streaming (`src/ui/handlers/chat.ts`), Slack bot handling (`src/cli/slack.ts`), and shared command resolution (`src/core/command-registry.ts`). Added tests in `src/core/command-interceptor.test.ts`.
 - **P2 Step 4: Chat multi-tab sessions (max 3)** -- Agent: codex -- Branch: `main`. Reworked chat UI to use a tab bar with max 3 concurrent sessions (`src/ui/dashboard/src/views/chat.tsx`), added deterministic tab naming + default-session guarantee, and updated styling/responsive behavior (`src/ui/dashboard/src/dashboard.css`). Validation: `npm run typecheck`, `npm run build:dashboard`.

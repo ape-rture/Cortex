@@ -22,6 +22,7 @@
     "daemon": "node --import tsx src/cli/daemon.ts",
     "slack": "node --import tsx src/cli/slack.ts",
     "telegram": "node --import tsx src/cli/telegram.ts",
+    "ralph": "node --import tsx src/cli/ralph.ts",
     "dev:ui": "node --import tsx src/ui/server.ts",
     "dev:dashboard": "vite --config src/ui/dashboard/vite.config.ts",
     "build:dashboard": "vite build --config src/ui/dashboard/vite.config.ts"

@@ -5,10 +5,35 @@
       "projectId": "cortex",
       "instances": [
         {
+          "instanceType": "codex"
+        },
+        {
+          "instanceType": "claude"
+        }
+      ]
+    },
+    {
+      "projectId": "voice",
+      "instances": [
+        {
+          "instanceType": "codex"
+        },
+        {
+          "instanceType": "claude"
+        }
+      ]
+    },
+    {
+      "projectId": "focus-lead-gen",
+      "instances": [
+        {
           "instanceType": "claude"
         },
         {
           "instanceType": "codex"
+        },
+        {
+          "instanceType": "shell"
         }
       ]
     }
