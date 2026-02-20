@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-02-20 codex -- Ralph Loop (Phase 10) core implementation
+
+### What
+- Implemented Codex subprocess execution wrapper in `src/core/codex-process.ts` with stdin prompt piping, `codex exec ... --json` JSONL parsing, timeout kill handling, and output-last-message capture.
+- Extended task board parsing/manipulation in `src/ui/handlers/tasks.ts` with:
+  - `BoardTask`, `ParsedBoard`
+  - `parseFullBoard()`
+  - `findTaskByTitle()`
+  - `moveTaskOnBoard()`
+- Implemented Ralph supervisor loop core in `src/core/ralph-loop.ts`:
+  - queue filtering by group/agent/title
+  - queued -> in_progress transitions
+  - Claude/Codex dispatch paths
+  - completion verification via board re-read
+  - retry + stuck detection and abort handling
+- Added forward-compat orchestrator execution type `"codex_cli"` in `src/core/types/orchestrator.ts`.
+- Added optional `task_prompt` override support in `src/core/claude-code-process.ts` for Ralph-directed Claude worker prompting.
+
+### Files Changed
+- `src/core/codex-process.ts`
+- `src/core/codex-process.test.ts`
+- `src/ui/handlers/tasks.ts`
+- `src/ui/handlers/tasks.test.ts`
+- `src/core/ralph-loop.ts`
+- `src/core/ralph-loop.test.ts`
+- `src/core/types/orchestrator.ts`
+- `src/core/claude-code-process.ts`
+
+### Validation
+- `node --import tsx --test src/core/codex-process.test.ts src/ui/handlers/tasks.test.ts src/core/ralph-loop.test.ts src/core/claude-code-process.test.ts` -- passed
+- `npm run typecheck` -- passed
+- `npm run ralph -- --dry-run --agent=codex` -- passed
+- `npm run test:unit` -- still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`
+
+### Status
+- Branch `codex/ralph-loop` merged to `main`.
+- Ready for Claude/Dennis review of end-to-end Ralph execution behavior.
+
 ## 2026-02-19 claude -- Phase 10: Ralph Loop planning + scaffolding
 
 ### What

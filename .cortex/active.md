@@ -2,18 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Ralph Loop (Phase 10) - codex core implementation
-Branch: codex/ralph-loop
-Files:
-  - src/core/codex-process.ts
-  - src/core/codex-process.test.ts
-  - src/core/ralph-loop.ts
-  - src/core/ralph-loop.test.ts
-  - src/core/types/orchestrator.ts
-  - src/ui/handlers/tasks.ts
-  - src/ui/handlers/tasks.test.ts
-Started: 2026-02-20T09:58Z
+*No agent currently working.*
 
 <!-- When starting work, replace the line above with:
 
