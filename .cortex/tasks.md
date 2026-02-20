@@ -60,7 +60,7 @@ Supervisor loop that reads `.cortex/tasks.md`, picks the next task, routes to Cl
 
 *Agent moves task here when starting.*
 
-*No tasks currently in progress.*
+- **Unified Capture Store (Phase 9) - Phases 1-3** -- Agent: codex -- Branch: `codex/unified-captures-phase9`. In progress: unify captures into `MarkdownTaskQueue`, update routing, and slim `ContentStore`.
 ## Done
 
 - **Ralph Loop (Phase 10) — Codex core tasks** -- Agent: codex -- Branch: `codex/ralph-loop` (merged to `main`). Implemented `src/core/codex-process.ts` + `src/core/codex-process.test.ts` (Codex CLI subprocess wrapper with JSONL parsing/stdin prompt/timeout), extended `src/ui/handlers/tasks.ts` with `BoardTask`/`ParsedBoard`/`parseFullBoard`/`moveTaskOnBoard`/`findTaskByTitle` and added `src/ui/handlers/tasks.test.ts`, implemented `src/core/ralph-loop.ts` + `src/core/ralph-loop.test.ts`, and added forward-compat `execution_type: "codex_cli"` in `src/core/types/orchestrator.ts`. Validation: targeted Ralph tests passed, `npm run typecheck` passed, `npm run ralph -- --dry-run --agent=codex` passed; `npm run test:unit` still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`.
