@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { Task, TaskPriority, TaskStatus, TaskSource } from "../core/types/task-queue.js";
+import type { CaptureType, Task, TaskPriority, TaskStatus, TaskSource } from "../core/types/task-queue.js";
 import type {
   Contact,
   ContactInfo,
@@ -14,10 +14,8 @@ import type {
   ContentChainNode,
   ContentDraft,
   ContentFormat,
-  ContentIdea,
   ContentPlatform,
   ContentSeed,
-  ContentStatus,
   DraftRevision,
   SeedSource,
 } from "../core/types/content.js";
@@ -27,7 +25,6 @@ const SECTION_HEADERS = ["queued", "in progress", "completed", "blocked", "faile
 type MutableTask = { -readonly [K in keyof Task]: Task[K] };
 type MutableContactInfo = { -readonly [K in keyof ContactInfo]: ContactInfo[K] };
 type MutableInteractionRecord = { -readonly [K in keyof InteractionRecord]: InteractionRecord[K] };
-type MutableContentIdea = { -readonly [K in keyof ContentIdea]: ContentIdea[K] };
 type MutableContentSeed = { -readonly [K in keyof ContentSeed]: ContentSeed[K] };
 type MutableContentDraft = { -readonly [K in keyof ContentDraft]: ContentDraft[K] };
 type MutableDraftRevision = { -readonly [K in keyof DraftRevision]: DraftRevision[K] };
@@ -70,6 +67,29 @@ function parseSource(value: string | undefined): TaskSource {
   return "cli";
 }
 
+function parseCaptureType(value: string | undefined): CaptureType {
+  if (!value) return "task";
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "task" || normalized === "research" || normalized === "content" || normalized === "feature" || normalized === "seed") {
+    return normalized as CaptureType;
+  }
+
+  // Backward-compatible mappings from older capture labels.
+  if (normalized === "content_idea") return "content";
+  if (normalized === "cortex_feature") return "feature";
+  if (normalized === "project_seed") return "seed";
+  return "task";
+}
+
+function inferCaptureTypeFromTags(tags: readonly string[] | undefined): CaptureType {
+  for (const tag of tags ?? []) {
+    if (!tag.startsWith("capture_type:")) continue;
+    const raw = tag.slice("capture_type:".length).trim();
+    return parseCaptureType(raw);
+  }
+  return "task";
+}
+
 function extractTitleAndAssignee(line: string): { title: string; assignedTo?: string } {
   // Example formats:
   // - [ ] **Title**
@@ -90,6 +110,24 @@ function extractTitleAndAssignee(line: string): { title: string; assignedTo?: st
   }
 
   return { title: line.trim() };
+}
+
+function extractChecklistTitle(line: string): { checked: boolean; title: string } | undefined {
+  const match = line.match(/^[-*]\s+\[([ xX])\]\s+\*\*(.+?)\*\*(?::\s*(.+))?$/);
+  if (match) {
+    const title = (match[3] ?? match[2]).trim();
+    return {
+      checked: match[1].toLowerCase() === "x",
+      title,
+    };
+  }
+
+  const plainMatch = line.match(/^[-*]\s+\[([ xX])\]\s+(.+)$/);
+  if (!plainMatch) return undefined;
+  return {
+    checked: plainMatch[1].toLowerCase() === "x",
+    title: plainMatch[2].trim(),
+  };
 }
 
 function generateId(title: string, index: number): string {
@@ -135,6 +173,9 @@ export function parseTaskQueue(content: string): Task[] {
 
   const flush = () => {
     if (current) {
+      if (!current.capture_type || current.capture_type === "task") {
+        current.capture_type = inferCaptureTypeFromTags(current.tags);
+      }
       tasks.push(current);
       current = null;
     }
@@ -165,6 +206,7 @@ export function parseTaskQueue(content: string): Task[] {
         title,
         status: parseStatus(undefined, checkbox),
         priority: "p2",
+        capture_type: "task",
         source: "cli",
         assigned_to: assignedTo,
         created_at: now,
@@ -189,6 +231,10 @@ export function parseTaskQueue(content: string): Task[] {
       case "priority":
         current.priority = parsePriority(kv.value);
         break;
+      case "capture type":
+      case "capture_type":
+        current.capture_type = parseCaptureType(kv.value);
+        break;
       case "added":
       case "created":
         current.created_at = kv.value || current.created_at;
@@ -202,6 +248,26 @@ export function parseTaskQueue(content: string): Task[] {
         break;
       case "context":
         current.context_refs = splitList(kv.value);
+        break;
+      case "source url":
+      case "source_url":
+        current.source_url = kv.value || undefined;
+        break;
+      case "source ref":
+      case "source_ref":
+        current.source_ref = kv.value || undefined;
+        break;
+      case "rationale":
+        current.rationale = kv.value || undefined;
+        break;
+      case "category":
+        current.category = kv.value || undefined;
+        break;
+      case "format":
+        current.format = kv.value || undefined;
+        break;
+      case "platform":
+        current.platform = kv.value || undefined;
         break;
       case "tags":
         current.tags = splitList(kv.value);
@@ -252,6 +318,7 @@ export function serializeTaskQueue(tasks: readonly Task[]): string {
     lines.push(`  - ID: ${task.id}`);
     lines.push(`  - Status: ${task.status}`);
     lines.push(`  - Priority: ${task.priority}`);
+    lines.push(`  - Capture Type: ${task.capture_type}`);
     if (task.description) {
       lines.push(`  - Description: ${task.description.replace(/\s+/g, " ").trim()}`);
     }
@@ -263,6 +330,12 @@ export function serializeTaskQueue(tasks: readonly Task[]): string {
     if (task.context_refs && task.context_refs.length > 0) {
       lines.push(`  - Context: ${task.context_refs.join(", ")}`);
     }
+    if (task.source_url) lines.push(`  - Source URL: ${task.source_url}`);
+    if (task.source_ref) lines.push(`  - Source Ref: ${task.source_ref}`);
+    if (task.rationale) lines.push(`  - Rationale: ${task.rationale.replace(/\s+/g, " ").trim()}`);
+    if (task.category) lines.push(`  - Category: ${task.category}`);
+    if (task.format) lines.push(`  - Format: ${task.format}`);
+    if (task.platform) lines.push(`  - Platform: ${task.platform}`);
     if (task.tags && task.tags.length > 0) {
       lines.push(`  - Tags: ${task.tags.join(", ")}`);
     }
@@ -561,22 +634,6 @@ function parseContentPlatform(value: string | undefined): ContentPlatform {
   }
 }
 
-function parseContentStatus(value: string | undefined): ContentStatus {
-  const normalized = value?.trim().toLowerCase();
-  switch (normalized) {
-    case "idea":
-    case "outline":
-    case "draft":
-    case "review":
-    case "approved":
-    case "published":
-    case "killed":
-      return normalized;
-    default:
-      return "idea";
-  }
-}
-
 function parseSeedSource(value: string | undefined): SeedSource {
   const normalized = value?.trim().toLowerCase();
   switch (normalized) {
@@ -697,53 +754,6 @@ export function serializeProjects(projects: readonly Project[]): string {
     );
   }
 
-  return lines.join("\n").trimEnd() + "\n";
-}
-
-export function parseContentIdeas(content: string): ContentIdea[] {
-  const ideas: MutableContentIdea[] = [];
-  const lines = content.split(/\r?\n/);
-
-  for (const rawLine of lines) {
-    const cells = parseTableCells(rawLine);
-    if (cells.length < 8) continue;
-    if (cells[0].toLowerCase() === "id") continue;
-    if (isSeparatorRow(cells)) continue;
-
-    const id = cells[0];
-    const date = cells[1];
-    const topic = cells[2];
-    if (!id || !date || !topic) continue;
-
-    ideas.push({
-      id,
-      date,
-      topic,
-      format: parseContentFormat(cells[3]),
-      platform: parseContentPlatform(cells[4]),
-      status: parseContentStatus(cells[5]),
-      source: cells[6] || undefined,
-      notes: cells[7] || undefined,
-      tags: undefined,
-    });
-  }
-
-  return ideas;
-}
-
-export function serializeContentIdeas(ideas: readonly ContentIdea[]): string {
-  const lines: string[] = [];
-  lines.push("# Content Ideas");
-  lines.push("");
-  lines.push("Track content ideas through the pipeline: idea -> outline -> draft -> review -> approved -> published.");
-  lines.push("");
-  lines.push("| ID | Date | Topic | Format | Platform | Status | Source | Notes |");
-  lines.push("|---|---|---|---|---|---|---|---|");
-  for (const idea of ideas) {
-    lines.push(
-      `| ${escapeTableCell(idea.id)} | ${escapeTableCell(idea.date)} | ${escapeTableCell(idea.topic)} | ${idea.format} | ${idea.platform} | ${idea.status} | ${escapeTableCell(idea.source ?? "")} | ${escapeTableCell(idea.notes ?? "")} |`,
-    );
-  }
   return lines.join("\n").trimEnd() + "\n";
 }
 
@@ -1063,22 +1073,6 @@ export function serializeContentChains(chains: readonly ContentChain[]): string 
 // ---------------------------------------------------------------------
 // ID generators
 // ---------------------------------------------------------------------
-
-/**
- * Generate the next content idea ID based on existing ideas.
- * Format: content-NNN (zero-padded to 3 digits).
- */
-export function nextContentIdeaId(ideas: readonly ContentIdea[]): string {
-  let max = 0;
-  for (const idea of ideas) {
-    const match = idea.id.match(/^content-(\d+)$/);
-    if (match) {
-      const num = parseInt(match[1], 10);
-      if (num > max) max = num;
-    }
-  }
-  return `content-${String(max + 1).padStart(3, "0")}`;
-}
 
 /**
  * Generate the next seed ID for a given date.

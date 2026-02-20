@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { parseTaskQueue, serializeTaskQueue } from "../utils/markdown.js";
-import type { Task, TaskPriority, TaskQueue, TaskStatus } from "./types/task-queue.js";
+import type { CaptureType, Task, TaskPriority, TaskQueue, TaskStatus } from "./types/task-queue.js";
 
 const DEFAULT_QUEUE_PATH = path.resolve("actions", "queue.md");
 
@@ -50,13 +50,17 @@ export class MarkdownTaskQueue implements TaskQueue {
     });
   }
 
-  async add(task: Omit<Task, "id" | "status" | "created_at" | "updated_at">): Promise<string> {
+  async add(
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type">
+      & { capture_type?: CaptureType },
+  ): Promise<string> {
     const tasks = await this.readAll();
     const createdAt = nowIso();
     const newTask: Task = {
       ...task,
       id: generateTaskId(task.title),
       status: "queued",
+      capture_type: task.capture_type ?? "task",
       created_at: createdAt,
       updated_at: createdAt,
     };
@@ -87,6 +91,11 @@ export class MarkdownTaskQueue implements TaskQueue {
       return a.created_at.localeCompare(b.created_at);
     });
     return queued[0];
+  }
+
+  async listByType(captureType: CaptureType): Promise<readonly Task[]> {
+    const tasks = await this.readAll();
+    return tasks.filter((task) => task.capture_type === captureType);
   }
 
   parseFromMarkdown(content: string): Task[] {

@@ -4,8 +4,6 @@ import {
   parseTaskQueue,
   serializeTaskQueue,
   parseContactFile,
-  parseContentIdeas,
-  serializeContentIdeas,
   parseContentDraft,
   serializeContentDraft,
   parseContentSeeds,
@@ -14,8 +12,32 @@ import {
   serializeProjects,
 } from "./markdown.js";
 
-test("parseTaskQueue extracts tasks and metadata", () => {
-  const content = `# Task Queue\n\n## Queued\n- [ ] **Dennis**: Ship core tests\n  - ID: task-1\n  - Status: queued\n  - Priority: p1\n  - Added: 2026-02-02T10:00:00Z\n  - Updated: 2026-02-02T10:00:00Z\n  - Source: cli\n  - Tags: testing, core\n\n## Completed\n- [x] **Cleanup**\n  - ID: task-2\n  - Status: done\n  - Priority: p3\n  - Added: 2026-02-01T10:00:00Z\n  - Updated: 2026-02-01T10:00:00Z\n  - Source: cli\n`;
+test("parseTaskQueue extracts tasks and unified capture metadata", () => {
+  const content = `# Task Queue
+
+## Queued
+- [ ] **Dennis**: Ship core tests
+  - ID: task-1
+  - Status: queued
+  - Priority: p1
+  - Capture Type: research
+  - Source URL: https://example.com/parser
+  - Source Ref: telegram:100:2
+  - Added: 2026-02-02T10:00:00Z
+  - Updated: 2026-02-02T10:00:00Z
+  - Source: telegram
+  - Tags: testing, capture_type:research
+
+## Completed
+- [x] **Cleanup**
+  - ID: task-2
+  - Status: done
+  - Priority: p3
+  - Capture Type: task
+  - Added: 2026-02-01T10:00:00Z
+  - Updated: 2026-02-01T10:00:00Z
+  - Source: cli
+`;
 
   const tasks = parseTaskQueue(content);
   assert.equal(tasks.length, 2);
@@ -23,19 +45,61 @@ test("parseTaskQueue extracts tasks and metadata", () => {
   assert.equal(tasks[0].assigned_to, "Dennis");
   assert.equal(tasks[0].priority, "p1");
   assert.equal(tasks[0].status, "queued");
-  assert.deepEqual(tasks[0].tags, ["testing", "core"]);
+  assert.equal(tasks[0].capture_type, "research");
+  assert.equal(tasks[0].source_url, "https://example.com/parser");
+  assert.equal(tasks[0].source_ref, "telegram:100:2");
+  assert.deepEqual(tasks[0].tags, ["testing", "capture_type:research"]);
   assert.equal(tasks[1].status, "done");
 });
 
-test("serializeTaskQueue groups by status", () => {
-  const tasks = parseTaskQueue(`## Queued\n- [ ] **A**\n  - ID: task-a\n  - Status: queued\n  - Priority: p2\n  - Added: 2026-02-02T00:00:00Z\n  - Updated: 2026-02-02T00:00:00Z\n  - Source: cli\n`);
+test("parseTaskQueue infers capture_type from tags when field is missing", () => {
+  const content = `## Queued
+- [ ] **Parser audit**
+  - ID: task-a
+  - Status: queued
+  - Priority: p2
+  - Added: 2026-02-02T00:00:00Z
+  - Updated: 2026-02-02T00:00:00Z
+  - Source: cli
+  - Tags: capture_type:cortex_feature
+`;
+  const tasks = parseTaskQueue(content);
+  assert.equal(tasks.length, 1);
+  assert.equal(tasks[0].capture_type, "feature");
+});
+
+test("serializeTaskQueue writes unified capture fields", () => {
+  const tasks = parseTaskQueue(`## Queued
+- [ ] **A**
+  - ID: task-a
+  - Status: queued
+  - Priority: p2
+  - Capture Type: content
+  - Format: thread
+  - Platform: x
+  - Added: 2026-02-02T00:00:00Z
+  - Updated: 2026-02-02T00:00:00Z
+  - Source: cli
+`);
   const output = serializeTaskQueue(tasks);
   assert.ok(output.includes("## Queued"));
   assert.ok(output.includes("task-a"));
+  assert.ok(output.includes("Capture Type: content"));
+  assert.ok(output.includes("Format: thread"));
+  assert.ok(output.includes("Platform: x"));
 });
 
 test("parseTaskQueue and serializeTaskQueue preserve description", () => {
-  const tasks = parseTaskQueue(`## Queued\n- [ ] **A**\n  - ID: task-a\n  - Status: queued\n  - Priority: p2\n  - Description: Keep full context from Slack\n  - Added: 2026-02-02T00:00:00Z\n  - Updated: 2026-02-02T00:00:00Z\n  - Source: slack\n`);
+  const tasks = parseTaskQueue(`## Queued
+- [ ] **A**
+  - ID: task-a
+  - Status: queued
+  - Priority: p2
+  - Description: Keep full context from Slack
+  - Added: 2026-02-02T00:00:00Z
+  - Updated: 2026-02-02T00:00:00Z
+  - Source: slack
+`);
   assert.equal(tasks[0].description, "Keep full context from Slack");
 
   const output = serializeTaskQueue(tasks);
@@ -83,43 +147,9 @@ Follow up next week.
   assert.equal(contact.history[0].type, "call");
 });
 
-test("parseContentIdeas extracts idea rows from table", () => {
-  const content = `# Content Ideas
-
-| ID | Date | Topic | Format | Platform | Status | Source | Notes |
-|---|---|---|---|---|---|---|---|
-| content-001 | 2026-02-04 | Why agents fail in handoff | thread | x | idea | manual | draft soon |
-| content-002 | 2026-02-04 | Weekly founder ops note | post | linkedin | review | seed-1 | in edits |
-`;
-
-  const ideas = parseContentIdeas(content);
-  assert.equal(ideas.length, 2);
-  assert.equal(ideas[0].id, "content-001");
-  assert.equal(ideas[0].format, "thread");
-  assert.equal(ideas[1].status, "review");
-});
-
-test("serializeContentIdeas renders markdown table", () => {
-  const output = serializeContentIdeas([
-    {
-      id: "content-001",
-      date: "2026-02-04",
-      topic: "Agent orchestration lessons",
-      format: "post",
-      platform: "linkedin",
-      status: "draft",
-      source: "manual",
-      notes: "first pass",
-      tags: [],
-    },
-  ]);
-  assert.ok(output.includes("| content-001 |"));
-  assert.ok(output.includes("| ID | Date | Topic |"));
-});
-
 test("parseContentDraft and serializeContentDraft roundtrip", () => {
   const markdown = serializeContentDraft({
-    ideaId: "content-001",
+    ideaId: "task-content-001",
     format: "thread",
     platform: "x",
     currentText: "Post one",
@@ -138,7 +168,7 @@ test("parseContentDraft and serializeContentDraft roundtrip", () => {
   });
 
   const draft = parseContentDraft(markdown);
-  assert.equal(draft.ideaId, "content-001");
+  assert.equal(draft.ideaId, "task-content-001");
   assert.equal(draft.format, "thread");
   assert.equal(draft.threadPosts?.length, 2);
   assert.equal(draft.revisions.length, 1);
@@ -159,14 +189,14 @@ test("parseContentSeeds extracts unprocessed and promoted seeds", () => {
 - [x] **seed-2026-02-04-002**: Founder workflow insight
   - Source: manual
   - Captured: 2026-02-04T09:00:00Z
-  - Promoted To: content-002
+  - Promoted To: task-content-002
 `;
 
   const seeds = parseContentSeeds(content);
   assert.equal(seeds.length, 2);
   assert.equal(seeds[0].promoted, false);
   assert.equal(seeds[1].promoted, true);
-  assert.equal(seeds[1].promotedToId, "content-002");
+  assert.equal(seeds[1].promotedToId, "task-content-002");
 });
 
 test("serializeContentSeeds renders both sections", () => {
@@ -184,7 +214,7 @@ test("serializeContentSeeds renders both sections", () => {
       source: "manual",
       capturedAt: "2026-02-04T09:00:00Z",
       promoted: true,
-      promotedToId: "content-002",
+      promotedToId: "task-content-002",
     },
   ]);
   assert.ok(markdown.includes("## Unprocessed"));

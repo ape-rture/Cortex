@@ -11,12 +11,15 @@ import {
   processTelegramQueueBatch,
 } from "./queue-worker.js";
 
-function makeTelegramTask(partial: Partial<Task> = {}): Omit<Task, "id" | "status" | "created_at" | "updated_at"> {
+function makeTelegramTask(
+  partial: Partial<Task> = {},
+): Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type"> & { capture_type?: Task["capture_type"] } {
   return {
     title: partial.title ?? "Queued Telegram task",
     description: partial.description,
     priority: partial.priority ?? "p2",
     source: partial.source ?? "telegram",
+    capture_type: partial.capture_type ?? "task",
     assigned_to: partial.assigned_to,
     due_by: partial.due_by,
     context_refs: partial.context_refs,
@@ -31,6 +34,7 @@ test("parseTelegramTaskRefs reads message refs", () => {
     title: "Test",
     status: "queued",
     priority: "p2",
+    capture_type: "task",
     source: "telegram",
     created_at: "2026-02-15T10:00:00.000Z",
     updated_at: "2026-02-15T10:00:00.000Z",

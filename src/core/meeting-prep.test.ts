@@ -62,6 +62,10 @@ class FakeTaskQueue implements TaskQueue {
     throw new Error("not implemented");
   }
 
+  async listByType(_captureType: Task["capture_type"]): Promise<readonly Task[]> {
+    return this.tasks;
+  }
+
   async update(): Promise<void> {
     throw new Error("not implemented");
   }
@@ -146,6 +150,7 @@ function makeTask(id: string, title: string, status: TaskStatus): Task {
     title,
     status,
     priority: "p2",
+    capture_type: "task",
     source: "cli",
     created_at: "2026-02-03T10:00:00Z",
     updated_at: "2026-02-03T10:00:00Z",

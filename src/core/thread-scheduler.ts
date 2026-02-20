@@ -1,5 +1,6 @@
 import { MarkdownTaskQueue } from "./task-queue.js";
 import type {
+  CaptureType,
   Task,
   TaskPriority,
   TaskQueue,
@@ -69,13 +70,21 @@ export class InMemoryThreadScheduler implements ThreadScheduler {
     return await this.queue.list(filter);
   }
 
-  async add(task: Omit<Task, "id" | "status" | "created_at" | "updated_at">): Promise<string> {
+  async add(
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type">
+      & { capture_type?: CaptureType },
+  ): Promise<string> {
     return await this.enqueue(DEFAULT_THREAD_KEY, task);
+  }
+
+  async listByType(captureType: CaptureType): Promise<readonly Task[]> {
+    return await this.queue.listByType(captureType);
   }
 
   async enqueue(
     thread: ThreadKey,
-    task: Omit<Task, "id" | "status" | "created_at" | "updated_at">,
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type">
+      & { capture_type?: CaptureType },
   ): Promise<string> {
     await this.syncQueuedTasksToDefaultThread();
     this.cleanupStaleThreads();

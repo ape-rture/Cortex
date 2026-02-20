@@ -27,6 +27,8 @@ export type TaskStatus =
 
 export type TaskPriority = "p0" | "p1" | "p2" | "p3";
 
+export type CaptureType = "task" | "research" | "content" | "feature" | "seed";
+
 // ---------------------------------------------------------------------
 // Task source — where the task originated
 // ---------------------------------------------------------------------
@@ -56,6 +58,9 @@ export interface Task {
   /** Current lifecycle state */
   status: TaskStatus;
 
+  /** Capture subtype used by the unified capture pipeline */
+  readonly capture_type: CaptureType;
+
   /** Urgency level */
   readonly priority: TaskPriority;
 
@@ -77,6 +82,24 @@ export interface Task {
   /** Related file paths for context */
   readonly context_refs?: readonly string[];
 
+  /** Source URL for research captures */
+  readonly source_url?: string;
+
+  /** Source reference for research captures */
+  readonly source_ref?: string;
+
+  /** Why this feature should exist */
+  readonly rationale?: string;
+
+  /** Category for seed captures */
+  readonly category?: string;
+
+  /** Content format for content captures */
+  readonly format?: string;
+
+  /** Content platform for content captures */
+  readonly platform?: string;
+
   /** Free-form tags for filtering */
   readonly tags?: readonly string[];
 
@@ -93,7 +116,13 @@ export interface TaskQueue {
   list(filter?: { status?: TaskStatus; priority?: TaskPriority }): Promise<readonly Task[]>;
 
   /** Add a new task to the queue. Returns the assigned ID. */
-  add(task: Omit<Task, "id" | "status" | "created_at" | "updated_at">): Promise<string>;
+  add(
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type">
+      & { capture_type?: CaptureType },
+  ): Promise<string>;
+
+  /** List tasks by capture type */
+  listByType(captureType: CaptureType): Promise<readonly Task[]>;
 
   /** Update task status and optionally set a result message */
   update(id: string, status: TaskStatus, result?: string): Promise<void>;
@@ -165,7 +194,8 @@ export interface ThreadScheduler extends TaskQueue {
   /** Add a task to a specific thread's queue. Returns the task ID. */
   enqueue(
     thread: ThreadKey,
-    task: Omit<Task, "id" | "status" | "created_at" | "updated_at">,
+    task: Omit<Task, "id" | "status" | "created_at" | "updated_at" | "capture_type">
+      & { capture_type?: CaptureType },
   ): Promise<string>;
 
   /** Get the next queued task for a specific thread. */

@@ -24,6 +24,32 @@ function summarizeTasks(queueMarkdown: string): string {
   return lines.join("\n");
 }
 
+function summarizeTelegramInbox(queueMarkdown: string): string {
+  const tasks = parseTaskQueue(queueMarkdown);
+  const telegramTasks = tasks.filter((t) => t.source === "telegram");
+  if (telegramTasks.length === 0) return "(no captured messages)";
+
+  const pending = telegramTasks.filter((t) => t.status === "queued");
+  const needsReview = telegramTasks.filter((t) => t.status === "blocked");
+  const routed = telegramTasks.filter((t) => t.status === "done" && t.result?.startsWith("\u2192"));
+
+  const sections: string[] = [];
+
+  if (pending.length > 0) {
+    sections.push(`**Pending** (${pending.length}):\n${pending.map((t) => `- ${t.title}`).join("\n")}`);
+  }
+  if (needsReview.length > 0) {
+    sections.push(`**Needs review** (${needsReview.length}):\n${needsReview.map((t) => `- ${t.title}`).join("\n")}`);
+  }
+  if (routed.length > 0) {
+    const recent = routed.slice(-5);
+    sections.push(`**Recently routed** (${routed.length}):\n${recent.map((t) => `- ${t.title} ${t.result}`).join("\n")}`);
+  }
+
+  if (sections.length === 0) return "(no captured messages)";
+  return sections.join("\n\n");
+}
+
 function summarizeEvents(events: { summary: string; start: string; end: string }[]): string {
   if (events.length === 0) return "(no events today)";
   return events
@@ -244,17 +270,17 @@ function summarizeDecay(alerts: readonly { contact: { name: string; company?: st
 }
 
 function summarizePostingReminders(
-  ideas: readonly { status: string; topic: string; platform: string }[],
+  ideas: readonly { status: string; title: string; platform?: string }[],
 ): string {
-  const ready = ideas.filter((i) => i.status === "draft" || i.status === "approved");
+  const ready = ideas.filter((i) => i.status === "in_progress" || i.status === "done");
 
   const lines: string[] = [];
 
   // X reminder
   lines.push("**X (Twitter)**");
-  const xDraft = ready.find((i) => i.platform === "x");
+  const xDraft = ready.find((i) => (i.platform ?? "multi") === "x");
   if (xDraft) {
-    lines.push(`- Ready to post: "${xDraft.topic}"`);
+    lines.push(`- Ready to post: "${xDraft.title}"`);
   } else {
     lines.push("- No draft ready. Consider sharing a quick insight or thread today.");
   }
@@ -263,9 +289,9 @@ function summarizePostingReminders(
 
   // LinkedIn reminder
   lines.push("**LinkedIn**");
-  const liDraft = ready.find((i) => i.platform === "linkedin");
+  const liDraft = ready.find((i) => (i.platform ?? "multi") === "linkedin");
   if (liDraft) {
-    lines.push(`- Ready to post: "${liDraft.topic}"`);
+    lines.push(`- Ready to post: "${liDraft.title}"`);
   } else {
     lines.push("- No draft ready. Consider posting about a recent project or lesson learned.");
   }
@@ -282,7 +308,7 @@ export async function runMorningBriefing(): Promise<string> {
   const gmailClient = new GoogleGmailClient();
   const focusClient = new FocusClient();
 
-  const [weeklyFocus, pendingActions, queueContent, calendar, mailSummary, gitReports, projectHealth, snapshot, decayAlerts, contentIdeas, contentSeeds] = await Promise.all([
+  const [weeklyFocus, pendingActions, queueContent, calendar, mailSummary, gitReports, projectHealth, snapshot, decayAlerts, contentSeeds] = await Promise.all([
     readMarkdownFile(weeklyFocusPath).catch(() => "(missing weekly-focus.md)"),
     readMarkdownFile(pendingPath).catch(() => "(missing pending.md)"),
     readMarkdownFile(queuePath).catch(() => ""),
@@ -292,9 +318,9 @@ export async function runMorningBriefing(): Promise<string> {
     new ProjectHeartbeatMonitor().checkAll(),
     new MarkdownSessionSnapshotStore().load(),
     new SimpleDecayDetector(new MarkdownContactStore()).detectDecay().catch(() => []),
-    contentStore.loadIdeas().catch(() => [] as const),
     contentStore.loadSeeds().catch(() => [] as const),
   ]);
+  const contentIdeas = parseTaskQueue(queueContent).filter((task) => task.capture_type === "content");
 
   // LinkedIn acceptances — fetched after mail summary to avoid slowing down the main batch
   const linkedInAcceptances = await fetchLinkedInAcceptances(gmailClient, focusClient).catch(() => []);
@@ -310,6 +336,7 @@ export async function runMorningBriefing(): Promise<string> {
   output.push("# Morning Briefing");
   output.push("");
   output.push(formatSection("Weekly Focus", weeklyFocus));
+  output.push(formatSection("Telegram Inbox", summarizeTelegramInbox(queueContent)));
   output.push(formatSection("Pending Actions", pendingActions));
   output.push(formatSection("Task Queue", summarizeTasks(queueContent)));
   output.push(formatSection("Calendar", [calendarSummary, calendarSources].filter(Boolean).join("\n")));

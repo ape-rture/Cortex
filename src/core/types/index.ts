@@ -134,7 +134,6 @@ export type {
   ContentStatus,
   SeedSource,
   ContentSeed,
-  ContentIdea,
   DraftRevision,
   ContentDraft,
   ContentChainNode,
@@ -150,6 +149,13 @@ export type {
   SeedExtractorInput,
   ContentSeedExtractor,
 } from "./content.js";
+
+export type {
+  CaptureType,
+  CaptureSource,
+} from "./capture.js";
+
+export { CAPTURE_TAG_MAP } from "./capture.js";
 
 export {
   DEFAULT_DRAFT_CONFIG,

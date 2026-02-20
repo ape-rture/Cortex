@@ -1830,3 +1830,29 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Branch `codex/telegram-bot` merged to `main` and deleted locally.
 
 
+## 2026-02-20 codex -- unified capture store phase 9 (phases 1-3 + cleanup)
+
+- Branch: `codex/unified-captures-phase9`.
+- Implemented unified capture queue model:
+  - Added `capture_type` and capture metadata fields to `Task` in `src/core/types/task-queue.ts`.
+  - Added `listByType()` to `MarkdownTaskQueue` (`src/core/task-queue.ts`) and corresponding tests.
+  - Extended queue markdown parse/serialize for unified capture fields in `src/utils/markdown.ts` + tests.
+- Routing and ingestion updates:
+  - Added `/capture` CLI (`src/cli/capture.ts`) + tests and wired command/script exports (`src/core/command-registry.ts`, `src/cli/index.ts`, `package.json`).
+  - Simplified Telegram triage to queue-only capture flow (`src/agents/telegram-triage.ts`, prompt file).
+  - Updated Telegram queue ingestion to set `capture_type` and tag mapping (`src/integrations/telegram/message-queue.ts` + tests).
+- Content pipeline updates:
+  - Removed `ContentIdea` and idea methods from `ContentStore` (`src/core/types/content.ts`, `src/core/content-store.ts` + tests).
+  - Reworked `/content` idea commands to use `MarkdownTaskQueue` with `capture_type: content` (`src/cli/content.ts`).
+  - Updated `/gm` and content scanner counts to queue-backed content captures (`src/cli/gm.ts`, `src/agents/content-scanner.ts`).
+- Compatibility + cleanup:
+  - Updated affected tests/helpers (`src/core/meeting-prep.test.ts`, `src/core/thread-scheduler.ts`, `src/integrations/slack/queue-worker.test.ts`, `src/integrations/telegram/queue-worker.test.ts`).
+  - Removed obsolete empty files: `projects/feature-proposals.md`, `projects/ideas.md`, `projects/content-ideas.md`.
+  - Updated content-scanner read permission from `projects/content-ideas.md` to `actions/queue.md` in `context/orchestrator.json`.
+  - Stabilized date-sensitive tests in `src/core/resume-token-store.test.ts` to use relative timestamps.
+- Validation:
+  - `npm run typecheck` passed.
+  - `npm run test:unit` passed (166 pass, 0 fail, 1 skip).
+- For Claude/Dennis:
+  - Phase 4 (captures handler/UI simplification) and `SYSTEM.md` wording updates remain on Claude side per board ownership.
+  - Branch is ready to merge.

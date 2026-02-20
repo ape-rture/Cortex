@@ -36,9 +36,11 @@ test("FileResumeTokenStore save/load/listRecent roundtrip", async () => {
   try {
     const storePath = path.join(tempDir, "resume-tokens.json");
     const store = new FileResumeTokenStore(storePath);
+    const older = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const newer = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
 
-    await store.save(makeToken("token-a", "2026-02-10T10:00:00.000Z"));
-    await store.save(makeToken("token-b", "2026-02-10T12:00:00.000Z"));
+    await store.save(makeToken("token-a", older));
+    await store.save(makeToken("token-b", newer));
 
     const loaded = await store.load("token-a");
     assert.equal(loaded?.token, "token-a");
@@ -102,7 +104,7 @@ test("FileResumeTokenStore generates token id when empty token is provided", asy
   try {
     const storePath = path.join(tempDir, "resume-tokens.json");
     const store = new FileResumeTokenStore(storePath);
-    await store.save(makeToken("", "2026-02-10T10:00:00.000Z"));
+    await store.save(makeToken("", new Date().toISOString()));
 
     const recent = await store.listRecent(1);
     assert.equal(recent.length, 1);
