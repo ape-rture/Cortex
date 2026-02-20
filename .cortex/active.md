@@ -2,15 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Codex CLI subprocess wrapper updates
-Branch: codex/ralph-codex-process
-Files:
-  - src/core/codex-process.ts
-  - src/core/codex-process.test.ts
-  - .cortex/tasks.md
-  - .cortex/log.md
-Started: 2026-02-20T13:42Z
+_None._
 
 <!-- When starting work, replace the line above with:
 

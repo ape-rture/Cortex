@@ -1829,4 +1829,15 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
   - `npm run test:unit`
 - Branch `codex/telegram-bot` merged to `main` and deleted locally.
 
+## 2026-02-20 codex -- codex cli subprocess wrapper follow-up hardening
+
+- Updated `src/core/codex-process.ts` to retain JSONL event parsing and add a resilient last-message fallback from JSONL `agent_message` events (`item.completed`) when `--output-last-message` output cannot be read.
+- Added/updated tests in `src/core/codex-process.test.ts`:
+  - Existing behavior (stdin prompt piping, JSONL parsing, non-zero exit handling, timeout kill path) remains covered.
+  - New coverage verifies fallback to event-derived last message when output file is unavailable.
+- Validation run:
+  - `node --import tsx --test src/core/codex-process.test.ts`
+  - `npm run typecheck`
+- Branch `codex/ralph-codex-process` merged to `main` and deleted locally.
+
 
