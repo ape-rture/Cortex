@@ -5,6 +5,7 @@ import { DashboardView } from "./views/dashboard";
 import { MonitorView } from "./views/monitor";
 import { ProjectsView } from "./views/projects";
 import { ReviewView } from "./views/review";
+import { CapturesView } from "./views/captures";
 import { WorkspacesView } from "./views/workspaces";
 
 function CurrentView() {
@@ -15,6 +16,8 @@ function CurrentView() {
       return <MonitorView />;
     case "/review":
       return <ReviewView />;
+    case "/captures":
+      return <CapturesView />;
     case "/projects":
       return <ProjectsView />;
     case "/workspaces":

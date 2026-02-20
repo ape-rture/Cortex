@@ -1,4 +1,8 @@
 import type {
+  CaptureItem,
+  CaptureStatus,
+  CaptureSummary,
+  CaptureType,
   ChatSession,
   ChatSessionLite,
   CreateSessionRequest,
@@ -75,6 +79,19 @@ export const api = {
   dismissReview: (id: string) => postJson(`/api/review/${id}/dismiss`),
   snoozeReview: (id: string, duration: string) =>
     postJson(`/api/review/${id}/snooze`, { duration }),
+
+  // Captures
+  getCaptures: (type?: CaptureType, status?: CaptureStatus) => {
+    const params = new URLSearchParams();
+    if (type) params.set("type", type);
+    if (status) params.set("status", status);
+    const qs = params.toString();
+    return fetchJson<{ captures: CaptureItem[] }>(`/api/captures${qs ? `?${qs}` : ""}`)
+      .then((r) => r.captures);
+  },
+  getCaptureSummary: () => fetchJson<CaptureSummary>("/api/captures/summary"),
+  updateCaptureStatus: (id: string, status: CaptureStatus, result?: string) =>
+    postJson<{ ok: true }>(`/api/captures/${id}/status`, { status, result }),
 
   // Tasks
   getTaskSummary: () => fetchJson<TaskSummary>("/api/tasks"),

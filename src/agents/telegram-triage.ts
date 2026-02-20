@@ -2,9 +2,7 @@
  * Telegram Triage Agent
  *
  * Classifies queued Telegram captures and routes them into the unified queue.
- * Special cases:
- * - project_task -> .cortex/tasks.md
- * - action_item  -> actions/pending.md
+ * All categories stay in actions/queue.md with the appropriate capture_type.
  */
 
 import { promises as fs } from "node:fs";
@@ -17,8 +15,6 @@ import type { AgentOutput, Finding } from "../core/types/agent-output.js";
 import type { CaptureType as QueueCaptureType, Task } from "../core/types/task-queue.js";
 
 const PROMPT_PATH = path.resolve("src", "agents", "prompts", "telegram-triage.md");
-const PENDING_PATH = path.resolve("actions", "pending.md");
-const CORTEX_TASKS_PATH = path.resolve(".cortex", "tasks.md");
 
 type Category =
   | "research"
@@ -97,7 +93,7 @@ function classificationFromCaptureTag(task: Task): Classification | undefined {
   };
 }
 
-function toQueueCaptureType(category: Exclude<Category, "project_task" | "action_item" | "needs_review">): QueueCaptureType {
+function toQueueCaptureType(category: Exclude<Category, "needs_review">): QueueCaptureType {
   switch (category) {
     case "research":
       return "research";
@@ -107,6 +103,9 @@ function toQueueCaptureType(category: Exclude<Category, "project_task" | "action
       return "feature";
     case "project_seed":
       return "seed";
+    case "project_task":
+    case "action_item":
+      return "task";
   }
 }
 
@@ -118,7 +117,7 @@ function buildQueueTags(task: Task, category: Category): string[] {
 
 async function routeToUnifiedQueue(
   task: Task,
-  category: Exclude<Category, "project_task" | "action_item" | "needs_review">,
+  category: Exclude<Category, "needs_review">,
   queue: MarkdownTaskQueue,
 ): Promise<string> {
   const queueCaptureType = toQueueCaptureType(category);
@@ -135,56 +134,6 @@ async function routeToUnifiedQueue(
     ...(category === "project_seed" ? { category: "uncategorized" } : {}),
     ...(category === "content_idea" ? { format: "post", platform: "multi" } : {}),
   });
-}
-
-async function routeToActionItem(task: Task): Promise<void> {
-  const content = await fs.readFile(PENDING_PATH, "utf8");
-  const entry = `- [ ] **Dennis**: ${task.title}\n  - Due: (none)\n  - Context: Telegram capture (${task.id})\n  - Priority: medium\n`;
-
-  const laterIndex = content.indexOf("## Later");
-  if (laterIndex === -1) {
-    await fs.writeFile(PENDING_PATH, content.trimEnd() + "\n\n" + entry, "utf8");
-    return;
-  }
-
-  const afterLater = content.indexOf("\n", laterIndex);
-  if (afterLater === -1) {
-    await fs.writeFile(PENDING_PATH, content + "\n" + entry, "utf8");
-    return;
-  }
-
-  let insertPos = afterLater + 1;
-  const nextLine = content.indexOf("\n", insertPos);
-  if (nextLine !== -1 && content.substring(insertPos, nextLine).startsWith("[")) {
-    insertPos = nextLine + 1;
-  }
-
-  const updated = content.slice(0, insertPos) + entry + content.slice(insertPos);
-  await fs.writeFile(PENDING_PATH, updated, "utf8");
-}
-
-async function routeToProjectTask(task: Task): Promise<void> {
-  const content = await fs.readFile(CORTEX_TASKS_PATH, "utf8");
-  const date = new Date().toISOString().slice(0, 10);
-  const entry = `\n- **${task.title}** -- Source: Telegram capture (${date}). Agent: TBD.\n`;
-
-  const queuedIndex = content.indexOf("## Queued");
-  if (queuedIndex === -1) {
-    await fs.writeFile(CORTEX_TASKS_PATH, content.trimEnd() + "\n" + entry, "utf8");
-    return;
-  }
-
-  let insertPos = content.indexOf("\n", queuedIndex) + 1;
-  const descLine = content.indexOf("\n", insertPos);
-  if (descLine !== -1 && content.substring(insertPos, descLine).startsWith("*")) {
-    insertPos = descLine + 1;
-  }
-  if (content[insertPos] === "\n") {
-    insertPos += 1;
-  }
-
-  const updated = content.slice(0, insertPos) + entry + content.slice(insertPos);
-  await fs.writeFile(CORTEX_TASKS_PATH, updated, "utf8");
 }
 
 export const telegramTriageAgent: AgentFunction = async (context): Promise<AgentOutput> => {
@@ -246,9 +195,9 @@ export const telegramTriageAgent: AgentFunction = async (context): Promise<Agent
             break;
           }
           case "project_task": {
-            await routeToProjectTask(capture);
-            await queue.update(capture.id, "done", "\u2192 .cortex/tasks.md");
-            details.push(`${capture.title} \u2192 project task`);
+            const routedId = await routeToUnifiedQueue(capture, "project_task", queue);
+            await queue.update(capture.id, "done", `\u2192 actions/queue.md (${routedId})`);
+            details.push(`${capture.title} \u2192 project task ${routedId}`);
             projectCount++;
             break;
           }
@@ -267,9 +216,9 @@ export const telegramTriageAgent: AgentFunction = async (context): Promise<Agent
             break;
           }
           case "action_item": {
-            await routeToActionItem(capture);
-            await queue.update(capture.id, "done", "\u2192 actions/pending.md");
-            details.push(`${capture.title} \u2192 action item`);
+            const routedId = await routeToUnifiedQueue(capture, "action_item", queue);
+            await queue.update(capture.id, "done", `\u2192 actions/queue.md (${routedId})`);
+            details.push(`${capture.title} \u2192 action item ${routedId}`);
             actionCount++;
             break;
           }
@@ -303,7 +252,7 @@ export const telegramTriageAgent: AgentFunction = async (context): Promise<Agent
       detail: details.join("\n"),
       urgency: reviewCount > 0 ? "medium" : "low",
       confidence: 0.9,
-      context_refs: ["actions/queue.md", "actions/pending.md", ".cortex/tasks.md"],
+      context_refs: ["actions/queue.md"],
       requires_human: reviewCount > 0,
     });
   } catch (err) {

@@ -26,6 +26,7 @@ type AppConfig = {
   systemPrompt: string;
   orchestrator: Orchestrator;
   taskBoardPath?: string;
+  queuePath?: string;
   reviewQueuePath?: string;
   reviewStatePath?: string;
   projectRegistryPath?: string;
@@ -43,6 +44,7 @@ export function createApp(config: AppConfig): Hono {
   );
   const monitorBroker = new MonitorBroker();
   const taskBoardPath = config.taskBoardPath ?? path.resolve(".cortex", "tasks.md");
+  const queuePath = config.queuePath ?? path.resolve("actions", "queue.md");
   const projectRegistryPath = config.projectRegistryPath ?? path.resolve("projects", "project-registry.md");
 
   app.get("/healthz", (c) => c.json({ ok: true }));
@@ -54,6 +56,7 @@ export function createApp(config: AppConfig): Hono {
     reviewStore,
     monitorBroker,
     taskBoardPath,
+    queuePath,
     projectRegistryPath,
     terminalSessionManager: config.terminalSessionManager,
   });

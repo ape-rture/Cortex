@@ -64,6 +64,35 @@ export interface TaskItem {
   agent?: string;
 }
 
+// Capture types
+
+export type CaptureType = "task" | "research" | "content" | "feature" | "seed";
+export type CaptureStatus = "queued" | "in_progress" | "blocked" | "done" | "failed" | "cancelled";
+
+export interface CaptureItem {
+  id: string;
+  title: string;
+  description?: string;
+  status: CaptureStatus;
+  capture_type: CaptureType;
+  priority: string;
+  source: string;
+  created_at: string;
+  updated_at: string;
+  source_url?: string;
+  rationale?: string;
+  category?: string;
+  format?: string;
+  platform?: string;
+  tags?: string[];
+}
+
+export interface CaptureSummary {
+  total: number;
+  by_type: Record<string, number>;
+  by_status: Record<string, number>;
+}
+
 // Review types
 
 export interface ReviewItem {
