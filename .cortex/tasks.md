@@ -60,7 +60,7 @@ Supervisor loop that reads `.cortex/tasks.md`, picks the next task, routes to Cl
 
 *Agent moves task here when starting.*
 
-*No tasks currently in progress.*
+- **Unified Capture Store (Phase 9) - Phases 1-3** -- Agent: codex -- Branch: `codex/unified-captures`. In progress: unify captures into `MarkdownTaskQueue`, update routing, and slim `ContentStore`.
 ## Done
 
 - **Typed Capture System (Phase 8)** -- Agent: codex -- Branch: `codex/typed-capture` (ready for merge). Implemented `MarkdownResearchStore`, `MarkdownFeatureStore`, and `MarkdownIdeaStore` with parse/serialize support in `src/utils/markdown.ts`; added tests in `src/core/research-store.test.ts`, `src/core/feature-store.test.ts`, `src/core/idea-store.test.ts`, plus parser tests in `src/utils/markdown.test.ts`. Added `/capture` command in `src/cli/capture.ts` (typed subcommands, `/capture list`, `/capture inbox`, auto-classification), wired into `src/core/command-registry.ts`, `src/cli/index.ts`, and `package.json`, with tests in `src/cli/capture.test.ts`. Updated Telegram capture typing in `src/integrations/telegram/message-queue.ts` and `src/integrations/telegram/message-queue.test.ts` for `#research/#feature/#seed/#task/#content/#action` tags. Updated `src/agents/telegram-triage.ts` to route `research`, `cortex_feature`, and `project_seed` directly to new stores and skip LLM classification when `capture_type:*` tag is present. Validation: targeted typed-capture tests passed and `npm run typecheck` passed; `npm run test:unit` still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`.
