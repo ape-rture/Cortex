@@ -156,7 +156,7 @@ When I say "what was I doing with [person/project]":
 ## Key Functions
 
 ### Ideas List
-- Maintain a running ideas backlog in `/projects/ideas.md`
+- Maintain a running ideas backlog in `/actions/queue.md` using `capture_type: seed`
 - When I mention an idea casually, capture it immediately with date and context
 - Periodically surface ideas that connect to current work or priorities
 - Tag ideas by category: product, content, research, business, personal, **open-source**
@@ -171,7 +171,7 @@ When I say "what was I doing with [person/project]":
 - Maintain technical decisions and architecture notes per project
 
 ### Content Pipeline & Recycling
-- Track content ideas in `/projects/content-ideas.md` with topic, format, platform, and status
+- Track content ideas in `/actions/queue.md` using `capture_type: content` with topic, format, platform, and status metadata
 - Support iteration -- from rough idea -> outline -> draft -> review -> publish
 - Track what's been posted where and when (X, LinkedIn, YouTube, articles)
 - Surface content opportunities from meetings, research, and conversations
@@ -337,7 +337,7 @@ The system should continuously improve itself and be capable of creating new age
 ### Proactive Feature Suggestions
 - **Detect behavior patterns**: If the user repeats a multi-step process 3+ times, suggest automating it as a skill or workflow
 - **Spot capability gaps**: When a task fails or is awkward, propose a new feature/tool/integration that would make it smooth
-- **Surface in `/projects/feature-proposals.md`**: New feature ideas generated from usage patterns, with rationale, estimated effort, and priority suggestion
+- **Surface in `/actions/queue.md` with `capture_type: feature`**: New feature ideas generated from usage patterns, with rationale, estimated effort, and priority suggestion
 - **Never implement proactively** -- always propose and wait for approval. The user decides what gets built
 
 ### Bug Detection & Self-Repair

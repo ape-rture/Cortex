@@ -2,17 +2,7 @@
 
 ## Currently Active
 
-Agent: codex
-Task: Unified Capture Store (Phase 9) cleanup
-Branch: main
-Files:
-  - projects/feature-proposals.md
-  - projects/ideas.md
-  - projects/content-ideas.md
-  - SYSTEM.md
-  - .cortex/tasks.md
-  - .cortex/log.md
-Started: 2026-02-20T14:48Z
+_None._
 
 <!-- When starting work, replace the line above with:
 

@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-02-20 codex -- unified capture store phase 9 cleanup
+
+- Completed Phase 5 cleanup on `main`.
+- Deleted legacy capture files:
+  - `projects/feature-proposals.md`
+  - `projects/ideas.md`
+  - `projects/content-ideas.md`
+  - (`actions/research-queue.md` was already absent)
+- Updated `SYSTEM.md` to point to queue-backed capture storage:
+  - ideas backlog -> `/actions/queue.md` with `capture_type: seed`
+  - content ideas -> `/actions/queue.md` with `capture_type: content`
+  - feature proposals -> `/actions/queue.md` with `capture_type: feature`
+- Validation:
+  - `npm test` passed
+  - `npm run typecheck` passed
+  - `npm run test:unit` still has pre-existing unrelated failures in `src/core/resume-token-store.test.ts`
+
 ## 2026-02-20 codex -- Ralph Loop (Phase 10) core implementation
 
 ### What
