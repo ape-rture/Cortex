@@ -114,6 +114,38 @@ test("executeCodexCliAgent resolves non-zero exits", async () => {
   assert.equal(result.events.length, 0);
 });
 
+test("executeCodexCliAgent falls back to agent_message event when output file is unavailable", async () => {
+  const child = createFakeChild();
+
+  const resultPromise = executeCodexCliAgent(
+    {
+      prompt: "run",
+      workingDir: "D:/repo",
+      timeoutMs: 1000,
+    },
+    undefined,
+    {
+      spawnImpl: () => {
+        queueMicrotask(() => {
+          child.stdout.write("{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"from event\"}}\n");
+          child.emit("close", 0, null);
+        });
+        return child as unknown as ChildProcessWithoutNullStreams;
+      },
+      mkdtempImpl: async () => "D:/tmp/codex-run",
+      readFileImpl: async () => {
+        throw new Error("missing output file");
+      },
+      rmImpl: async () => undefined,
+    },
+  );
+
+  const result = await resultPromise;
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.lastMessage, "from event");
+  assert.equal(result.events.length, 1);
+});
+
 test("executeCodexCliAgent times out and terminates process", async () => {
   let killed = false;
   const child = createFakeChild(() => {
