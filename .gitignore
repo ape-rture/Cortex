@@ -20,7 +20,8 @@ data/
 context/workspaces-scrollback/
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/skills/
 
 # Playwright MCP artifacts
 .playwright-mcp/
