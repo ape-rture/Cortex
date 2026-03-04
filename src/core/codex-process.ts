@@ -12,6 +12,7 @@ export interface CodexExecConfig {
   readonly sandboxMode?: "read-only" | "workspace-write" | "danger-full-access";
   readonly timeoutMs?: number;
   readonly codexPath?: string;
+  readonly abortSignal?: AbortSignal;
 }
 
 export interface CodexJsonlEvent extends Record<string, unknown> {
@@ -146,10 +147,17 @@ export async function executeCodexCliAgent(
   });
 
   let timedOut = false;
+  let aborted = false;
   const timer = setTimeout(() => {
     timedOut = true;
     child.kill("SIGTERM");
   }, timeoutMs);
+
+  const abortListener = () => {
+    aborted = true;
+    child.kill("SIGTERM");
+  };
+  config.abortSignal?.addEventListener("abort", abortListener, { once: true });
 
   try {
     child.stdin.end(config.prompt);
@@ -158,13 +166,14 @@ export async function executeCodexCliAgent(
     const lastMessage = lastMessageFromFile.trim() || lastMessageFromEvents;
 
     return {
-      exitCode: timedOut ? -1 : (exit.code ?? 1),
+      exitCode: timedOut || aborted ? -1 : (exit.code ?? 1),
       lastMessage,
       events,
       durationMs: Date.now() - start,
     };
   } finally {
     clearTimeout(timer);
+    config.abortSignal?.removeEventListener("abort", abortListener);
     stdout.close();
     await rmImpl(tempDir, { recursive: true, force: true }).catch(() => undefined);
   }

@@ -24,6 +24,8 @@ type ReadFileFunction = (filePath: string, encoding: BufferEncoding) => Promise<
 export interface ClaudeCodeProcessDeps {
   readonly queryImpl?: QueryFunction;
   readonly readFileImpl?: ReadFileFunction;
+  readonly abortSignal?: AbortSignal;
+  readonly onEvent?: (event: Record<string, unknown>) => void;
 }
 
 // ---------------------------------------------------------------------
@@ -270,6 +272,8 @@ export async function executeClaudeCodeAgent(
   const abortController = new AbortController();
   const timeoutMs = config.permissions.timeout_ms || 180_000;
   const timer = setTimeout(() => abortController.abort(), timeoutMs);
+  const externalAbortListener = () => abortController.abort();
+  deps.abortSignal?.addEventListener("abort", externalAbortListener, { once: true });
 
   try {
     const q = queryImpl({
@@ -314,6 +318,7 @@ export async function executeClaudeCodeAgent(
     const assistantChunks: string[] = [];
 
     for await (const message of q) {
+      deps.onEvent?.(message);
       if (message.type === "result") {
         resultMessage = message as SDKResultMessage;
         break;
@@ -416,5 +421,6 @@ export async function executeClaudeCodeAgent(
     throw err;
   } finally {
     clearTimeout(timer);
+    deps.abortSignal?.removeEventListener("abort", externalAbortListener);
   }
 }

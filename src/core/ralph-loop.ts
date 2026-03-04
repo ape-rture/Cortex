@@ -2,6 +2,15 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { executeClaudeCodeAgent } from "./claude-code-process.js";
 import { executeCodexCliAgent, type CodexJsonlEvent, type CodexExecResult } from "./codex-process.js";
+import { QualityGateRunner, type QualityGateReport } from "./quality-gates.js";
+import { PostToolHookProcessor, SessionMetadataStore } from "./post-tool-hooks.js";
+import {
+  SessionLifecyclePoller,
+  determineStatus,
+  type SessionSignals,
+  type SessionStatus,
+} from "./session-lifecycle.js";
+import { WorkspaceManager, type WorkspaceInfo } from "./workspace-manager.js";
 import type { AgentOutput } from "./types/agent-output.js";
 import type { AgentSpawnConfig, Trigger } from "./types/orchestrator.js";
 import type { ModelRef } from "./types/routing.js";
@@ -20,6 +29,9 @@ export interface RalphConfig {
   readonly basePath: string;
   readonly maxIterations: number;
   readonly maxStuckCount: number;
+  readonly pollIntervalMs?: number;
+  readonly sessionMaxPolls?: number;
+  readonly worktreeRoot?: string;
   readonly filter?: {
     readonly group?: string;
     readonly agent?: "claude" | "codex";
@@ -50,6 +62,7 @@ export interface RalphResult {
 type RalphEventType =
   | "loop_started"
   | "task_picked"
+  | "session_status"
   | "agent_started"
   | "agent_progress"
   | "agent_completed"
@@ -66,6 +79,7 @@ export interface RalphEvent {
   readonly agent?: "claude" | "codex";
   readonly detail?: string;
   readonly task?: BoardTask;
+  readonly sessionStatus?: SessionStatus;
 }
 
 interface RalphLoopDeps {
@@ -75,6 +89,7 @@ interface RalphLoopDeps {
     prompt: string;
     task: BoardTask;
     iteration: number;
+    workingDir: string;
   }) => Promise<AgentOutput>;
   readonly executeCodexImpl?: (
     input: {
@@ -84,9 +99,20 @@ interface RalphLoopDeps {
       model?: string;
       sandboxMode?: "read-only" | "workspace-write" | "danger-full-access";
       timeoutMs?: number;
+      workingDir: string;
     },
     onEvent?: (event: CodexJsonlEvent) => void,
   ) => Promise<CodexExecResult>;
+  readonly workspaceManager?: WorkspaceManager;
+  readonly qualityGateRunner?: QualityGateRunner;
+  readonly metadataStore?: SessionMetadataStore;
+  readonly postToolHookProcessor?: PostToolHookProcessor;
+  readonly sessionPoller?: SessionLifecyclePoller;
+}
+
+interface DispatchResult {
+  readonly success: boolean;
+  readonly detail: string;
 }
 
 function nowIso(): string {
@@ -115,7 +141,7 @@ function buildBoardSummary(board: ParsedBoard, group?: string): string {
   return `Board summary (${scopeLabel}): queued=${queued}, in_progress=${inProgress}, done=${done}`;
 }
 
-function buildTaskContext(task: BoardTask, boardSummary: string): string {
+function buildTaskContext(task: BoardTask, boardSummary: string, retryNotes: readonly string[] = []): string {
   const lines: string[] = [
     "Assigned task from `.cortex/tasks.md`:",
     `Title: ${task.title}`,
@@ -132,15 +158,31 @@ function buildTaskContext(task: BoardTask, boardSummary: string): string {
     "3. Update `.cortex/tasks.md` to move this task from In Progress to Done when complete.",
     "4. Append completion details to `.cortex/log.md`.",
   ];
+
+  if (retryNotes.length > 0) {
+    lines.push("", "Previous verification feedback:");
+    for (const note of retryNotes.slice(-3)) {
+      lines.push(`- ${note}`);
+    }
+  }
+
   return lines.join("\n");
 }
 
-export function buildClaudeTaskPrompt(task: BoardTask, board: ParsedBoard): string {
-  return buildTaskContext(task, buildBoardSummary(board, task.group));
+export function buildClaudeTaskPrompt(
+  task: BoardTask,
+  board: ParsedBoard,
+  retryNotes: readonly string[] = [],
+): string {
+  return buildTaskContext(task, buildBoardSummary(board, task.group), retryNotes);
 }
 
-export function buildCodexTaskPrompt(task: BoardTask, board: ParsedBoard): string {
-  return buildTaskContext(task, buildBoardSummary(board, task.group));
+export function buildCodexTaskPrompt(
+  task: BoardTask,
+  board: ParsedBoard,
+  retryNotes: readonly string[] = [],
+): string {
+  return buildTaskContext(task, buildBoardSummary(board, task.group), retryNotes);
 }
 
 function annotateTaskLine(markdown: string, title: string, status: BoardTask["status"], annotation: string): string {
@@ -156,12 +198,33 @@ function annotateTaskLine(markdown: string, title: string, status: BoardTask["st
   return lines.join("\n");
 }
 
+function taskKey(title: string): string {
+  return normalize(title);
+}
+
+function sanitizeSessionId(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "session";
+}
+
 export class RalphLoop {
   private readonly readFileImpl: (filePath: string, encoding: BufferEncoding) => Promise<string>;
   private readonly writeFileImpl: (filePath: string, content: string, encoding: BufferEncoding) => Promise<void>;
   private readonly deps: RalphLoopDeps;
   private readonly onEvent?: (event: RalphEvent) => void;
   private readonly stuckCounts = new Map<string, number>();
+  private readonly retryFeedback = new Map<string, string[]>();
+  private readonly workspaceManager: WorkspaceManager;
+  private readonly qualityGateRunner: QualityGateRunner;
+  private readonly metadataStore: SessionMetadataStore;
+  private readonly postToolHookProcessor: PostToolHookProcessor;
+  private readonly sessionPoller: SessionLifecyclePoller;
+  private readonly pollIntervalMs: number;
+  private readonly sessionMaxPolls: number;
   private aborted = false;
 
   constructor(
@@ -173,6 +236,21 @@ export class RalphLoop {
     this.deps = deps;
     this.readFileImpl = deps.readFileImpl ?? fs.readFile;
     this.writeFileImpl = deps.writeFileImpl ?? fs.writeFile;
+
+    this.pollIntervalMs = config.pollIntervalMs ?? 30_000;
+    this.sessionMaxPolls = config.sessionMaxPolls ?? 20;
+
+    this.workspaceManager = deps.workspaceManager
+      ?? new WorkspaceManager(
+        config.basePath,
+        config.worktreeRoot ?? path.join(config.basePath, ".cortex", "worktrees"),
+      );
+    this.qualityGateRunner = deps.qualityGateRunner ?? new QualityGateRunner();
+    this.metadataStore = deps.metadataStore
+      ?? new SessionMetadataStore(path.join(config.basePath, ".cortex", "session-metadata.json"));
+    this.postToolHookProcessor = deps.postToolHookProcessor
+      ?? new PostToolHookProcessor(this.metadataStore);
+    this.sessionPoller = deps.sessionPoller ?? new SessionLifecyclePoller(this.pollIntervalMs);
   }
 
   abort(): void {
@@ -258,7 +336,35 @@ export class RalphLoop {
         await this.writeBoard(moved);
         attempts += 1;
 
-        let dispatchDetail = "";
+        let workspace: WorkspaceInfo | null = null;
+        const sessionId = `ralph-${iteration}-${sanitizeSessionId(task.title)}`;
+
+        try {
+          workspace = await this.workspaceManager.create({
+            taskTitle: task.title,
+            branch: task.branch,
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          const detail = `Workspace creation failed: ${message}`;
+          await this.handleTaskFailure(task, iteration, failed, detail);
+          this.emit({
+            type: "loop_error",
+            iteration,
+            task,
+            agent,
+            message: detail,
+          });
+          continue;
+        }
+
+        this.emitSessionStatus(iteration, task, "spawning", "Spawned isolated workspace");
+
+        let dispatch: DispatchResult = {
+          success: false,
+          detail: "Dispatch did not run",
+        };
+
         try {
           this.emit({
             type: "agent_started",
@@ -268,19 +374,30 @@ export class RalphLoop {
             message: `Dispatching ${agent} worker`,
           });
 
-          dispatchDetail = await this.dispatchTask({ task, agent, board, iteration });
+          this.emitSessionStatus(iteration, task, "working", `Executing task in ${workspace.path}`);
+
+          dispatch = await this.dispatchTask({
+            task,
+            agent,
+            board,
+            iteration,
+            workingDir: workspace.path,
+            sessionId,
+          });
 
           this.emit({
             type: "agent_completed",
             iteration,
             task,
             agent,
-            message: `Agent ${agent} completed`,
-            detail: dispatchDetail,
+            message: dispatch.success
+              ? `Agent ${agent} completed`
+              : `Agent ${agent} reported failure`,
+            detail: dispatch.detail,
           });
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          dispatchDetail = message;
+          dispatch = { success: false, detail: message };
           this.emit({
             type: "loop_error",
             iteration,
@@ -290,50 +407,70 @@ export class RalphLoop {
           });
         }
 
-        const latest = await this.loadBoard();
-        if (findTaskByTitle(latest, task.title, "done")) {
+        let qualityReport: QualityGateReport | null = null;
+        if (dispatch.success) {
+          qualityReport = await this.qualityGateRunner.run(task, workspace.path);
+
+          if (!qualityReport.passed) {
+            this.addRetryFeedback(task.title, qualityReport.feedbackMessage);
+            dispatch = {
+              success: false,
+              detail: qualityReport.feedbackMessage,
+            };
+          }
+        }
+
+        if (!dispatch.success) {
+          await this.pollLifecycle(iteration, task, sessionId, {
+            fatalError: dispatch.detail || "agent dispatch failed",
+          });
+          await this.handleTaskFailure(task, iteration, failed, dispatch.detail);
+        }
+
+        if (dispatch.success) {
+          const latest = await this.loadBoard();
+          let updatedBoard = latest.raw;
+
+          if (findTaskByTitle(latest, task.title, "in_progress")) {
+            updatedBoard = moveTaskOnBoard(updatedBoard, task.title, "in_progress", "done");
+          } else if (findTaskByTitle(latest, task.title, "queued")) {
+            updatedBoard = moveTaskOnBoard(updatedBoard, task.title, "queued", "done");
+          }
+
+          if (updatedBoard !== latest.raw) {
+            await this.writeBoard(updatedBoard);
+          }
+
+          await this.pollLifecycle(iteration, task, sessionId, {
+            qualityGateStatus: "passed",
+            taskDone: true,
+          });
+
           completed.add(task.title);
-          this.stuckCounts.delete(normalize(task.title));
+          this.stuckCounts.delete(taskKey(task.title));
+          this.retryFeedback.delete(taskKey(task.title));
           this.emit({
             type: "task_verified",
             iteration,
             task,
             agent,
             message: `Task "${task.title}" is done`,
-            detail: dispatchDetail,
+            detail: qualityReport?.feedbackMessage ?? dispatch.detail,
           });
-          continue;
         }
 
-        const stuckCount = this.bumpStuck(task.title);
-        const blocked = stuckCount >= this.config.maxStuckCount;
-        if (blocked) failed.add(task.title);
-
-        const note = blocked
-          ? `(ralph blocked after ${stuckCount} attempts)`
-          : `(ralph retry ${stuckCount}/${this.config.maxStuckCount})`;
-
-        let updatedBoard = latest.raw;
-        if (findTaskByTitle(latest, task.title, "in_progress")) {
-          updatedBoard = moveTaskOnBoard(updatedBoard, task.title, "in_progress", "queued", note);
-        } else if (findTaskByTitle(latest, task.title, "queued")) {
-          updatedBoard = annotateTaskLine(updatedBoard, task.title, "queued", note);
+        if (workspace) {
+          await this.workspaceManager.destroy(workspace.path).catch((error) => {
+            const message = error instanceof Error ? error.message : String(error);
+            this.emit({
+              type: "loop_error",
+              iteration,
+              task,
+              agent,
+              message: `Workspace cleanup failed: ${message}`,
+            });
+          });
         }
-
-        if (updatedBoard !== latest.raw) {
-          await this.writeBoard(updatedBoard);
-        }
-
-        this.emit({
-          type: "task_stuck",
-          iteration,
-          task,
-          agent,
-          message: blocked
-            ? `Task "${task.title}" reached max stuck count`
-            : `Task "${task.title}" not completed; queued for retry`,
-          detail: dispatchDetail,
-        });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -354,31 +491,81 @@ export class RalphLoop {
     );
   }
 
+  private async handleTaskFailure(
+    task: BoardTask,
+    iteration: number,
+    failed: Set<string>,
+    detail: string,
+  ): Promise<void> {
+    const stuckCount = this.bumpStuck(task.title);
+    const blocked = stuckCount >= this.config.maxStuckCount;
+    if (blocked) failed.add(task.title);
+
+    const note = blocked
+      ? `(ralph blocked after ${stuckCount} attempts)`
+      : `(ralph retry ${stuckCount}/${this.config.maxStuckCount})`;
+
+    const latest = await this.loadBoard();
+    let updatedBoard = latest.raw;
+    if (findTaskByTitle(latest, task.title, "in_progress")) {
+      updatedBoard = moveTaskOnBoard(updatedBoard, task.title, "in_progress", "queued", note);
+    } else if (findTaskByTitle(latest, task.title, "queued")) {
+      updatedBoard = annotateTaskLine(updatedBoard, task.title, "queued", note);
+    }
+
+    if (updatedBoard !== latest.raw) {
+      await this.writeBoard(updatedBoard);
+    }
+
+    this.emit({
+      type: "task_stuck",
+      iteration,
+      task,
+      agent: normalizeAgent(task.agent),
+      message: blocked
+        ? `Task "${task.title}" reached max stuck count`
+        : `Task "${task.title}" not completed; queued for retry`,
+      detail,
+    });
+  }
+
   private async dispatchTask(input: {
     task: BoardTask;
     agent: "claude" | "codex";
     board: ParsedBoard;
     iteration: number;
-  }): Promise<string> {
+    workingDir: string;
+    sessionId: string;
+  }): Promise<DispatchResult> {
     if (input.agent === "claude") {
-      const prompt = buildClaudeTaskPrompt(input.task, input.board);
+      const prompt = buildClaudeTaskPrompt(input.task, input.board, this.getRetryFeedback(input.task.title));
 
       const output = this.deps.executeClaudeImpl
         ? await this.deps.executeClaudeImpl({
           prompt,
           task: input.task,
           iteration: input.iteration,
+          workingDir: input.workingDir,
         })
-        : await this.dispatchClaudeDefault(prompt, input.iteration, input.task);
+        : await this.dispatchClaudeDefault(
+          prompt,
+          input.iteration,
+          input.task,
+          input.workingDir,
+          input.sessionId,
+        );
 
-      return output.errors.length > 0
-        ? output.errors.join("; ")
-        : `Claude output with ${output.findings.length} findings`;
+      const success = output.errors.length === 0;
+      const detail = success
+        ? `Claude output with ${output.findings.length} findings`
+        : output.errors.join("; ");
+
+      return { success, detail };
     }
 
     const templatePath = path.resolve(this.config.basePath, "src/agents/prompts/ralph-codex-worker.md");
     const template = await this.readFileImpl(templatePath, "utf8").catch(() => "");
-    const taskPrompt = buildCodexTaskPrompt(input.task, input.board);
+    const taskPrompt = buildCodexTaskPrompt(input.task, input.board, this.getRetryFeedback(input.task.title));
     const prompt = [template.trim(), "", taskPrompt].filter(Boolean).join("\n");
 
     const exec = this.deps.executeCodexImpl
@@ -390,46 +577,54 @@ export class RalphLoop {
           model: this.config.codex?.model,
           sandboxMode: this.config.codex?.sandboxMode,
           timeoutMs: this.config.codex?.timeoutMs,
+          workingDir: input.workingDir,
         },
         (event) => {
-          this.emit({
-            type: "agent_progress",
-            iteration: input.iteration,
-            task: input.task,
-            agent: "codex",
-            message: typeof event.type === "string" ? `codex:${event.type}` : "codex:event",
-            detail: JSON.stringify(event).slice(0, 400),
-          });
+          this.emitCodexProgress(input, event);
+          void this.postToolHookProcessor.processCodexEvent(input.sessionId, event);
         },
       )
       : executeCodexCliAgent(
         {
           prompt,
-          workingDir: this.config.basePath,
+          workingDir: input.workingDir,
           model: this.config.codex?.model,
           sandboxMode: this.config.codex?.sandboxMode,
           timeoutMs: this.config.codex?.timeoutMs,
         },
         (event) => {
-          this.emit({
-            type: "agent_progress",
-            iteration: input.iteration,
-            task: input.task,
-            agent: "codex",
-            message: typeof event.type === "string" ? `codex:${event.type}` : "codex:event",
-            detail: JSON.stringify(event).slice(0, 400),
-          });
+          this.emitCodexProgress(input, event);
+          void this.postToolHookProcessor.processCodexEvent(input.sessionId, event);
         },
       );
 
     const result = await exec;
-    return result.lastMessage || `codex exit code ${result.exitCode}`;
+    return {
+      success: result.exitCode === 0,
+      detail: result.lastMessage || `codex exit code ${result.exitCode}`,
+    };
+  }
+
+  private emitCodexProgress(
+    input: { iteration: number; task: BoardTask },
+    event: CodexJsonlEvent,
+  ): void {
+    this.emit({
+      type: "agent_progress",
+      iteration: input.iteration,
+      task: input.task,
+      agent: "codex",
+      message: typeof event.type === "string" ? `codex:${event.type}` : "codex:event",
+      detail: JSON.stringify(event).slice(0, 400),
+    });
   }
 
   private async dispatchClaudeDefault(
     prompt: string,
     iteration: number,
     task: BoardTask,
+    workingDir: string,
+    sessionId: string,
   ): Promise<AgentOutput> {
     const model: ModelRef = this.config.claude?.model
       ? (this.config.claude.model.includes(":")
@@ -467,12 +662,83 @@ export class RalphLoop {
       },
     };
 
-    return await executeClaudeCodeAgent(spawnConfig, {
-      cycle_id: `ralph-${iteration}`,
-      trigger,
-      basePath: this.config.basePath,
-      task_prompt: prompt,
-    });
+    return await executeClaudeCodeAgent(
+      spawnConfig,
+      {
+        cycle_id: `ralph-${iteration}`,
+        trigger,
+        basePath: workingDir,
+        task_prompt: prompt,
+      },
+      {
+        onEvent: (event) => {
+          void this.postToolHookProcessor.processClaudeEvent(sessionId, event);
+        },
+      },
+    );
+  }
+
+  private async pollLifecycle(
+    iteration: number,
+    task: BoardTask,
+    sessionId: string,
+    overrides: SessionSignals,
+  ): Promise<SessionStatus> {
+    let polls = 0;
+
+    const final = await this.sessionPoller.pollUntilTerminal(
+      "working",
+      async () => {
+        polls += 1;
+        const signals = await this.collectSessionSignals(task.title, sessionId, overrides);
+        const predicted = determineStatus("working", signals);
+
+        if (polls >= this.sessionMaxPolls && predicted !== "done" && predicted !== "failed") {
+          return {
+            ...signals,
+            fatalError: `Session lifecycle polling exceeded ${this.sessionMaxPolls} checks`,
+          };
+        }
+
+        return signals;
+      },
+      (transition) => {
+        this.emitSessionStatus(
+          iteration,
+          task,
+          transition.to,
+          `Session status ${transition.from} -> ${transition.to}`,
+        );
+      },
+    );
+
+    return final;
+  }
+
+  private async collectSessionSignals(
+    taskTitle: string,
+    sessionId: string,
+    overrides: SessionSignals,
+  ): Promise<SessionSignals> {
+    const snapshot = await this.metadataStore.load();
+    const session = snapshot.sessions[sessionId];
+    const board = await this.loadBoard();
+
+    const taskDone =
+      overrides.taskDone
+      || Boolean(findTaskByTitle(board, taskTitle, "done"));
+
+    return {
+      spawned: true,
+      hasAgentOutput: true,
+      ...(session?.prUrl ? { prUrl: session.prUrl } : {}),
+      ...(session?.ciStatus ? { ciStatus: session.ciStatus } : {}),
+      ...(session?.reviewStatus ? { reviewStatus: session.reviewStatus } : {}),
+      ...(typeof session?.mergeable === "boolean" ? { mergeable: session.mergeable } : {}),
+      ...(typeof session?.merged === "boolean" ? { merged: session.merged } : {}),
+      ...(taskDone ? { taskDone: true } : {}),
+      ...overrides,
+    };
   }
 
   private filterQueuedTasks(board: ParsedBoard): BoardTask[] {
@@ -489,6 +755,16 @@ export class RalphLoop {
       });
   }
 
+  private addRetryFeedback(title: string, feedback: string): void {
+    const key = taskKey(title);
+    const current = this.retryFeedback.get(key) ?? [];
+    this.retryFeedback.set(key, [...current, feedback]);
+  }
+
+  private getRetryFeedback(title: string): readonly string[] {
+    return this.retryFeedback.get(taskKey(title)) ?? [];
+  }
+
   private async loadBoard(): Promise<ParsedBoard> {
     const raw = await this.readFileImpl(this.config.taskBoardPath, "utf8");
     return parseFullBoard(raw);
@@ -499,11 +775,11 @@ export class RalphLoop {
   }
 
   private getStuckCount(title: string): number {
-    return this.stuckCounts.get(normalize(title)) ?? 0;
+    return this.stuckCounts.get(taskKey(title)) ?? 0;
   }
 
   private bumpStuck(title: string): number {
-    const key = normalize(title);
+    const key = taskKey(title);
     const next = (this.stuckCounts.get(key) ?? 0) + 1;
     this.stuckCounts.set(key, next);
     return next;
@@ -527,6 +803,22 @@ export class RalphLoop {
       tasksFailed: [...failed],
       exitReason: reason,
     };
+  }
+
+  private emitSessionStatus(
+    iteration: number,
+    task: BoardTask,
+    sessionStatus: SessionStatus,
+    message: string,
+  ): void {
+    this.emit({
+      type: "session_status",
+      iteration,
+      task,
+      agent: normalizeAgent(task.agent),
+      sessionStatus,
+      message,
+    });
   }
 
   private emit(event: Omit<RalphEvent, "timestamp">): void {

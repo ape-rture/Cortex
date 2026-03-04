@@ -78,6 +78,51 @@ export interface AgentSpawnConfig {
 }
 
 // ---------------------------------------------------------------------
+// Agent plugin interface (Phase 11e)
+// ---------------------------------------------------------------------
+
+export interface AgentPluginContext {
+  readonly cycle_id: string;
+  readonly trigger: Trigger;
+  readonly basePath: string;
+  readonly task_prompt?: string;
+  readonly workingDir?: string;
+}
+
+export interface AgentPluginSession {
+  readonly id: string;
+  readonly agent: string;
+  readonly execution_type: AgentSpawnConfig["execution_type"];
+  readonly started_at: string;
+}
+
+export interface AgentPluginResult {
+  readonly output?: AgentOutput;
+  readonly error?: string;
+  readonly metadata?: Record<string, unknown>;
+}
+
+export interface AgentPlugin {
+  /** Identifier for diagnostics/logging (e.g. claude-sdk, codex-cli, local-script) */
+  readonly id: string;
+
+  /** Spawn a new agent session. */
+  spawn(config: AgentSpawnConfig, context: AgentPluginContext): Promise<AgentPluginSession>;
+
+  /** Check whether the spawned session is still running. */
+  isAlive(session: AgentPluginSession): Promise<boolean>;
+
+  /** Return output when available. Null means "not ready yet". */
+  getOutput(session: AgentPluginSession): Promise<AgentPluginResult | null>;
+
+  /** Send follow-up instructions while running (best effort, plugin-specific). */
+  send(session: AgentPluginSession, message: string): Promise<void>;
+
+  /** Terminate the running session (best effort). */
+  kill(session: AgentPluginSession): Promise<void>;
+}
+
+// ---------------------------------------------------------------------
 // Cycle — one round of agent execution
 // ---------------------------------------------------------------------
 

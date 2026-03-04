@@ -1,11 +1,8 @@
 /**
  * Agent Runner
  *
- * Executes a single agent and returns its AgentOutput. Handles both
- * local_script (TypeScript functions) and API-based agents (Phase 7).
- * Emits lifecycle events for real-time progress streaming.
- *
- * Design source: decisions/2026-02-02-dennett-architecture.md
+ * Executes a single agent and returns its AgentOutput.
+ * Uses pluggable execution backends (Phase 11e).
  */
 
 import type { AgentOutput } from "./types/agent-output.js";
@@ -15,8 +12,15 @@ import type {
   CompletedEvent,
   StartedEvent,
 } from "./types/events.js";
-import type { AgentSpawnConfig, Trigger } from "./types/orchestrator.js";
-import { executeClaudeCodeAgent } from "./claude-code-process.js";
+import type {
+  AgentPlugin,
+  AgentPluginContext,
+  AgentPluginResult,
+  AgentPluginSession,
+  AgentSpawnConfig,
+  Trigger,
+} from "./types/orchestrator.js";
+import { createDefaultPlugins } from "./agent-plugins.js";
 
 // ---------------------------------------------------------------------
 // Public types
@@ -27,6 +31,8 @@ export interface AgentRunContext {
   readonly cycle_id: string;
   readonly trigger: Trigger;
   readonly basePath: string;
+  readonly task_prompt?: string;
+  readonly workingDir?: string;
 }
 
 export type AgentFunction = (context: AgentRunContext) => Promise<AgentOutput>;
@@ -49,16 +55,50 @@ function makeErrorOutput(agent: string, error: string): AgentOutput {
   };
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export class AgentRunner {
   private readonly localAgents = new Map<string, AgentFunction>();
+  private readonly plugins = new Map<AgentSpawnConfig["execution_type"], AgentPlugin>();
   private readonly onEvent?: AgentEventListener;
 
   constructor(onEvent?: AgentEventListener) {
     this.onEvent = onEvent;
+
+    const defaults = createDefaultPlugins(async (config, pluginContext) => {
+      const fn = this.localAgents.get(config.agent);
+      if (!fn) {
+        throw new Error(
+          `No local agent registered for "${config.agent}". ` +
+          `Call runner.registerLocal("${config.agent}", fn) first.`,
+        );
+      }
+
+      return await fn({
+        agent: config.agent,
+        cycle_id: pluginContext.cycle_id,
+        trigger: pluginContext.trigger,
+        basePath: pluginContext.basePath,
+        ...(pluginContext.task_prompt ? { task_prompt: pluginContext.task_prompt } : {}),
+        ...(pluginContext.workingDir ? { workingDir: pluginContext.workingDir } : {}),
+      });
+    });
+
+    for (const [executionType, plugin] of Object.entries(defaults) as Array<
+      [AgentSpawnConfig["execution_type"], AgentPlugin]
+    >) {
+      this.plugins.set(executionType, plugin);
+    }
   }
 
   registerLocal(agent: string, fn: AgentFunction): void {
     this.localAgents.set(agent, fn);
+  }
+
+  registerPlugin(executionType: AgentSpawnConfig["execution_type"], plugin: AgentPlugin): void {
+    this.plugins.set(executionType, plugin);
   }
 
   async run(config: AgentSpawnConfig, context: AgentRunContext): Promise<AgentOutput> {
@@ -75,12 +115,34 @@ export class AgentRunner {
     let output: AgentOutput;
 
     try {
-      // claude_code agents manage their own timeout via AbortController
-      if (config.execution_type === "claude_code") {
-        output = await this.execute(config, context);
+      const plugin = this.plugins.get(config.execution_type);
+      if (!plugin) {
+        throw new Error(`Unknown execution type: ${config.execution_type}`);
+      }
+
+      const pluginContext: AgentPluginContext = {
+        cycle_id: context.cycle_id,
+        trigger: context.trigger,
+        basePath: context.basePath,
+        ...(context.task_prompt ? { task_prompt: context.task_prompt } : {}),
+        ...(context.workingDir ? { workingDir: context.workingDir } : {}),
+      };
+
+      const session = await plugin.spawn(config, pluginContext);
+      const timeoutMs = config.permissions.timeout_ms || 30_000;
+
+      const result = await withTimeout(
+        this.waitForPluginResult(plugin, session),
+        timeoutMs,
+      ).catch(async (error) => {
+        await plugin.kill(session).catch(() => undefined);
+        throw error;
+      });
+
+      if (result.output) {
+        output = result.output;
       } else {
-        const timeoutMs = config.permissions.timeout_ms || 30_000;
-        output = await withTimeout(this.execute(config, context), timeoutMs);
+        output = makeErrorOutput(config.agent, result.error ?? "Agent completed without output");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -107,40 +169,22 @@ export class AgentRunner {
     return output;
   }
 
-  private async execute(
-    config: AgentSpawnConfig,
-    context: AgentRunContext,
-  ): Promise<AgentOutput> {
-    switch (config.execution_type) {
-      case "local_script": {
-        const fn = this.localAgents.get(config.agent);
-        if (!fn) {
-          throw new Error(
-            `No local agent registered for "${config.agent}". ` +
-            `Call runner.registerLocal("${config.agent}", fn) first.`,
-          );
-        }
-        return await fn(context);
+  private async waitForPluginResult(
+    plugin: AgentPlugin,
+    session: AgentPluginSession,
+  ): Promise<AgentPluginResult> {
+    while (true) {
+      const output = await plugin.getOutput(session);
+      if (output) return output;
+
+      const alive = await plugin.isAlive(session);
+      if (!alive) {
+        const finalOutput = await plugin.getOutput(session);
+        if (finalOutput) return finalOutput;
+        return { error: "Agent plugin ended without output" };
       }
 
-      case "claude_code":
-        return await executeClaudeCodeAgent(config, context);
-
-      case "claude_api":
-      case "openai_api":
-        throw new Error(
-          `${config.execution_type} execution not yet implemented. ` +
-          `Use "claude_code" for LLM-powered agents or "local_script" for fast local agents.`,
-        );
-
-      case "mcp_tool":
-        throw new Error(
-          "mcp_tool execution not yet implemented. " +
-          `Use "claude_code" for LLM-powered agents or "local_script" for fast local agents.`,
-        );
-
-      default:
-        throw new Error(`Unknown execution type: ${config.execution_type}`);
+      await delay(25);
     }
   }
 
