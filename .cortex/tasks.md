@@ -8,18 +8,6 @@
 
 *Add tasks with `Agent: claude` or `Agent: codex` to assign.*
 
-### Memory Flywheel (Phase 5.5)
-
-### Orchestrator MVP Follow-up (Phase 5)
-
-### Claude Code Agents (Phase 5.5)
-
-### Web Terminal (Phase 1.5)
-
-### Gmail Integration (Phase 6)
-
-### Typed Capture System (Phase 8)
-
 ### FOCUS — Mail Enrichment
 
 - **Add more mail functionality and enrichment to Focus** -- Project: `focus-lead-gen` (`D:\Documenten\Programmeren\Python\Cryptocurrency\The Indexing Company\FOCUS - Lead gen system`)
@@ -37,29 +25,24 @@ Unify all 5 capture stores into a single `MarkdownTaskQueue`. A capture is just 
 - **Phase 4: Simplify captures handler and UI** -- Agent: claude -- Branch: `claude/unified-captures-handler`. Rewrite `src/ui/handlers/captures.ts` from 5-store aggregation to single `taskQueue.list()` + map. Remove `CaptureStores` interface. Update `src/ui/index.ts` (remove 4 store instantiations). Update `src/ui/dashboard/src/views/captures.tsx` `STATUS_COLUMNS` to unified `TaskStatus` values.
 
 
-### Ralph Loop — Autonomous Dual-Agent Supervisor (Phase 10)
+### Orchestration Upgrade (Phase 11)
 
-Supervisor loop that reads `.cortex/tasks.md`, picks the next task, routes to Claude (SDK) or Codex (CLI), waits for completion, and loops until done. Plan: `C:\Users\Dennis\.claude\plans\pure-jumping-elephant.md`
+Based on deep research into Hermes Agent, Agent Orchestrator (ComposioHQ), and OpenClaw/Zoe systems. Research: `research/12-orchestration-systems-deep-dive.md`. Reference code: `research/orchestration-research/REFERENCE-INDEX.md`.
 
-- **Codex CLI subprocess wrapper** -- Agent: codex -- Branch: `codex/ralph-codex-process`. Create `src/core/codex-process.ts` with `executeCodexCliAgent()`. Spawn `codex exec - --full-auto --json --ephemeral -C <dir>`, pipe prompt via stdin, parse JSONL events, capture final message. Tests in `src/core/codex-process.test.ts`.
+- **11d: Context-aware retry prompts** -- Agent: claude -- Branch: `claude/context-retry`. When Ralph loop agent fails, analyze error output + query relevant context files (meetings, contacts, decisions). Construct targeted retry prompt with specific file paths, error messages, and business context. Replace current "double max_turns" escalation. Create prompt templates in `src/agents/prompts/ralph-retry-*.md`. Tests in `src/core/context-retry.test.ts` — cover error analysis, context injection, prompt construction for different failure modes (CI fail, wrong direction, out of context).
 
-- **Enhanced task board parser** -- Agent: codex -- Branch: `codex/ralph-board-parser`. Extend `src/ui/handlers/tasks.ts` with `BoardTask` (group, branch, description, lineNumber), `ParsedBoard`, `parseFullBoard()`, `moveTaskOnBoard()`, `findTaskByTitle()`. Enhanced regex to capture branch names. Tests in `src/ui/handlers/tasks.test.ts`.
+- **11g: Bounded working memory** -- Agent: claude -- Commit to main. Create `context/working-memory.md` (2000 char max). Contains: current focus, recent decisions, active blockers, key conventions. Updated by Memory Synthesizer agent. Injected into every agent's system prompt. Reference: `hermes-agent/tools/memory_tool.py`. Tests in `src/core/working-memory.test.ts` — cover char limit enforcement, update/truncation logic, injection into agent prompts.
 
-- **Ralph agent prompts** -- Agent: claude -- Commit to main. Create `src/agents/prompts/ralph-claude-worker.md` and `src/agents/prompts/ralph-codex-worker.md`. System prompts for Claude/Codex when dispatched by Ralph — include coordination protocol (update active/log/tasks files), git workflow, completion criteria.
+- **11h: Skills system (learned knowledge)** -- Agent: claude -- Commit to main. When agents solve hard problems, persist solution pattern as skill in `context/skills/`. Skills have SKILL.md with frontmatter (name, description). Build skill registry that future agents can reference. Reference: `hermes-agent/agent/skill_commands.py`. Tests in `src/core/skill-registry.test.ts` — cover skill scanning, frontmatter parsing, invocation message building, duplicate detection.
 
-- **Core Ralph loop** -- Agent: codex -- Branch: `codex/ralph-loop`. Create `src/core/ralph-loop.ts` with `RalphLoop` class. Read board, pick task, route agent, verify completion, stuck detection, abort handling. Depends on codex-process + board-parser + prompts. Tests in `src/core/ralph-loop.test.ts`.
-
-- **Ralph CLI entry point + wiring** -- Agent: claude -- Branch: `claude/ralph-cli`. Create `src/cli/ralph.ts` with arg parsing (--group, --agent, --task, --max-iterations, --dry-run), signal handling, console output. Wire into `package.json` and `src/cli/index.ts`.
-
-- **Forward-compat type extension** -- Agent: codex -- Commit to main. Add `"codex_cli"` to `execution_type` union in `src/core/types/orchestrator.ts`.
-
-*Completed (moved to Done).*
+- **11i: Proactive task discovery agents** -- Agent: claude -- Branch: `claude/proactive-discovery`. Expand cron-triggered agents: Sentry scanning → auto-file bug tasks, post-meeting note scanning → extract feature requests → file tasks, git log scanning → detect stale branches → notify. Route all discovered tasks through standard queue. Reference: `hermes-agent/cron/scheduler.py` + `cron/jobs.py`. Tests in `src/agents/proactive-discovery.test.ts` — cover each scanner (git staleness, meeting extraction), task filing, deduplication against existing queue items.
 
 ## In Progress
 
 *Agent moves task here when starting.*
 ## Done
 
+- **Orchestration Upgrade (Phase 11) — Codex tasks 11a/11b/11c/11e/11f/11j** -- Agent: codex -- Branch: `codex/orchestration-phase11` (merged to `main`). Implemented isolated task worktrees (`src/core/workspace-manager.ts` + tests), 15-state lifecycle with polling (`src/core/session-lifecycle.ts` + tests), quality-gate verification (`src/core/quality-gates.ts` + tests), plugin-based agent execution (`src/core/agent-plugins.ts`, `src/core/agent-runner.ts`, `src/core/types/orchestrator.ts`, + tests), post-tool metadata hooks (`src/core/post-tool-hooks.ts` + tests), Ralph loop integration (`src/core/ralph-loop.ts` + tests), and end-to-end orchestration pipeline coverage (`src/core/orchestration-e2e.test.ts`). Validation: `node --import tsx --test src/core/workspace-manager.test.ts src/core/session-lifecycle.test.ts src/core/quality-gates.test.ts src/core/post-tool-hooks.test.ts src/core/agent-plugin.test.ts src/core/agent-runner.test.ts src/core/ralph-loop.test.ts src/core/orchestration-e2e.test.ts src/core/codex-process.test.ts src/core/claude-code-process.test.ts`, `npm run typecheck`.
 - **Unified Capture Store (Phase 9) — Phase 5 cleanup** -- Agent: codex -- Branch: `main`. Deleted legacy capture files `projects/feature-proposals.md`, `projects/ideas.md`, and `projects/content-ideas.md` (`actions/research-queue.md` was already absent). Updated `SYSTEM.md` references to use `/actions/queue.md` with `capture_type` metadata (`seed`, `content`, `feature`). Validation: `npm test` and `npm run typecheck` passed; `npm run test:unit` still has pre-existing unrelated failures in `src/core/resume-token-store.test.ts`.
 - **Codex CLI subprocess wrapper (follow-up hardening)** -- Agent: codex -- Branch: `codex/ralph-codex-process` (merged to `main`). Updated `src/core/codex-process.ts` to preserve JSONL parsing and now fall back to `agent_message` events when `--output-last-message` output is unavailable; added coverage in `src/core/codex-process.test.ts`. Validation: `node --import tsx --test src/core/codex-process.test.ts`, `npm run typecheck`.
 - **Ralph Loop (Phase 10) — Codex core tasks** -- Agent: codex -- Branch: `codex/ralph-loop` (merged to `main`). Implemented `src/core/codex-process.ts` + `src/core/codex-process.test.ts` (Codex CLI subprocess wrapper with JSONL parsing/stdin prompt/timeout), extended `src/ui/handlers/tasks.ts` with `BoardTask`/`ParsedBoard`/`parseFullBoard`/`moveTaskOnBoard`/`findTaskByTitle` and added `src/ui/handlers/tasks.test.ts`, implemented `src/core/ralph-loop.ts` + `src/core/ralph-loop.test.ts`, and added forward-compat `execution_type: "codex_cli"` in `src/core/types/orchestrator.ts`. Validation: targeted Ralph tests passed, `npm run typecheck` passed, `npm run ralph -- --dry-run --agent=codex` passed; `npm run test:unit` still has unrelated pre-existing failures in `src/core/resume-token-store.test.ts`.

@@ -4,6 +4,67 @@
 
 ---
 
+## 2026-03-04 claude -- Orchestration Phase 11 (d, g, h, i) Implementation
+
+### What
+Implemented 4 Claude-assigned orchestration phases, all committed to main:
+
+- **11g: Bounded working memory** — `src/core/working-memory.ts` + tests (20 passing). WorkingMemoryStore with frozen snapshots for prefix cache stability, section-level updates, char limit enforcement. Created `context/working-memory.md` initial content.
+
+- **11h: Skills system** — `src/core/skill-registry.ts` + tests (27 passing). SkillRegistry with scan/list/get/create/exists, YAML frontmatter parsing, skill invocation message builder, `context/skills/` directory structure.
+
+- **11d: Context-aware retry** — `src/core/context-retry.ts` + tests (40 passing). Failure classification (ci_failed, wrong_direction, incomplete, conflict, runtime_error), context-aware retry prompt builder with per-category instructions, escalation policy with time+attempt limits, RetryTracker for attempt history.
+
+- **11i: Proactive task discovery** — `src/agents/proactive-discovery.ts` + tests (25 passing). Git stale branch scanner, meeting action item scanner, deduplication against existing queue, DiscoveredTask→Task conversion. Agent functions ready for orchestrator registration.
+
+### Files Created
+- `src/core/working-memory.ts` + `src/core/working-memory.test.ts`
+- `src/core/skill-registry.ts` + `src/core/skill-registry.test.ts`
+- `src/core/context-retry.ts` + `src/core/context-retry.test.ts`
+- `src/agents/proactive-discovery.ts` + `src/agents/proactive-discovery.test.ts`
+- `context/working-memory.md`
+
+### Tests
+112 tests total, all passing. No blockers.
+
+### Next Steps
+- Codex: 11a (worktree isolation), 11b (session states), 11c (quality gates), 11e (agent plugins), 11f (post-tool hooks)
+- Integration: Wire working-memory into agent prompts, wire context-retry into ralph-loop, register discovery agents in orchestrator.json
+- 11j (integration tests) depends on all other phases
+
+---
+
+## 2026-03-03 claude -- Orchestration Systems Deep Dive Research
+
+### What
+Deep research into 3 orchestration systems to improve Cortex's agent coordination:
+- **Hermes Agent** (NousResearch) — persistent agent + delegation, Python, skills-as-knowledge
+- **Agent Orchestrator** (ComposioHQ) — session lifecycle state machine, 8-plugin architecture, TypeScript
+- **OpenClaw/Zoe** (Elvis Sun) — two-tier context separation, context-aware retry, proactive task discovery
+
+Both repos cloned to `research/orchestration-research/` for reference.
+
+### Key Findings
+1. **Worktree isolation** is universal — every production system uses it. Cortex doesn't.
+2. **Context-aware retry** (OpenClaw) beats "retry with more turns" (Cortex current approach)
+3. **Quality gates** (CI/tests/reviews) should verify completion, not agent self-reports
+4. **Plugin architecture** for agents enables easy addition of new models/tools
+5. **Post-tool hooks** auto-capture metadata (PR URLs, branches) without polling
+6. **Bounded working memory** with prefix caching (Hermes) is more effective than unbounded context
+
+### Output
+- Full research document: `research/12-orchestration-systems-deep-dive.md`
+- Implementation roadmap: Phase 11a–11i (worktree isolation → proactive task discovery)
+- Comparison table mapping all systems against Cortex + Dennett principles
+
+### Next Steps
+- Phase 11a: Add worktree isolation to Ralph loop
+- Phase 11b: Implement session state machine (15 states)
+- Phase 11c: Quality gates (typecheck, tests, diff check on completion)
+- Phase 11d: Context-aware retry prompts
+
+---
+
 ## 2026-02-20 codex -- unified capture store phase 9 cleanup
 
 - Completed Phase 5 cleanup on `main`.
@@ -1858,3 +1919,31 @@ All types are at `src/core/types/content.ts`. All prompts are in `src/agents/pro
 - Branch `codex/ralph-codex-process` merged to `main` and deleted locally.
 
 
+## 2026-03-04 codex -- orchestration upgrade phase 11 (11a, 11b, 11c, 11e, 11f, 11j)
+
+- Implemented task-level git worktree isolation for Ralph loop in `src/core/workspace-manager.ts` with lifecycle tests in `src/core/workspace-manager.test.ts`.
+- Added 15-state session lifecycle machine + polling/reentrancy guards in `src/core/session-lifecycle.ts` with coverage in `src/core/session-lifecycle.test.ts`.
+- Added completion verification quality gates in `src/core/quality-gates.ts` (`typecheck`, `test:unit`, `git diff --stat`) with pass/fail/bypass feedback tests in `src/core/quality-gates.test.ts`.
+- Added `AgentPlugin` contract to orchestrator types and plugin implementations (`claude-sdk`, `codex-cli`, `local-script`) in `src/core/agent-plugins.ts`; refactored `src/core/agent-runner.ts` to resolve execution through plugins; added `src/core/agent-plugin.test.ts`.
+- Added post-tool metadata hook pipeline in `src/core/post-tool-hooks.ts` to parse Claude SDK stream + Codex JSONL events (PR URL, branch, CI/review/merge metadata) with atomic metadata writes; tests in `src/core/post-tool-hooks.test.ts`.
+- Integrated all of the above into `src/core/ralph-loop.ts`:
+  - isolated worktree spawn/cleanup per task
+  - lifecycle status emission/polling
+  - gate-enforced completion (requeue on verification failure)
+  - retry feedback injection into follow-up prompts
+  - session metadata hook ingestion from agent tool events
+- Added orchestration integration coverage in `src/core/orchestration-e2e.test.ts` for:
+  - success path with real worktrees
+  - retry-after-failure path
+  - terminal stuck escalation path
+- Updated process executors for plugin/hook support:
+  - `src/core/claude-code-process.ts` now supports external abort + event callbacks
+  - `src/core/codex-process.ts` now supports external abort signal
+
+- Validation run:
+  - `node --import tsx --test src/core/workspace-manager.test.ts src/core/session-lifecycle.test.ts src/core/quality-gates.test.ts src/core/post-tool-hooks.test.ts src/core/agent-plugin.test.ts src/core/agent-runner.test.ts src/core/ralph-loop.test.ts src/core/orchestration-e2e.test.ts src/core/codex-process.test.ts src/core/claude-code-process.test.ts`
+  - `npm run typecheck`
+
+- Branch/workflow:
+  - Feature branch: `codex/orchestration-phase11`
+  - Merged to `main` with `--no-ff`
